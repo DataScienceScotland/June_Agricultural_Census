@@ -1,4 +1,4 @@
-# This script imports and formats AGS (JAC) data extracts - code is rewrite of A2 section of the June SAS code (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
+# This script imports and formats AGS (JAC) data extracts - code is rewrite of "A2 - Ags data extract upload" in the June SAS code (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
 # Created by Lucy Nevard 04.01.23 
 # Modified by Lucy Nevard 04.01.23
 
@@ -75,7 +75,7 @@ df_nonSAF<-df_nonSAF %>%
 str(df_nonSAF, list.len=ncol(df_nonSAF))
 
 
-# Save RDAs for each df into repo
+# Save RDAs for each df into repo or other directory
 
 setwd("C:/Users/u455049/Documents/R/repos/June")
 
@@ -84,6 +84,5 @@ save(df_SAF, file=paste("SAF_ags",yr, sep='_',".rda"))
 save(df_nonSAF, file=paste("nonSAF_ags",yr, sep='_',".rda"))
 
 
-load("nonSAF_ags_21_.rda")
 
 
