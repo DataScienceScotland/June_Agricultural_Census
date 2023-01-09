@@ -39,6 +39,3 @@ vignettes/*.pdf
 .Renviron
 
 
-# Data files
-
-.rda
