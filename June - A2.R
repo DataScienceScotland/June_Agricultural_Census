@@ -20,7 +20,7 @@ library(tidyverse)
 setwd("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June21/Data Drops/AGS")
 
 
-#  Assign year to allow creation of dataset with correct year (at the very end of this script)
+#  Assign the year of the current dataset to allow creation of dataset with correct year (at the very end of this script)
 
 yr<-21
 
@@ -37,7 +37,7 @@ df_nonSAF<-read.csv("NonSAFFINAL.csv")
 # Formatting SAF df -------------------------------------------------------
 
 
-# Remove two variables from df_SAF, item21310 and X
+# Remove two variables from df_SAF. This should be changed to keep all necessary variables
 
 df_SAF<-subset(df_SAF, select = -c(item21310, X))
 
