@@ -24,12 +24,11 @@ library(dplyr)
 library(stringr)
 
 
-#  Assign year and month to allow creation of dataset with correct year (at the very end of this script)
-# Depending on how data stored, year/month may need to be specified in readxl
+#  Assign year and month to allow creation of dataset with correct year (at the very end of this script). 
+# Depending on how data are stored, year/month may need to be specified in readxl
 
 yr<-21
 mnth<-"SEP"
-
 
 
 
@@ -154,7 +153,13 @@ misseligibleareaperm_seas<-lapply(list_perm_seas, function(x)
 })
 
 
-
+# Write these to rda (for future use)
+# 
+# setwd("C:/Users/u455049/Documents/R/repos/June")
+# 
+# save(missingperm_seas, file=paste("missingallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
+# save(missfieldareaperm_seas, file=paste("missingfieldareaallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
+# save(misseligibleareaperm_seas, file=paste("missingeligibleareaallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
 
 
 # Create final dataframes -------------------------------------------------
@@ -183,28 +188,30 @@ for (i in seq(list_perm_seas))
 
 # rename df with correct year
 
-assign(paste("allsaf", yr, "perm", mnth, sep = '_'), df1) 
-assign(paste("allsaf", yr, "seas", mnth, sep = '_'), df2) 
-assign(paste("allsaf", yr, "scheme", mnth, sep = '_'), df_schemework) 
-
 
 # This is where the A1 section of the SAS code ends.
 
+# Write to rda with name including year and month. Figure out how to take out the last underscore...
+
+setwd("C:/Users/u455049/Documents/R/repos/June")
+
+save(df1, file=paste("allsaf",yr, "perm", mnth, sep='_',".rda"))
+save(df2, file=paste("allsaf",yr, "seas", mnth, sep='_',".rda"))
+save(df_schemework, file=paste("allsaf",yr, "scheme", mnth, sep='_',".rda"))
 
 
+# Write to csv if necessary ------------------------------------------------------------
 
-# Write to csv ------------------------------------------------------------
 
-
-# Write dfs to csv for use in further scripts
+# Write dfs to csv 
 # Note: year and month are specified in the object name already...
-
-setwd("C:/Users/u455049/Documents/R/repos/Trial")
-
-
-write.csv(allsaf_21_perm_SEP, "allsaf_21_perm_SEP.csv")
-write.csv(allsaf_21_scheme_SEP, "allsaf_21_scheme_SEP.csv")
-write.csv(allsaf_21_seas_SEP, "allsaf_21_seas_SEP.csv")
+# 
+# setwd("C:/Users/u455049/Documents/R/repos/June")
+# 
+# 
+# write.csv(allsaf_21_perm_SEP, "allsaf_21_perm_SEP.csv")
+# write.csv(allsaf_21_scheme_SEP, "allsaf_21_scheme_SEP.csv")
+# write.csv(allsaf_21_seas_SEP, "allsaf_21_seas_SEP.csv")
 
 
 
