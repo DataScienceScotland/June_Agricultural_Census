@@ -71,6 +71,7 @@ df_nonSAF<-df_nonSAF %>%
     item186=as.character(item186)
   )
 
+# Check variables types are correct
 
 str(df_nonSAF, list.len=ncol(df_nonSAF))
 
