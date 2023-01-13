@@ -1,6 +1,6 @@
 # This script imports and formats AGS (JAC) data extracts - code is rewrite of "A2 - Ags data extract upload" in the June SAS code (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
 # Created by Lucy Nevard 04.01.23 
-# Modified by Lucy Nevard 04.01.23
+# Modified by Lucy Nevard 13.01.23
 
 
 # Before import -----------------------------------------------------------
