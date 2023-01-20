@@ -46,9 +46,6 @@ df_SAF<-subset(df_SAF, select = -c(item21310, X))
 
 df_SAF<-df_SAF %>%
   mutate(
-  survtype=as.character(survtype),
-  submisType=as.character(submisType),
-  maderight=as.character(maderight),
   item186=as.character(item186)
   )
 
@@ -64,10 +61,6 @@ df_nonSAF<-subset(df_nonSAF, select = -c(item21310, X))
 
 df_nonSAF<-df_nonSAF %>%
   mutate(
-    survtype=as.character(survtype),
-    submisType=as.character(submisType),
-    maderight=as.character(maderight),
-    item185=as.character(item185),
     item186=as.character(item186)
   )
 
