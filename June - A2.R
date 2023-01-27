@@ -1,6 +1,6 @@
 # This script imports and formats AGS (JAC) data extracts - code is rewrite of "A2 - Ags data extract upload" in the June SAS code (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
 # Created by Lucy Nevard 04.01.23 
-# Modified by Lucy Nevard 04.01.23
+# Modified by Lucy Nevard 13.01.23
 
 
 # Before import -----------------------------------------------------------
@@ -20,7 +20,7 @@ library(tidyverse)
 AGS_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June21/Data Drops/AGS")
 
 
-#  Assign year to allow creation of dataset with correct year (at the very end of this script)
+#  Assign the year of the current dataset to allow creation of dataset with correct year (at the very end of this script)
 
 yr<-21
 
@@ -37,7 +37,7 @@ df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"))
 # Formatting SAF df -------------------------------------------------------
 
 
-# Remove two variables from df_SAF, item21310 and X
+# Remove two variables from df_SAF. This should be changed to keep all necessary variables
 
 df_SAF<-subset(df_SAF, select = -c(item21310, X))
 
@@ -65,6 +65,7 @@ df_nonSAF<-df_nonSAF %>%
     item186=as.character(item186)
   )
 
+# Check variables types are correct
 
 str(df_nonSAF, list.len=ncol(df_nonSAF))
 
