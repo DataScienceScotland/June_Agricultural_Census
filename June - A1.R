@@ -110,6 +110,9 @@ misseligibleareaperm_seas<-lapply(list_perm_seas, function(x)
 # save(missfieldareaperm_seas, file=paste("missingfieldareaallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
 # save(misseligibleareaperm_seas, file=paste("missingeligibleareaallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
 
+<<<<<<< HEAD
+>>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
+=======
 >>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
 
 # Create final dataframes -------------------------------------------------
@@ -136,6 +139,9 @@ assign(paste("allsaf", yr, "scheme", mnth, sep = '_'), df_schemework)
 =======
 
 # rename df with correct year
+<<<<<<< HEAD
+>>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
+=======
 >>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
 
 
@@ -144,19 +150,26 @@ assign(paste("allsaf", yr, "scheme", mnth, sep = '_'), df_schemework)
 # Write to rda with name including year and month. Figure out how to take out the last underscore...
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Write to csv ------------------------------------------------------------
 =======
+=======
+>>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
 setwd("C:/Users/u455049/Documents/R/repos/June")
 
 save(df1, file=paste("allsaf",yr, "perm", mnth, sep='_',".rda"))
 save(df2, file=paste("allsaf",yr, "seas", mnth, sep='_',".rda"))
 save(df_schemework, file=paste("allsaf",yr, "scheme", mnth, sep='_',".rda"))
 
+<<<<<<< HEAD
+>>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
+=======
 >>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
 
 # Write to csv if necessary ------------------------------------------------------------
 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 output_path <- "C:/Users/u455049/Documents/R/repos/Trial"
 
@@ -165,6 +178,8 @@ write.csv(allsaf_21_perm_SEP, paste0(output_path, "/allsaf_21_perm_SEP.csv"))
 write.csv(allsaf_21_scheme_SEP, paste0(output_path, "/allsaf_21_scheme_SEP.csv"))
 write.csv(allsaf_21_seas_SEP, paste0(output_path, "/allsaf_21_seas_SEP.csv"))
 =======
+=======
+>>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
 # Write dfs to csv 
 # Note: year and month are specified in the object name already...
 # 
@@ -174,6 +189,9 @@ write.csv(allsaf_21_seas_SEP, paste0(output_path, "/allsaf_21_seas_SEP.csv"))
 # write.csv(allsaf_21_perm_SEP, "allsaf_21_perm_SEP.csv")
 # write.csv(allsaf_21_scheme_SEP, "allsaf_21_scheme_SEP.csv")
 # write.csv(allsaf_21_seas_SEP, "allsaf_21_seas_SEP.csv")
+<<<<<<< HEAD
+>>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
+=======
 >>>>>>> 10e519be90aa42ddf224dc3ba83d2f7159b15417
 
 
