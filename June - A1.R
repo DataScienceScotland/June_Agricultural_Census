@@ -195,9 +195,9 @@ for (i in seq(list_perm_seas))
 
 setwd("C:/Users/u455049/Documents/R/repos/June")
 
-save(df1, file=paste("allsaf",yr, "perm", mnth, sep='_',".rda"))
-save(df2, file=paste("allsaf",yr, "seas", mnth, sep='_',".rda"))
-save(df_schemework, file=paste("allsaf",yr, "scheme", mnth, sep='_',".rda"))
+save(df1, file=paste("allsaf",yr, "perm", mnth, sep='_',"A1end.rda"))
+save(df2, file=paste("allsaf",yr, "seas", mnth, sep='_',"A1end.rda"))
+save(df_schemework, file=paste("allsaf",yr, "scheme", mnth, sep='_',"A1end.rda"))
 
 
 # Write to csv if necessary ------------------------------------------------------------
