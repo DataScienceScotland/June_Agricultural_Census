@@ -17,7 +17,7 @@ library(tidyverse)
 # Set working directory
 
 
-setwd("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June21/Data Drops/AGS")
+AGS_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June21/Data Drops/AGS")
 
 
 #  Assign the year of the current dataset to allow creation of dataset with correct year (at the very end of this script)
@@ -30,8 +30,8 @@ yr<-21
 # This imports the final version of these datasets - change to version/date needed. 
 
 
-df_SAF<-read.csv("SAFFINAL.csv")
-df_nonSAF<-read.csv("NonSAFFINAL.csv")
+df_SAF<-read.csv(paste0(AGS_directory,"/SAFFINAL.csv"))
+df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"))
 
 
 # Formatting SAF df -------------------------------------------------------
@@ -46,9 +46,6 @@ df_SAF<-subset(df_SAF, select = -c(item21310, X))
 
 df_SAF<-df_SAF %>%
   mutate(
-  survtype=as.character(survtype),
-  submisType=as.character(submisType),
-  maderight=as.character(maderight),
   item186=as.character(item186)
   )
 
@@ -64,9 +61,6 @@ df_nonSAF<-subset(df_nonSAF, select = -c(item21310, X))
 
 df_nonSAF<-df_nonSAF %>%
   mutate(
-    survtype=as.character(survtype),
-    submisType=as.character(submisType),
-    maderight=as.character(maderight),
     item185=as.character(item185),
     item186=as.character(item186)
   )
@@ -78,11 +72,13 @@ str(df_nonSAF, list.len=ncol(df_nonSAF))
 
 # Save RDAs for each df into repo or other directory
 
-setwd("C:/Users/u455049/Documents/R/repos/June")
+#check output_path is correct - Jackie 17/1/23
 
-save(df_SAF, file=paste("SAF_ags",yr, sep='_',".rda"))
+output_path <- "C:/Users/u455049/Documents/R/repos/Trial"
 
-save(df_nonSAF, file=paste("nonSAF_ags",yr, sep='_',".rda"))
+save(df_SAF, file=paste0(output_path, "SAF_ags_", yr,".rda"))
+
+save(df_nonSAF, file=paste0(output_path, "nonSAF_ags_", yr,".rda"))
 
 
 
