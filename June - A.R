@@ -1,7 +1,7 @@
 # This script imports the datasets from SAF, Ags (the census returns) from this year and the previous year, and the Crofting Commission. They are saved as rdas in the datashare 
 # Please update the directories at the top to get the correct years.
-# Created by Lucy Nevard 22.11.22 
-# Modified by Lucy Nevard 22.12.22
+# Created by Lucy Nevard 24.02.22 
+# Modified by Lucy Nevard 27.02.22
 
 
 
