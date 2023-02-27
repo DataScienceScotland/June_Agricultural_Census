@@ -1,78 +1,56 @@
+# This script changes SAF codes to JAC item numbers. 
 # This script recreates code in B9 of the SAS June project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
 # Created by Lucy Nevard 17.02.23 
-# Modified by Lucy Nevard 17.02.23
+# Modified by Lucy Nevard 27.02.23
 
 # Clear environment prior 
 
 rm(list=ls())
 
+# Datashare file path for import and export
+
+Code_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023")
+
+# ADM schema for export
+
+server <- "s0196a\\ADM"
+database <- "RuralAndEnvironmentalScienceFarmingStatistics"
+schema <- "juneagriculturalsurvey2023alpha"
+
 # Load packages
 
 library(tidyverse)
-library(readxl)
 library(stringr)
 library(data.table)
 
-# Functions
 
-loadRData <- function(fileName){
-  #loads an RData file, and returns it
-  load(fileName)
-  get(ls()[ls() != "fileName"])
-}
+# Load functions
 
-# Main function
-.ls.objects <- function (pos = 1, pattern, order.by,
-                         decreasing=FALSE, head=FALSE, n=5) {
-  napply <- function(names, fn) sapply(names, function(x)
-    fn(get(x, pos = pos)))
-  names <- ls(pos = pos, pattern = pattern)
-  obj.class <- napply(names, function(x) as.character(class(x))[1])
-  obj.mode <- napply(names, mode)
-  obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
-  obj.prettysize <- napply(names, function(x) {
-    capture.output(format(utils::object.size(x), units = "auto")) })
-  obj.size <- napply(names, object.size)
-  obj.dim <- t(napply(names, function(x)
-    as.numeric(dim(x))[1:2]))
-  vec <- is.na(obj.dim)[, 1] & (obj.type != "function")
-  obj.dim[vec, 1] <- napply(names, length)[vec]
-  out <- data.frame(obj.type, obj.size, obj.prettysize, obj.dim)
-  names(out) <- c("Type", "Size", "PrettySize", "Rows", "Columns")
-  if (!missing(order.by))
-    out <- out[order(out[[order.by]], decreasing=decreasing), ]
-  if (head)
-    out <- head(out, n)
-  out
-}
+source("Functions/Functions.R")
 
-# Shorthand function for easy access
-lsos <- function(..., n=10) {
-  .ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
-}
+
+
+# Import all saf data and code translation table
+
+allsaf<-loadRData(paste0(Code_directory,"/allsaf_B8.rda"))
+
+newcodetrans<-read.csv(paste0(Code_directory,"/NEW_CODE_TRANS21.csv"))
 
 
 
 
-# Note: remove ECS as redundant.
-
-allsaf_21<-loadRData("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/allsaf_21.rda")
-
-newcodetrans21<-read.csv("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/NEW_CODE_TRANS21.csv")
-
-
-check.llo<-allsaf_21 %>% 
+check.llo<-allsaf %>% 
   filter(!(LLO=="N"|LLO=="Y"))
 
 
-summ_fds<-allsaf_21 %>% 
+summ_fds<-allsaf %>% 
   filter(!claimtype=="LMC") %>% 
   mutate(LLO_area=
            ifelse(LLO=="Y", area, 0),
          LFASS_area=
            ifelse((lfass_eligible=="Y"&claimtype=="SFPS"),area,0))
 
-allsaf_21_fids<-summ_fds %>% 
+allsaf_fids<-summ_fds %>% 
   group_by(parish, holding, fid, code) %>% 
   summarize(
             mlc=unique(mlc),
@@ -87,7 +65,7 @@ allsaf_21_fids<-summ_fds %>%
 
 rm(summ_fds)
 
-aggregate1<-allsaf_21_fids %>% 
+aggregate1<-allsaf_fids %>% 
   group_by(parish, holding, code) %>% 
   summarize(
             area=sum(area),
@@ -98,23 +76,23 @@ aggregate1<-allsaf_21_fids %>%
             brn=unique(brn),
             .groups="keep")
 
-allsaf_21_reduced<-allsaf_21 %>% 
+allsaf_reduced<-allsaf %>% 
   select(parish, holding, mlc, brn, area)
 
-rm(allsaf_21, allsaf_21_fids,check.llo)
+rm(allsaf, allsaf_fids,check.llo)
 
 # Translate codes to June items based on translation table (this will probably be updated every year)
 
 aggregate1$code<-as.factor(aggregate1$code)
 newcodetrans21$code<-as.factor(newcodetrans21$code)
 
-cens_coded<-merge(aggregate1,newcodetrans21,by="code", all.x = TRUE)
+cens_coded<-merge(aggregate1,newcodetrans,by="code", all.x = TRUE)
 
 unmatched_codes<-cens_coded [ !aggregate1$code %in% cens_coded$code ,]
 
-rm(newcodetrans21, aggregate1)
+rm(newcodetrans, aggregate1)
 
-allsaf_21<-as_tibble(allsaf_21)
+allsaf<-as_tibble(allsaf)
 
 # Produces item185 for item 41 (item41 is Unspecified Crops Total Area). Item185 will specify the crops. 
 
@@ -193,9 +171,9 @@ extra_fields<-census_format %>%
             brn = unique(brn))
 
 
-brns<-allsaf_21_reduced 
+brns<-allsaf_reduced 
 
-rm(allsaf_21_reduced)
+rm(allsaf_reduced)
 
 brns$parish<-str_pad(brns$parish, width=3, pad="0")
 brns$holding<-str_pad(brns$holding, width=4, pad="0")
@@ -212,12 +190,8 @@ brns<-brns %>%
 
 
 
-lsos() #Run this in order to list objects in order of memory usage
 
-
-
-
-brns21<-brns %>% 
+brns<-brns %>% 
   group_by(parish,holding,brn) %>% 
   summarise(area=sum(area),
             mlc = unique(mlc),
@@ -225,7 +199,7 @@ brns21<-brns %>%
 
 
 
-brns21<-brns21 %>% 
+brns<-brns %>% 
   group_by(parish,holding)
 summarize_all(distinct)
 
@@ -239,16 +213,16 @@ cens_wide<-cens_wide %>%
 
 
 
+# Check where these items are in the JAC
   
-  order<-c("parish",  "holding",  "item2321", "item2322", "item2828", "item9999", "item2469", "item2470", "item3156", "item47", "item20", 
+order<-c("parish",  "holding",  "item2321", "item2322", "item2828", "item9999", "item2469", "item2470", "item3156", "item47", "item20", 
            "item16", "item14", "item19", "item41", "item70","item48","item18","item2320","item66", "item17","item24", 
            "item2827", "item34", "item29", "item32","item49","item31","item30", "item28", "item52", "item1710", 
            "item83",  "item53", "item63", "item75", "item27", "item56", "item2858", "item82", "item80", "item2879", "item21", "item23", 
            "item15", "item36", "item2059",  "item2323", "item64", "item71",  "item72", "item2859", "item2324", "item1709", "item2860",
            "item65", "item60",  "item59", "item2832", "item61", "item2034", "item2861", "item55", "item81", "item2707", "item22","item2863",  "item2864",  "item2865")
   
-  
-   # Check where these items are in the JAC:  )
+
   
   
   
@@ -295,15 +269,15 @@ extra_fields<-extra_fields %>%
 extra_fields$parish<-as.numeric(extra_fields$parish)
 extra_fields$holding<-as.numeric(extra_fields$holding)
 
-brns21<-brns21 %>% 
+brns<-brns %>% 
   select(parish, holding, brn, mlc)
 
 # remove leading zeroes
 
-brns21$parish<-sub("^0+", "", brns21$parish)    
-brns21$holding<-sub("^0+", "", brns21$holding)    
-brns21$parish<-as.numeric(brns21$parish)
-brns21$holding<-as.numeric(brns21$holding)
+brns$parish<-sub("^0+", "", brns$parish)    
+brns$holding<-sub("^0+", "", brns$holding)    
+brns$parish<-as.numeric(brns$parish)
+brns$holding<-as.numeric(brns$holding)
 
 
 
@@ -312,7 +286,7 @@ cens_wide2<-left_join(cens_wide,extra_fields, by=c("parish", "holding"))
 cens_wide3<-left_join(cens_wide2, extra_item185, by=c("parish", "holding"))
 
 
-cens_wide_final<-left_join(cens_wide3, brns21,  by=c("parish", "holding"))  # check that this hasn't added rows 
+cens_wide_final<-left_join(cens_wide3, brns,  by=c("parish", "holding"))  # check that this hasn't added rows 
 
 
 
@@ -355,6 +329,7 @@ cens_wide_dups<-cens_wide_final[!duplicated(cens_wide_final[,1:2]),]
 
 # Note: decide what checks to add here. e.g. SAS code checks if item50 exists (total land) and is > 0 in any cases. Item50 is not in the dataset.
 
+# Save to datashare 
 
-save(cens_wide_final,file="//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/allsaf_21final.rda")
+save(cens_wide_final,file=paste0(Code_directory,"/allsaf_final.rda"))
 
