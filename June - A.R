@@ -1,6 +1,7 @@
 # This script imports the datasets from SAF, Ags (the census returns) from this year and the previous year, and the Crofting Commission. They are saved as rdas in the datashare 
-# Please update the directories at the top to get the correct years.
-# Created by Lucy Nevard 24.02.22 
+# Update the directories at the top to get data drops from the correct years.
+# The data used currently is from September 2021. 
+# Created by Lucy Nevard 24.02.22 (original scripts created 22.11.22)
 # Modified by Lucy Nevard 27.02.22
 
 
@@ -46,7 +47,6 @@ library(RtoSQLServer)
 # Load functions
 
 source("Functions/Functions.R")
-
 
 
 # Import datasets separately (or do this directly into a list depending on what other files are in the folder).
@@ -111,13 +111,7 @@ misseligibleareaperm_seas<-lapply(list_perm_seas, missing_eligible_area)
   })
 
 
-# Write these to rda (for future use)
-# 
-# setwd("C:/Users/u455049/Documents/R/repos/June")
-# 
-# save(missingperm_seas, file=paste("missingallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
-# save(missfieldareaperm_seas, file=paste("missingfieldareaallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
-# save(misseligibleareaperm_seas, file=paste("missingeligibleareaallsaf",yr, "perm_seas", mnth, sep='_',".rda"))
+
 
 
 # Create final dataframes -------------------------------------------------
@@ -140,6 +134,7 @@ for (i in seq(list_perm_seas))
   assign(paste("allsaf", names(list_perm_seas)[[i]], sep = "_"), list_perm_seas[[i]])
 
 
+# Save to datashare
 
 
 save(allsaf_perm, file=paste0(Code_directory, "/allsaf_perm_A.rda"))
@@ -147,22 +142,18 @@ save(allsaf_seas, file=paste0(Code_directory, "/allsaf_seas_A.rda"))
 save(df_scheme, file=paste0(Code_directory, "/allsaf_scheme_A.rda"))
 
 
-# allsaf_perm<- allsaf_perm%>%
-#   mutate_all(str_sub, 1, 49)
-
-
- # allsaf_perm<- as.data.frame(unclass(allsaf_perm),stringsAsFactors=TRUE)
+# Save to ADM
 
 # The following code to write to ADM returns error - find out how to fix this and then repeat this for all datasets. 
-
-write_dataframe_to_db(server=server, 
-                      database=database, 
-                      schema=schema, 
-                      table_name="allsaf_perm_A", 
-                      dataframe=allsaf_perm, 
-                      append_to_existing = FALSE,
-                      batch_size=1000, 
-                      versioned_table=FALSE)
+# 
+# write_dataframe_to_db(server=server, 
+#                       database=database, 
+#                       schema=schema, 
+#                       table_name="allsaf_perm_A", 
+#                       dataframe=allsaf_perm, 
+#                       append_to_existing = FALSE,
+#                       batch_size=1000, 
+#                       versioned_table=FALSE)
 
 
 # Remove SAF data to free up memory 
@@ -308,8 +299,7 @@ df_crofts<-mutate(df_crofts, ownedarea=ifelse(StatusA=="Owned",TotalArea,0))
 df_crofts<- subset(df_crofts, select = c(parish, holding, TotalArea, rentedarea, ownedarea))
 
 
-
-
+# Group by parish and holding 
 
 df_croftsfinal <- df_crofts %>%
   group_by(parish, holding) %>%
