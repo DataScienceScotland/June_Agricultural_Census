@@ -30,7 +30,9 @@ Code_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Su
 
 server <- "s0196a\\ADM"
 database <- "RuralAndEnvironmentalScienceFarmingStatistics"
-schema <- "juneagriculturalsurvey2023alpha"
+schema <- "juneagriculturalsurvey2023alpha" 
+
+#schema <- "agriculture" 
 
 # Load packages
 
@@ -43,10 +45,8 @@ library(RtoSQLServer)
 
 # Load functions
 
-source("Functions/A1 Functions.R")
+source("Functions/Functions.R")
 
-
-#schema <- "agriculture"
 
 
 # Import datasets separately (or do this directly into a list depending on what other files are in the folder).
