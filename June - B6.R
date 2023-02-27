@@ -110,7 +110,8 @@ allsaf_seas<-allsaf_seas[rowSums(is.na(allsaf_seas)) != ncol(allsaf_seas), ]
 
 # Permanent - split up SAF datalines into claimtype other or sfp --------
 
-# Make wide to long, with claimtype as OTHER or SFP and "line" variable increasing by 0.01 if OTHER. 
+# Reformat df with claimtype as OTHER or SFP and "line" variable increasing by 0.01 if OTHER. 
+# LLO flags also assigned 
 
 # Other claimtype data
 
@@ -200,7 +201,7 @@ allsaf_perm<-allsaf_perm %>%
 
 
 #  Seasonal - filter out "Other" holdings, keep only SFP  --------------------------------------------------------------
-# According to desk notes, the data from Other is too messy to be reliable. 
+# According to desk notes, the data from Other is too messy to be reliable. The seasonal data is therefore an underestimate.
 
 
 
