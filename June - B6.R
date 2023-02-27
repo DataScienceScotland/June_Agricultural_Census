@@ -1,10 +1,10 @@
-# This code applies corrections to the SAF datasets (permanent and seasonal). 
+# This code applies corrections to the SAF datasets (permanent and seasonal). These corrections will include manual corrections which can be added each year, perhaps to the function script.
 # Then, for the permanent data, it corrects invalid codes (this will need updating every year) and  splits up lines with both SFP code and Other Code. For the seasonal data, it splits up and removes those with only an Other code.
-
+# Code corrections may need updating yearly depending on SAF data.
 # This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
 
 # Created by Lucy Nevard 27.01.23 
-# Modified by Lucy Nevard 21.02.23
+# Modified by Lucy Nevard 27.02.23
 
 
 # Before import -----------------------------------------------------------
@@ -15,28 +15,36 @@
 
 rm(list=ls())
 
+
+# Datashare file path for import and export
+
+Code_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023")
+
+# ADM schema for export
+
+server <- "s0196a\\ADM"
+database <- "RuralAndEnvironmentalScienceFarmingStatistics"
+schema <- "juneagriculturalsurvey2023alpha"
+
 # Load packages
 
 library(tidyverse)
 library(dplyr)
 
-# Functions (note: put this into function script)
+# Load functions
 
-loadRData <- function(fileName){
-  #loads an RData file, and returns it
-  load(fileName)
-  get(ls()[ls() != "fileName"])
-}
+source("Functions/Functions.R")
+
+
 
 
 # Import SAF data -------------------------------------------------------------
 
-# Note: maybe the rdas should already be in a list. Correct in A1 code. 
+
 # In the code from 2021, the data used last in B6 was AUG - I use SEP here for consistency with rest of previous code.
 
-allsaf_perm<-loadRData("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/allsaf_21_perm_SEP_A1end.rda")
-allsaf_seas<-loadRData("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/allsaf_21_seas_SEP_A1end.rda")
-
+allsaf_perm<-loadRData(paste0(Code_directory, "/allsaf_perm_A.rda"))
+allsaf_seas<-loadRData(paste0(Code_directory, "/allsaf_seas_A.rda"))
 
 
 list_perm_seas<-list(allsaf_perm,allsaf_seas)
@@ -44,12 +52,12 @@ list_perm_seas<-list(allsaf_perm,allsaf_seas)
 
 
 #  Apply corrections to both datasets.  -----------------------------------
+# Correcting area variables and slc when blank. Code corrections for sfp_code and other_code. 
 
+# For SAF codes - this might change year to year. But these below might still be used. 
+# Manual corrections will also be here and change from year to year. 
+# Make these manual changes part of a function in the future. Then codes can be updated in function script. 
 
-
-#Make this a function. Then codes can be updated in function script. 
-
-# Code corrections for sfp_code and other_code. For SAF codes - this might change year to year. But these below might still be used. 
 
   
 list_perm_seas<-lapply(list_perm_seas, function(x)
@@ -71,10 +79,12 @@ list_perm_seas<-lapply(list_perm_seas, function(x)
 
 
 
+
 # Unlist permanent and seasonal.  ---------------------------------------
 
 
-# Tidy this up!
+# Tidy this up in future.
+
 
 for (i in seq(list_perm_seas))
   assign(paste0("df", i), list_perm_seas[[i]])
@@ -89,20 +99,22 @@ allsaf_perm$landtype<-"PERM"
 allsaf_seas$landtype<-"SEAS"
 
 
+# Remove rows of all NAS.
 
 
-# Remove rows of all NAS. Note: add this.
+allsaf_perm<-allsaf_perm[rowSums(is.na(allsaf_perm)) != ncol(allsaf_perm), ]
+
+allsaf_seas<-allsaf_seas[rowSums(is.na(allsaf_seas)) != ncol(allsaf_seas), ]
 
 
 
 # Permanent - split up SAF datalines into claimtype other or sfp --------
 
-# Make wide to long, with claimtype as OTHER or SFP and line increasing by 0.01. 
+# Make wide to long, with claimtype as OTHER or SFP and "line" variable increasing by 0.01 if OTHER. 
 
+# Other claimtype data
 
 allsaf_permother<-filter(allsaf_perm, allsaf_perm$other_area>0)
-
-
 
 allsaf_permother$claimtype<-"OTHER"  
 
@@ -132,7 +144,7 @@ allsaf_permother <- allsaf_permother %>%
 
 
 
-# SFP
+# SFP claimtype data
 
 allsaf_permsfp<-filter(allsaf_perm, allsaf_perm$sfp_area>0)
 
@@ -161,17 +173,19 @@ allsaf_permsfp<- allsaf_permsfp %>%
 
 
 
-# Merge other and sfp
+# Merge Other and SFP
 
 
 allsaf_perm <- rbind(allsaf_permother,allsaf_permsfp)
 
 
-# Remove variables
+# Remove unneccesary variables
 
 
 allsaf_perm<-allsaf_perm %>%
   select(-c(other_area,other_code,prefix))
+
+# Create correct parish and holding 
 
 allsaf_perm<-allsaf_perm %>%
   mutate(
@@ -180,19 +194,19 @@ allsaf_perm<-allsaf_perm %>%
   )
 
 
-# The SAS code here has tables to see what errors are left in the permanent df - not sure what we're looking for and there aren't any fixes in the code, so I've skipped this for now. 
+# The SAS code here has tables to see what errors are left in the permanent df - not clear what wer'e looking for at this point and there aren't any fixes in the code, so I've left this out for now. 
 
 
 
 
 #  Seasonal - filter out "Other" holdings, keep only SFP  --------------------------------------------------------------
-# Apparently the data from Other is too messy to be reliable. 
+# According to desk notes, the data from Other is too messy to be reliable. 
 
 
 
 allsaf_seas<-filter(allsaf_seas, allsaf_seas$sfp_area>0)
 
-
+# SFP claimtype data
 
 allsaf_seas<-allsaf_seas %>%
   mutate(
@@ -205,6 +219,7 @@ allsaf_seas<-allsaf_seas %>%
   )
 
 
+# Create correct parish and holding
 
 allsaf_seas<-allsaf_seas%>%
   mutate(
@@ -215,9 +230,22 @@ allsaf_seas<-allsaf_seas%>%
 
 # Save separate permanent and seasonal datasets --------------------------
 
+# Save to datashare
+
+save(allsaf_perm,file=paste0(Code_directory, "/allsaf_perm_B6.rda"))
+
+save(allsaf_seas,file=paste0(Code_directory, "/allsaf_seas_B6.rda"))
 
 
-save(allsaf_perm,file="//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/allsaf_permB6end.rda")
 
-save(allsaf_seas,file="//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/allsaf_seasB6end.rda")
-
+# Save to ADM
+# 
+# 
+# write_dataframe_to_db(server=server, 
+#                       database=database, 
+#                       schema=schema, 
+#                       table_name="allsaf_perm_B6", 
+#                       dataframe=allsaf_perm, 
+#                       append_to_existing = FALSE,
+#                       batch_size=1000, 
+#                       versioned_table=FALSE)
