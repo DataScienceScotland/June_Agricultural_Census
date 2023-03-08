@@ -72,9 +72,10 @@ str(df_nonSAF, list.len=ncol(df_nonSAF))
 
 # Save RDAs for each df into repo or other directory
 
-#check output_path is correct - Jackie 17/1/23
 
-output_path <- "C:/Users/u455049/Documents/R/repos/Trial"
+## Jackie: When we can output_path should be to the ADM server
+
+output_path <- "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/"
 
 save(df_SAF, file=paste0(output_path, "SAF_ags_", yr,".rda"))
 
