@@ -1,4 +1,4 @@
-# This script collates the SAF data supplied by RPID - code is rewrite of A1 section of the June SAS code (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
+# This script collates the SAF data supplied by RPID - code is rewrite of A1 section of the June SAS code (//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/JUNE CENSUS PROJECT - 2021 Provisional Scott)
 # Created by Lucy Nevard 22.11.22 
 # Modified by Lucy Nevard 22.12.22
 
@@ -128,7 +128,7 @@ assign(paste("allsaf", yr, "scheme", mnth, sep = '_'), df_schemework)
 
 ## Jackie: When we can output_path should be to the ADM server
 
-output_path <- "C:/Users/z620777/OneDrive - SCOTS Connect/R/June"
+output_path <- "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/"
 
 save(allsaf_21_perm_SEP, file=paste("allsaf",yr, "perm", mnth, sep='_',".rda"))
 save(allsaf_21_seas_SEP, file=paste("allsaf",yr, "seas", mnth, sep='_',".rda"))
