@@ -184,6 +184,8 @@ full_JAC_SAF_corr <- read.csv(paste0(output_path, "full_JAC_SAF_corr.csv")) %>%
 
 check_glasshouse <- FJS %>% ungroup() %>% filter(land_data== "saf" & sum(item85, item86)>0)
 
+
+#add in new items
 #dealing with NAs - remove from sum to get value. Remove "na.rm = TRUE" to return NA (otherwise get zeros, imputation for genuinely missing values not zeros)
 
 full_JAC_SAF <- full_JAC_SAF_corr %>% mutate(item87 = sum(item2713, item2707, na.rm = TRUE
@@ -257,6 +259,7 @@ full_JAC_SAF <- full_JAC_SAF %>% mutate(item2 = case_when(item2879 > 0  ~ as.num
 
 full_JAC_SAF <- full_JAC_SAF %>% arrange(parish, holding, by_group = TRUE)
 
+#clear unused dataframes
 rm(anti_JAC, both_SAF_JAC_inner_full, both_SAF_JAC_inner_partial, full_JAC_SAF_SAF_SEAS_anti,
    full_JAC_SAF_SAF_SEAS_inner, inner_SAF_JAC, JAC_anti_full, JAC_anti_partial,  SAF_anti, SAF_JAC_inner,
    SAF_JAC_JAC_anti, SAF_JAC_SAF_anti)
@@ -265,12 +268,13 @@ rm(anti_JAC, both_SAF_JAC_inner_full, both_SAF_JAC_inner_partial, full_JAC_SAF_S
 
 SAS_combined <- read.csv(paste0(output_path, "COMBINED_DATA.csv"))
 
+#order columns according to SAS_combined
 full_JAC_SAF <- full_JAC_SAF[names(SAS_combined)]
 FJS <- full_JAC_SAF %>% select(-c(i, item185, item186))
 SAS <- SAS_combined %>% select(-c(i, item185, item186))
 
                            
-
+#compare column classes
 FJS_SAS_compare <- as.data.frame(compare_df_cols(FJS, SAS))
 
 
