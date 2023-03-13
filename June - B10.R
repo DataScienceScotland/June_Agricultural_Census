@@ -12,13 +12,17 @@ library(stringr)
 library(janitor)
 library(data.table)
 library(skimr)
+library(haven)
 source("Functions/B10 Functions.R")
 source("Scripts/Item categories.R")
+#change year here
 yr <- 21
+yr1 <- (yr-1)
 
 #Load the June Survey return (SAFags (df_SAF) and Non-SAFags (df_nonSAF)) datasets (outputs saved from A2)
 
 output_path <- "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/"
+sas_agscens_path <- "//s0177a/sasdata1/ags/census/agscens/"
 
 load(paste0(output_path, "SAF_ags_", yr,".rda"))
 load(paste0(output_path, "nonSAF_ags_", yr,".rda"))
@@ -295,3 +299,31 @@ write.csv(comb_fjs, (paste0(output_path, "june_diff.csv")))
 write.csv(comb_fjs2, (paste0(output_path, "SAS_diff.csv")))
 
 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~#additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#duplicates
+full_JAC_SAF %>% distinct() %>% nrow()
+
+#glasshouse check
+glasshouse_check <-  full_JAC_SAF %>% select(parish, holding, survtype, land_data, other_data, all_of(all_glasshouse)) %>% 
+  mutate(sum_glasshouse = rowSums(across(contains(all_glasshouse)))) %>% 
+  filter(sum_glasshouse>0)
+
+#returns check
+prev_yr_data <- read_sas(paste0(sas_agscens_path, "june", yr1, ".sas7bdat"))
+prev_yr_data_ph<- prev_yr_data %>% select(parish, holding)
+returns <- full_JAC_SAF %>% select(parish, holding, other_data) %>% 
+  inner_join(., prev_yr_data_ph, by = c("parish", "holding"))
+#returns <- inner_join(returns, prev_yr_data_ph, by = c("parish", "holding"))
+
+returns_21 <- inner_join(full_JAC_SAF, returns, by= c("parish", "holding", "other_data")) 
+
+#check if other_data cols are identical
+#identical(returns_21$other_data.x, returns_21$other_data.y)
+
+data.table(returns_21)
+
+returns_21_summary <- returns_21 %>% select(where(is.numeric))
+returns_21_sum <-  as.data.frame(colSums(returns_21_summary, na.rm = TRUE)) %>% 
+  rename(Sum = 1) 
+returns_21_count <-returns_21_summary %>% group_by(everything) %>% count() 
