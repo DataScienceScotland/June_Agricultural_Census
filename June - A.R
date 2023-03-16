@@ -147,16 +147,6 @@ list_perm_seas <- lapply(list_perm_seas, cleaned_datasets)
 df_scheme <- cleaned_datasets(df_scheme)
 
 
-#  Create final dfs for permanent, scheme and seasonal.
-
-names(list_perm_seas) <- c("perm", "seas")
-
-for (i in seq(list_perm_seas)) {
-  assign(paste("saf", names(list_perm_seas)[[i]], sep = "_"), list_perm_seas[[i]])
-}
-
-
-
 
 
 # Ags data ----------------------------------------------------------------
@@ -307,8 +297,8 @@ df_names<-c("saf_perm","saf_seas","df_scheme")
 # Save to datashare
 
 
-save(saf_perm, file = paste0(Code_directory, "/saf_perm_A.rda"))
-save(saf_seas, file = paste0(Code_directory, "/saf_seas_A.rda"))
+save(list_perm_seas, file = paste0(Code_directory, "/saflist_permseas_A.rda"))
+
 save(df_scheme, file = paste0(Code_directory, "/saf_scheme_A.rda"))
 
 
