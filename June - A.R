@@ -6,12 +6,28 @@
 
 
 
-# Before import -----------------------------------------------------------
+# Setup before import -----------------------------------------------------------
 
 
 # Clear environment prior
 
 rm(list = ls())
+
+
+# Load packages
+
+library(readxl)
+library(data.table)
+library(dplyr)
+library(stringr)
+library(tidyverse)
+library(RtoSQLServer)
+library(janitor)
+library(openxlsx)
+
+# Load functions
+
+source("Functions/Functions.R")
 
 # Data drop file paths for import
 
@@ -32,27 +48,26 @@ schema <- "juneagriculturalsurvey2023alpha"
 
 # schema <- "agriculture"
 
-# Load packages
+# Import data -------------------------------------------------------------
 
-library(readxl)
-library(data.table)
-library(dplyr)
-library(stringr)
-library(tidyverse)
-library(RtoSQLServer)
-
-# Load functions
-
-source("Functions/Functions.R")
 
 
 # Import datasets separately (or do this directly into a list depending on what other files are in the folder).
 
-df_permanent <- read_excel(paste0(SAF_directory, "/permanent_output1_SecondDrop.xlsx")) # called script1 in SAS
-df_scheme <- read_excel(paste0(SAF_directory, "/scheme_output1_SecondDrop.xlsx")) # called script2 in SAS
-df_seasonal <- read_excel(paste0(SAF_directory, "/seasonal_output1_SecondDrop.xlsx")) # called script3 in SAS
+df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output1_SecondDrop.xlsx"), sep.names = "_") # called script1 in SAS
+df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output1_SecondDrop.xlsx"),sep.names = "_") # called script2 in SAS
+df_seasonal <- read.xlsx(paste0(SAF_directory, "/seasonal_output1_SecondDrop.xlsx"),sep.names = "_") # called script3 in SAS
+
+df_SAF<-read.csv(paste0(AGS_directory,"/SAFFINAL.csv"))
+df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"))
 
 
+df_SAFprev <- read.csv(paste0(AGS_prev_directory, "/SAF1011.csv"))
+df_nonSAFprev <- read.csv(paste0(AGS_prev_directory, "/NonSAF1011.csv"))
+
+# Import crofts data. Note: using read.csv here creates a df with HoldingID as the index, which we don't want!
+
+df_crofts <- read_csv(paste0(Croft_directory, "/Register_of_crofts_Holdings_16-9-2021.csv"))
 
 # SAF data ----------------------------------------------------------------
 
@@ -61,11 +76,21 @@ list_perm_seas <- list(df_permanent, df_seasonal)
 
 # Create line variable for list to index by LPID for permanent and seasonal. Number gives instance of each LPID.
 
+list_perm_seas <- lapply(list_perm_seas, clean_names)
+
 list_perm_seas <- lapply(list_perm_seas, LPID_index)
+
+
+
+# Add in the following line to clean variable names - all code will need to be updated to reflect this. 
+# list_perm_seas <- lapply(list_perm_seas, clean_names)
 
 # Create new df and line variable for scheme
 
+df_scheme<-clean_names(df_scheme)
+
 df_scheme <- LPID_index(df_scheme)
+
 
 
 # Rename and create variables ---------------------------------------------
@@ -127,35 +152,11 @@ df_scheme <- cleaned_datasets(df_scheme)
 names(list_perm_seas) <- c("perm", "seas")
 
 for (i in seq(list_perm_seas)) {
-  assign(paste("allsaf", names(list_perm_seas)[[i]], sep = "_"), list_perm_seas[[i]])
+  assign(paste("saf", names(list_perm_seas)[[i]], sep = "_"), list_perm_seas[[i]])
 }
 
 
-# Save to datashare
 
-
-save(allsaf_perm, file = paste0(Code_directory, "/allsaf_perm_A.rda"))
-save(allsaf_seas, file = paste0(Code_directory, "/allsaf_seas_A.rda"))
-save(df_scheme, file = paste0(Code_directory, "/allsaf_scheme_A.rda"))
-
-
-# Save to ADM
-
-# The following code to write to ADM returns error - find out how to fix this and then repeat this for all datasets.
-#
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="allsaf_perm_A",
-#                       dataframe=allsaf_perm,
-#                       append_to_existing = FALSE,
-#                       batch_size=1000,
-#                       versioned_table=FALSE)
-
-
-# Remove SAF data to free up memory
-
-rm(df_permanent, df_seasonal, allsaf_perm, allsaf_seas, df_scheme)
 
 
 # Ags data ----------------------------------------------------------------
@@ -192,18 +193,11 @@ df_nonSAF <- df_nonSAF %>%
 
 str(df_nonSAF, list.len = ncol(df_nonSAF))
 
-# Save rdas
-
-save(df_SAF, file = paste0(Code_directory, "/Ags_SAF_A.rda"))
-save(df_nonSAF, file = paste0(Code_directory, "/Ags_nonSAF_A.rda"))
 
 
 # Ags data previous year --------------------------------------------------
 
 
-
-df_SAFprev <- read.csv(paste0(AGS_prev_directory, "/SAF1011.csv"))
-df_nonSAFprev <- read.csv(paste0(AGS_prev_directory, "/NonSAF1011.csv"))
 
 
 
@@ -244,23 +238,16 @@ df_nonSAF <- df_nonSAF %>%
 str(df_nonSAFprev, list.len = ncol(df_nonSAFprev))
 
 
-
-# Save rdas
-
-save(df_SAFprev, file = paste0(Code_directory, "/Ags_SAFprev_A.rda"))
-save(df_nonSAFprev, file = paste0(Code_directory, "/Ags_nonSAFprev_A.rda"))
-
-
 # Save to ADM
 
 
 
 # Crofting data -----------------------------------------------------------
 
-# Import crofts data. Note: using read.csv here creates a df with HoldingID as the index, which we don't want!
 
 
-df_crofts <- read_csv(paste0(Croft_directory, "/Register_of_crofts_Holdings_16-9-2021.csv"))
+
+
 
 
 
@@ -312,6 +299,54 @@ df_croftsfinal <- df_crofts %>%
 
 # Check missing values are set to zero.
 
+
+# Export datasets -----------------------------------------------------------
+
+df_names<-c("saf_perm","saf_seas","df_scheme")
+
 # Save to datashare
 
+
+save(saf_perm, file = paste0(Code_directory, "/saf_perm_A.rda"))
+save(saf_seas, file = paste0(Code_directory, "/saf_seas_A.rda"))
+save(df_scheme, file = paste0(Code_directory, "/saf_scheme_A.rda"))
+
+
+# Save rdas
+
+save(df_SAF, file = paste0(Code_directory, "/Ags_SAF_A.rda"))
+save(df_nonSAF, file = paste0(Code_directory, "/Ags_nonSAF_A.rda"))
+
+# Save rdas
+
+save(df_SAFprev, file = paste0(Code_directory, "/Ags_SAFprev_A.rda"))
+save(df_nonSAFprev, file = paste0(Code_directory, "/Ags_nonSAFprev_A.rda"))
+
+
+
 save(df_croftsfinal, file = paste0(Code_directory, "/crofts_A.rda"))
+
+
+
+
+# Save to ADM
+
+
+# 
+
+# 
+# old <- Sys.time()
+# 
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="saf_permA",
+#                       dataframe=allsaf_perm1,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
+# 
+# new <- Sys.time() - old # calculate difference
+# print(new) # print in nice format
+
+
