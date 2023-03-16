@@ -153,6 +153,94 @@ cleaned_datasets <- function(x) {
 
 # B6
 
+change_codes<-function(x) {
+  mutate(x,
+         other_area =
+           ifelse(land_use_area < bps_claimed_area, "0", other_area),
+         sfp_area =
+           ifelse(land_use_area < bps_claimed_area, bps_claimed_area, sfp_area),
+         land_use_area =
+           ifelse(land_use_area < bps_claimed_area, bps_claimed_area, land_use_area),
+         slc = ifelse(slc == "", mlc, slc),
+         sfp_code =
+           recode(as.factor(sfp_code), "TREE" = "TREES", "UNSP" = "EXCL"),
+         sfp_code =
+           recode(as.factor(other_code), "TREE" = "TREES", "UNSP" = "EXCL")
+  )
+}
+
+# create new variables
+
+newvarsother<-function(x)  {
+  mutate(x,
+        claimtype = "OTHER",
+        other_code=as.character(other_code),
+        prefix = substr(other_code, 1, 4),
+        code = other_code,
+        crops = other_code,
+        area = other_area,
+        LLO =
+          ifelse(prefix == "LLO-", "Y", ifelse(other_code == "LLO", "Y", "N")),
+        other_code =
+          ifelse(prefix == "LLO-", substring(other_code, 5), other_code),
+        other_code =
+          ifelse(other_code == "", "OTH-LAND", other_code)
+)
+}
+
+
+newvarssfp<-function(x)  {
+  mutate(x,
+         sfp_code = as.character(sfp_code),
+         claimtype = "SFPS",
+         prefix = substr(sfp_code, 1, 4),
+         code = sfp_code,
+         crops = sfp_code,
+         area = sfp_area,
+         LLO =
+           ifelse(prefix == "LLO-", "1", ifelse(sfp_code == "LLO", "Y", "N")),
+         sfp_code =
+           ifelse(prefix == "LLO-", substring(sfp_code, 5), sfp_code),
+         sfp_code =
+           ifelse(sfp_code == "", "OTH-LAND", sfp_code),
+         line =
+           ifelse(other_area > 0, line + 0.01, line)
+  )
+}
+
+
+# create parish and holding from slc
+
+
+parishholdingslc<-function(x)  {
+mutate(x,
+  parish = str_remove(substr(slc, 1, 3), "^0+"),
+  holding = str_remove(substr(slc, 5, 8), "^0+"),
+)
+}
+
+
+# Seasonal
 
 
 
+newvarsseas<-function(x)  {
+  mutate(x,
+  claimtype = "SFPS",
+  LLO = "N",
+  code = sfp_code,
+  crops = sfp_code,
+  area = sfp_area,
+  slc = ifelse(slc == "", mlc, slc)
+)
+}
+
+# create parish and holding from slc
+
+
+parishholdingmlc<-function(x)  {
+  mutate(x,
+         parish = str_remove(substr(mlc, 1, 3), "^0+"),
+         holding = str_remove(substr(mlc, 5, 8), "^0+"),
+  )
+}
