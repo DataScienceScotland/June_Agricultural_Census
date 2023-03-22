@@ -61,11 +61,21 @@ schema <- "juneagriculturalsurvey2023alpha"
 
 
 ###check if this has been updated for this year!!
-source("punch-error-checks_files/Item categories.R")
-source("punch-error-checks_files/punch error tables.R")
+source("./punch-error-checks_files/item categories.R")
+
+#source("./punch-error-checks_files/punch error tables.R")
 
 ```
 
-```{r setup}
 
+#JAC Survey form Punch Error Checks
+The following table displays errors for holdings where:  total area has gone up or down by 10% and there has been an increase of grass greater than 5 years in the last year that does not account for the total of last year's rough grazings, fallow, other land and the difference in total land use area change.
+```{r}
+
+perr_finder <- function(x, dt){
+  for (i in 1:nrow(dt)){if(x == 1){ print("Errors found")}
+  else {print("No errors")} }
+}
+perr_finder(perr1, perr1)
 ```
+
