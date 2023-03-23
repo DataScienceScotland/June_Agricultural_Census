@@ -1,5 +1,5 @@
 
-#June Item categories
+#June Item categories----------------------------------------------------------------------------------------------------------------------------------------------------
 all_holding_areas <- c("item7", "item11", "item12", "item125", "item126", "item127", "item2249")
 all_seasonal <- c("item1", "item2827", "item2828")
 all_seasonal_saf <- c("item1", "item2879")
@@ -27,7 +27,7 @@ string_answers <- c("item185", "item186")
 
 
 
-#all June Census items
+#all June Census items-----------------------------------------------------------------------------------------------------------------------
 all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf, 
                "item2", all_crops, "item35", "item37", "item38", "item40", "item41", 
                all_grass, "item46", all_other_land, "item50", all_veg, "item68",
@@ -35,7 +35,8 @@ all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf,
                all_cattle, "cts312", all_sheep, "item145", all_pig, "item157", all_poultry, "item170",
                all_other_livestock, "item171", occupier_12, workforce, "item200", other_labour, "item2980") 
 
-#this year's June items for punch error checks
+
+#this year's June items for punch error checks------------------------------------------------------------------------------------------------------
 
 punch_June_items <- c("item7", "item11", "item12", "item40", "item157", "item170", "item2321", "item145", "item139", "item140", "item141", "item143", "item144", "item47", "item49", "item2322", "item37", "item2469", "item2470", "item85", "item86", "item24", "item2320", "item160", "item162", "item163", "item94", "item50", "item2511")
 
@@ -44,3 +45,22 @@ punch_June_items <- c("item7", "item11", "item12", "item40", "item157", "item170
 punch_June_items_yr1 <- punch_June_items
 
 punch_June_items_yr2 <- punch_June_items
+
+perr1_vars<-c("perr1", "item12", "oitem12", "voitem12", "grass", "ograss", "vograss", "othgrass", "oothgrass", "voothgrass", "item47", "oitem47", "voitem47", "tillage", "otillage", "votillage") 
+perr2_vars <- c("perr2", "item157", "oitem157", "voitem157")
+perr3_vars <- c("perr3", "item170", "oitem170", "voitem170")
+perr4_vars <- c("perr4", "cts312", "octs312", "vocts312")
+perr5_vars <- c("perr5", "dairy", "odairy", "vodairy")
+perr6_vars <- c("perr6","beef", "obeef", "vobeef")
+perr7_vars <- c("perr7", "item145", "oitem145", "voitem145")
+perr9_vars <- c("perr9",  "item37", "oitem37", "voitem37")
+perr10_vars <- c("perr10", "glass", "oglass", "voglass")
+perr11_vars <- c("perr11", "male", "omale", "vomale")
+perr12_vars <- c("perr12", "female", "ofemale", "vofemale")
+perr13_vars <- c("perr13", "ware", "oware", "voware")
+perr14_vars <- c("perr14", "item94", "oitem94", "voitem94")
+perr15_vars <- c("perr15", "item50", "oitem50", "voitem50")
+perr16_vars <- c("perr16", "item47", "oitem47", "voitem47")
+perr17_vars <- c("perr17", "item2511", "oitem2511", "voitem2511")
+
+

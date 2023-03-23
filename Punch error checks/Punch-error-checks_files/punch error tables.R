@@ -136,8 +136,8 @@ all_punch_errors <- punch_errors %>%
          item6000 =as.numeric(""),
          item6001 =as.numeric(""),
          glass=sum(item87, item2556, item2557, item2836, item2036, item2037, item1711, item1943, item6000, item6001), 
-         oglass=sum(oitem87, oitem2556, oitem2557, oitem2036, oitem2037, oitem1711, oitem1943, oitem2836),
-         voglass=sum(voitem87, voitem2556, voitem2557, voitem2036, voitem2037, voitem1711, voitem1943),
+         oglass=sum(sum(oitem87, oitem2556, oitem2557, oitem2036, oitem2037, oitem1711, oitem1943, oitem2836)),
+         voglass=sum(sum(voitem87, voitem2556, voitem2557, voitem2036, voitem2037, voitem1711, voitem1943)),
          ware=sum(item2320),
          oware=sum(oitem2320),
          voware=sum(voitem2320),
@@ -172,7 +172,7 @@ all_punch_errors <- punch_errors %>%
                       TRUE ~ 0
       
     ),
-    #Poulty check - if total poultry is greater than 8 times or less than an eighth last year's poultry and the land area has not as much as doubled
+    #Poulty check - if total poultry is greater than 8 times or less than an eighth last year's poultry and the land area has not as much as doubled----------------------------
  
     perr3 = case_when (((item170 > 8.*oitem170 & item12 < 2*oitem12) | (item170 < 0.125*oitem170 & item12 > 0.5*oitem12)) &
     ((item170-oitem170) > 150000 | (oitem170-item170) > 100000) &
@@ -182,7 +182,7 @@ all_punch_errors <- punch_errors %>%
      oitem170-item170 < 1.5*(voitem170-oitem170) & oitem170-item170 < 0) ~1,
     TRUE~0),
 	 
-	#Sheep check 
+	#Sheep check ------------------------------------------------------------------------------------------------------------------------------------------
 perr7= case_when(((item145 > 10.*oitem145 & item12 < 2*oitem12) 	| (item145 < 0.1*oitem145 & item12 > 0.5*oitem12)) &
     abs(item145-oitem145) > 5000 & 
     (item145 > 10.*voitem145 | item145 < 0.1*voitem145) &
@@ -192,7 +192,7 @@ perr7= case_when(((item145 > 10.*oitem145 & item12 < 2*oitem12) 	| (item145 < 0.
 	TRUE~0),
  
 
-	 #Soft fruit check
+	 #Soft fruit check--------------------------------------------------------------------------------------------------------
 perr9 =  case_when((item37 > 3.*oitem37 | item37 < 0.3*oitem37) &
     ((item37-oitem37) > 10 | (oitem37-item37) > 1) & 
     (item37 > 3.*voitem37 | item37 < 0.3*voitem37) &
@@ -202,7 +202,7 @@ perr9 =  case_when((item37 > 3.*oitem37 | item37 < 0.3*oitem37) &
 	& (item37 > 50 | oitem37 > 3)~1,
 	TRUE ~ 0),
 
-	#Glass houses check 
+	#Glass houses check ------------------------------------------------------------------------------------------------
 perr10 = case_when((glass > 0.1*oglass | glass < 0.1*oglass) &
     abs(glass-oglass) > 0.02 & (oglass > 0 | glass > 50) &
     (glass > 200*voglass | glass < 0.5*voglass) &
@@ -210,7 +210,7 @@ perr10 = case_when((glass > 0.1*oglass | glass < 0.1*oglass) &
     (oglass-glass > 1.5*(voglass-oglass) & oglass-glass > 0 |oglass-glass < 1.5*(voglass-oglass) & oglass-glass < 0) ~1,
     TRUE~ 0),
 	
-	#Land check
+	#Land check------------------------------------------------------------------------------------------------------------
 #NA check here: SAS includes 3 entries where item12 is missing, whilst R does not....
 perr13 = case_when((item12< 1.1*oitem12  & oitem24 == 0 & voitem24  == 0 & item24 > 10
    & ware == 0 & oware > 5 & voware > 5) ~1,
@@ -230,12 +230,7 @@ perr14 = case_when((item94>=50| oitem94 >= 50) && ((item94_ratio >1.8) |(item94_
 )
   
 
-
-    
-  
-
-
-###will have to change as one form only  for JAC 2023!
+###will have to change as one form only  for JAC 2023!--------------------------------------------------------------------------------------------------------------
 all_punch_errors <- all_punch_errors %>% 
   mutate(perr15 = case_when(survtype == "Non-SAF" & (item50>= 2*oitem50 |item50<0.5*oitem50) &
                               (item50>1000 | oitem50 > 1000) ~1,
@@ -246,8 +241,210 @@ all_punch_errors <- all_punch_errors %>%
            
          )
 
-filter(all_punch_errors, perr3 > 0)    
   
-#perr17 doesn't appear to be computed in SAS code...therefore not mutated here.          
+  
+##----perr17 doesn't appear to be computed in SAS code...therefore not mutated here.          
 errors <- all_punch_errors %>% filter((sum(perr2, perr3, perr7, perr10, perr13, perr14)>0 & survtype == "Non-SAF")| (sum(perr2, perr3, perr7, perr10, perr14) > 0 & survtype == "SAF"))
+
+
+
+
+
+
+
+##move this function---------------------------------------------------------------------------------
+keep_perr_vars <- function(x){
+    perr_x <<- errors %>% select(parish, holding, survtype, all_of(x))    
+  name_x <<- sub("\\_.*", "", substitute(x))
+}
+
+
+#fix function
+# add_err_col <- function(x)
+# { 
+# x %>%  mutate(error=ifelse(perr2== 1, "Error", "No Error"),
+#               difference = ifelse(item157-oitem157 < 0, -0.5*(item157-oitem157), item157-oitem157)
+# )
+# 
+# }
+#
+
+##----perr 1----------------------------------------------------------------------------------------------
+
+keep_perr_vars(perr1_vars)
+assign(name_x, perr_x)
+perr1 <-perr1 %>%  mutate(error=ifelse(perr1== 1, "Error", "No Error"),
+                          difference = (tillage-otillage))
+                          
+                          
+                          
+##----perr 2----------------------------------------------------------------------------------
+keep_perr_vars(perr2_vars)
+assign(name_x, perr_x)
+
+
+perr2 <-perr2 %>%  mutate(error=ifelse(perr2== 1, "Error", "No Error"),
+                           difference = ifelse(item157-oitem157 < 0, -0.5*(item157-oitem157), item157-oitem157)
+)
+
+
+
+##----perr 3----------------------------------------------------------------------------------
+keep_perr_vars(perr3_vars)
+assign(name_x, perr_x)
+
+
+perr3 <-perr3 %>%  mutate(error=ifelse(perr3== 1, "Error", "No Error"),
+                          difference = ifelse(item170 -oitem170 < 0, -0.5*(item170-oitem170), item170-oitem170)
+)
+
+
+
+
+# 
+# 
+# ###----perr 4 [CTS312 ISN'T IN PE ALL SAS OUTPUT....NOT SURE WHY IT IS IN CODE]----------------------------------------------------------------------------------
+# keep_perr_vars(perr4_vars)
+# assign(name_x, perr_x)
+# 
+# 
+# perr4 <-perr4 %>%  mutate(error=ifelse(perr4== 1, "Error", "No Error"),
+#                           difference = ifelse(cts312 -octs312 < 0, -0.5*(cts312-octs312), cts312-octs312)
+# )
+# 
+
+
+
+
+###----perr 5 NOT IN CODE EITHER----------------------------------------------------------------------------------
+# keep_perr_vars(perr5_vars)
+# assign(name_x, perr_x)
+# 
+# 
+# perr5 <-perr5 %>%  mutate(error=ifelse(perr5== 1, "Error", "No Error")
+#                          )
+# 
+
+
+###----perr 6 NOT IN CODE EITHER----------------------------------------------------------------------------------
+# keep_perr_vars(perr6_vars)
+# assign(name_x, perr_x)
+# 
+# 
+# perr6 <-perr6 %>%  mutate(error=ifelse(perr6== 1, "Error", "No Error")
+# )
+
+
+##----perr7------------------------------------------------------------------------------------------------
+keep_perr_vars(perr7_vars)
+assign(name_x, perr_x)
+
+
+perr7 <-perr7 %>%  mutate(error=ifelse(perr7== 1, "Error", "No Error"),
+                          difference = ifelse(item145 -oitem145 < 0, -0.5*(item145-oitem145), item145-oitem145)
+)
+
+
+
+##----perr9------------------------------------------------------------------------------------------------
+keep_perr_vars(perr9_vars)
+assign(name_x, perr_x)
+
+
+perr9 <-perr9 %>%  mutate(error=ifelse(perr9== 1, "Error", "No Error"),
+                          difference = ifelse(item37 -oitem37 < 0, -0.5*(item37-oitem37), item37-oitem37)
+)
+
+
+##----perr10------------------------------------------------------------------------------------------------
+keep_perr_vars(perr10_vars)
+assign(name_x, perr_x)
+
+
+perr10 <-perr10 %>%  mutate(error=ifelse(perr10== 1, "Error", "No Error"),
+                          difference = ifelse(glass -oglass < 0, -0.5*(glass-oglass), glass-oglass)
+)
+
+
+
+# ##----perr11 NOT IN CODE EITHER------------------------------------------------------------------------------------------------
+# keep_perr_vars(perr11_vars)
+# assign(name_x, perr_x)
+# 
+# 
+# perr11 <-perr11 %>%  mutate(error=ifelse(perr11== 1, "Error", "No Error"))
+# 
+
+
+
+# ##----perr12  NOT IN CODE EITHER------------------------------------------------------------------------------------------------
+# keep_perr_vars(perr12_vars)
+# assign(name_x, perr_x)
+# 
+# 
+# perr12 <-perr12 %>%  mutate(error=ifelse(perr12== 1, "Error", "No Error"))
+
+
+##----perr13------------------------------------------------------------------------------------------------
+keep_perr_vars(perr13_vars)
+assign(name_x, perr_x)
+
+
+perr13 <-perr13 %>%  mutate(error=ifelse(perr13== 1, "Error", "No Error"))
+
+
+
+##----perr14------------------------------------------------------------------------------------------------
+keep_perr_vars(perr14_vars)
+assign(name_x, perr_x)
+
+
+perr14 <-perr14 %>%  mutate(error=ifelse(perr14== 1, "Error", "No Error"))
+
+##----perr15------------------------------------------------------------------------------------------------
+keep_perr_vars(perr15_vars)
+assign(name_x, perr_x)
+
+
+perr15 <-perr15 %>%  mutate(error=ifelse(perr15== 1, "Error", "No Error"))
+
+
+##----perr16------------------------------------------------------------------------------------------------
+keep_perr_vars(perr16_vars)
+assign(name_x, perr_x)
+
+
+perr16 <-perr16 %>%  mutate(error=ifelse(perr16== 1, "Error", "No Error"))
+
+
+# ##----perr17------------------------------------------------------------------------------------------------
+# keep_perr_vars(perr17_vars)
+# assign(name_x, perr_x)
+# 
+# 
+# perr17 <-perr17 %>%  mutate(error=ifelse(perr17== 1, "Error", "No Error"))
+# 
+# 
+# 
+
+
+
+
+
+
+
+
+
+
+
+
+# perr_list <- c("perr1_vars", "perr2_vars", "perr3_vars")
+# 
+# 
+# 
+
+
+
+
+#####
 
