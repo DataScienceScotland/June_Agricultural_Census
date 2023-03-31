@@ -1,5 +1,5 @@
 #Tables for punch error checks------------------------------------------
-#uses June items from Item categories file
+#can use June items from Item categories file or, if using with Rmd items appear in "punch item vars" section 
 
 # Before import -----------------------------------------------------------
 
@@ -8,7 +8,9 @@
 rm(list=ls())
 
 ###check if this has been updated for this year!!
-source("Punch error checks/Punch-error-checks_files/Item categories.R")
+#commented out because Rmd doesn't work with another "source" ref
+#source("Punch error checks/Punch-error-checks_files/Item categories.R")
+
 
 
 #yr = this year 20xx
@@ -41,7 +43,32 @@ library(stringr)
 library(data.table)
 library(haven)
 
-# Load functions and item lists
+# Load functions and item lists--------------------------------------------------------
+
+punch_June_items <- c("item7", "item11", "item12", "item40", "item157", "item170", "item2321", "item145", "item139", "item140", "item141", "item143", "item144", "item47", "item49", "item2322", "item37", "item2469", "item2470", "item85", "item86", "item24", "item2320", "item160", "item162", "item163", "item94", "item50", "item2511")
+
+#prev years items seem to be the same as "this year's"
+
+punch_June_items_yr1 <- punch_June_items
+
+punch_June_items_yr2 <- punch_June_items
+
+perr1_vars<-c("perr1", "item12", "oitem12", "voitem12", "grass", "ograss", "vograss", "othgrass", "oothgrass", "voothgrass", "item47", "oitem47", "voitem47", "tillage", "otillage", "votillage") 
+perr2_vars <- c("perr2", "item157", "oitem157", "voitem157")
+perr3_vars <- c("perr3", "item170", "oitem170", "voitem170")
+perr4_vars <- c("perr4", "cts312", "octs312", "vocts312")
+perr5_vars <- c("perr5", "dairy", "odairy", "vodairy")
+perr6_vars <- c("perr6","beef", "obeef", "vobeef")
+perr7_vars <- c("perr7", "item145", "oitem145", "voitem145")
+perr9_vars <- c("perr9",  "item37", "oitem37", "voitem37")
+perr10_vars <- c("perr10", "glass", "oglass", "voglass")
+perr11_vars <- c("perr11", "male", "omale", "vomale")
+perr12_vars <- c("perr12", "female", "ofemale", "vofemale")
+perr13_vars <- c("perr13", "ware", "oware", "voware")
+perr14_vars <- c("perr14", "item94", "oitem94", "voitem94")
+perr15_vars <- c("perr15", "item50", "oitem50", "voitem50")
+perr16_vars <- c("perr16", "item47", "oitem47", "voitem47")
+perr17_vars <- c("perr17", "item2511", "oitem2511", "voitem2511")
 
 
 
@@ -155,7 +182,9 @@ all_punch_errors <- punch_errors %>%
 
 #add punch error checks
 
-  all_punch_errors <- all_punch_errors %>% 
+  
+
+all_punch_errors <- all_punch_errors %>% 
   mutate(
   #Land check - If total area has gone up or down by 10% and there has been an increase of grass greater than 5 years in the last year that does not account for the total of last year's rough grazings, fallow, other land and the difference in total land use area change.
     checkperr1 = 0.9*oitem12,
@@ -212,7 +241,7 @@ perr10 = case_when((glass > 0.1*oglass | glass < 0.1*oglass) &
 	
 	#Land check------------------------------------------------------------------------------------------------------------
 #NA check here: SAS includes 3 entries where item12 is missing, whilst R does not....
-perr13 = case_when((item12< 1.1*oitem12  & oitem24 == 0 & voitem24  == 0 & item24 > 10
+perr13 = case_when(((item12< 1.1*oitem12 ) && oitem24 == 0 & voitem24  == 0 & item24 > 10
    & ware == 0 & oware > 5 & voware > 5) ~1,
    TRUE~0),
 
@@ -229,6 +258,7 @@ perr14 = case_when((item94>=50| oitem94 >= 50) && ((item94_ratio >1.8) |(item94_
                             TRUE ~0)
 )
   
+
 
 ###will have to change as one form only  for JAC 2023!--------------------------------------------------------------------------------------------------------------
 all_punch_errors <- all_punch_errors %>% 
@@ -253,10 +283,6 @@ errors <- all_punch_errors %>% filter((sum(perr2, perr3, perr7, perr10, perr13, 
 
 
 ##move this function---------------------------------------------------------------------------------
-keep_perr_vars <- function(x){
-    perr_x <<- errors %>% select(parish, holding, survtype, all_of(x))    
-  name_x <<- sub("\\_.*", "", substitute(x))
-}
 
 
 #fix function
@@ -270,6 +296,12 @@ keep_perr_vars <- function(x){
 #
 
 ##----perr 1----------------------------------------------------------------------------------------------
+##@knitr perr1
+
+keep_perr_vars <- function(x){
+    perr_x <<- errors %>% select(parish, holding, survtype, all_of(x))    
+  name_x <<- sub("\\_.*", "", substitute(x))
+}
 
 keep_perr_vars(perr1_vars)
 assign(name_x, perr_x)
@@ -390,7 +422,8 @@ keep_perr_vars(perr13_vars)
 assign(name_x, perr_x)
 
 
-perr13 <-perr13 %>%  mutate(error=ifelse(perr13== 1, "Error", "No Error"))
+
+perr13 <-perr13 %>%  mutate(error=ifelse(perr13== 1, "Error", "No Error")) 
 
 
 
@@ -425,26 +458,18 @@ perr16 <-perr16 %>%  mutate(error=ifelse(perr16== 1, "Error", "No Error"))
 # perr17 <-perr17 %>%  mutate(error=ifelse(perr17== 1, "Error", "No Error"))
 # 
 # 
-# 
+#
 
+##----perr-summary---------------------------------------------------------------------------------------------
+error_count <- all_punch_errors %>% ungroup() %>% 
+  select(survtype, starts_with("perr")) %>% group_by(survtype)
 
+  error_count_n <- error_count %>% summarise(count = n())
+  
+#to fix. For now need to manually type perr variables
+error_agg <- aggregate(cbind(perr1, perr2, perr3, perr7, perr9, perr10, perr13, perr14, perr15, perr16) ~ survtype, data = error_count, FUN = sum)
 
+punch_error_summary <- full_join(error_count_n, error_agg, by = "survtype")
+  
 
-
-
-
-
-
-
-
-
-# perr_list <- c("perr1_vars", "perr2_vars", "perr3_vars")
-# 
-# 
-# 
-
-
-
-
-#####
 

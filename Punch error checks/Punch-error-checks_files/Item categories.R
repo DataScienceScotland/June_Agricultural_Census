@@ -1,5 +1,5 @@
 
-#June Item categories----------------------------------------------------------------------------------------------------------------------------------------------------
+##@knitr June Item categories----------------------------------------------------------------------------------------------------------------------------------------------------
 all_holding_areas <- c("item7", "item11", "item12", "item125", "item126", "item127", "item2249")
 all_seasonal <- c("item1", "item2827", "item2828")
 all_seasonal_saf <- c("item1", "item2879")
@@ -27,7 +27,7 @@ string_answers <- c("item185", "item186")
 
 
 
-#all June Census items-----------------------------------------------------------------------------------------------------------------------
+##@knitr all June Census items-----------------------------------------------------------------------------------------------------------------------
 all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf, 
                "item2", all_crops, "item35", "item37", "item38", "item40", "item41", 
                all_grass, "item46", all_other_land, "item50", all_veg, "item68",
@@ -36,7 +36,7 @@ all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf,
                all_other_livestock, "item171", occupier_12, workforce, "item200", other_labour, "item2980") 
 
 
-#this year's June items for punch error checks------------------------------------------------------------------------------------------------------
+## @knitr June items for punch error checks------------------------------------------------------------------------------------------------------
 
 punch_June_items <- c("item7", "item11", "item12", "item40", "item157", "item170", "item2321", "item145", "item139", "item140", "item141", "item143", "item144", "item47", "item49", "item2322", "item37", "item2469", "item2470", "item85", "item86", "item24", "item2320", "item160", "item162", "item163", "item94", "item50", "item2511")
 
