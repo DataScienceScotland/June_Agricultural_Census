@@ -47,6 +47,7 @@ loadRData <- function(fileName) {
   out
 }
 
+
 # Shorthand function for easy access
 
 lsos <- function(..., n = 10) {
@@ -54,6 +55,12 @@ lsos <- function(..., n = 10) {
 }
 
 
+# flatten function
+
+flatten <- function(data) {
+  ListCols <- sapply(data, is.list)
+  cbind(data[!ListCols], t(apply(data[ListCols], 1, unlist)))
+}
 # Functions used in A -----------------------------------------------------
 
 
@@ -66,7 +73,7 @@ LPID_index <- function(x) {
 
 # Rename select variables in permanent and seasonal datasets
 rename_perm_seas_vars <- function(x) {
-  rename(x,
+  dplyr::rename(x,
     brn = "business_reference_number",
     mlc = "main_location_code",
     slc = "location_code",
@@ -99,7 +106,7 @@ new_perm_seas_vars <- function(x) {
 
 # Rename select variables in scheme dataset
 rename_scheme_vars <- function(x) {
-  rename(x,
+  dplyr::rename(x,
          brn = "business_reference_number",
          mlc = "main_location_code",
          slc = "location_code",
@@ -140,7 +147,7 @@ missing_eligible_area <- function(x) {
 }
 
 
-# Remove NAs from datsets
+# Remove NAs from datasets
 
 cleaned_datasets <- function(x) {
   x[!is.na(brn) | !is.na(mlc) | !is.na(slc)]
@@ -180,7 +187,7 @@ newvarsother<-function(x)  {
         crops = other_code,
         area = other_area,
         LLO =
-          ifelse(prefix == "LLO-", "Y", ifelse(other_code == "LLO", "Y", "N")),
+          ifelse(prefix == "LLO-", "Y", ifelse(other_code == "LLO", "Y", LLO)),
         other_code =
           ifelse(prefix == "LLO-", substring(other_code, 5), other_code),
         other_code =
@@ -198,7 +205,7 @@ newvarssfp<-function(x)  {
          crops = sfp_code,
          area = sfp_area,
          LLO =
-           ifelse(prefix == "LLO-", "1", ifelse(sfp_code == "LLO", "Y", "N")),
+           ifelse(prefix == "LLO-", "1", ifelse(sfp_code == "LLO", "Y", LLO)),
          sfp_code =
            ifelse(prefix == "LLO-", substring(sfp_code, 5), sfp_code),
          sfp_code =
@@ -244,3 +251,36 @@ parishholdingmlc<-function(x)  {
          holding = str_remove(substr(mlc, 5, 8), "^0+"),
   )
 }
+
+
+
+#B7
+
+fid_index   <-  function(x) {
+  setDT(x)[, line := seq(1, .N), by = fid]
+}
+
+
+summarycheckarea<-function(x) {
+  dplyr::summarize(x,
+    sum_area = sum(area),
+    sum_field = sum(field_area),
+    sum_eligible = sum(eligible_area),
+    max_field = max(field_area),
+    var_field = var(field_area),
+    flag1 = max(flag1),
+    flag7 = max(flag7)
+  )
+}
+
+
+mutateareamismatches<-function(x) {
+mutate(x,
+  diff = round(max_field - sum_area, 3),
+  ratio = round(sum_area / max_field, 3)
+) 
+}
+
+
+
+

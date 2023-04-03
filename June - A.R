@@ -59,7 +59,8 @@ df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output1_SecondDrop.xlsx"),
 df_seasonal <- read.xlsx(paste0(SAF_directory, "/seasonal_output1_SecondDrop.xlsx"),sep.names = "_") # called script3 in SAS
 
 df_SAF<-read.csv(paste0(AGS_directory,"/SAFFINAL.csv"))
-df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"))
+df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"),
+                    fileEncoding="latin1")
 
 
 df_SAFprev <- read.csv(paste0(AGS_prev_directory, "/SAF1011.csv"))
@@ -99,6 +100,8 @@ df_scheme <- LPID_index(df_scheme)
 
 
 list_perm_seas <- lapply(list_perm_seas, rename_perm_seas_vars)
+
+
 
 list_perm_seas <- lapply(list_perm_seas, new_perm_seas_vars)
 
@@ -243,10 +246,12 @@ str(df_nonSAFprev, list.len = ncol(df_nonSAFprev))
 
 # Remove Parish variable and create parish and holding. Note: need to deal with mainlocationcode when they have county in
 
-df_crofts <- subset(df_crofts, select = -(Parish))
+df_crofts<-clean_names(df_crofts)
 
-df_crofts$parish <- str_remove(substr(df_crofts$MainLocationCode, 1, 3), "123")
-df_crofts$holding <- str_remove(substr(df_crofts$MainLocationCode, 5, 8), "123")
+df_crofts <- subset(df_crofts, select = -(parish))
+
+df_crofts$parish <- str_remove(substr(df_crofts$main_location_code, 1, 3), "123")
+df_crofts$holding <- str_remove(substr(df_crofts$main_location_code, 5, 8), "123")
 
 
 df_crofts$parish <- as.numeric(df_crofts$parish)
@@ -254,7 +259,7 @@ df_crofts$holding <- as.numeric(df_crofts$holding)
 
 # Remove crofts with zero area
 
-df_crofts <- df_crofts[df_crofts$TotalArea > 0, ]
+df_crofts <- df_crofts[df_crofts$total_area > 0, ]
 
 # Remove crofts with invalid holding number. This removes more records than in SAS - blanks are removed by R but not in the SAS code. I assume holdings with blanks should be removed.
 
@@ -263,27 +268,27 @@ df_crofts <- df_crofts[df_crofts$holding != 0, ]
 
 # Create variables for rented area and owned area
 
-df_crofts <- mutate(df_crofts, rentedarea = ifelse(StatusA == "Tenanted", TotalArea, 0))
-df_crofts <- mutate(df_crofts, ownedarea = ifelse(StatusA == "Owned", TotalArea, 0))
+df_crofts <- mutate(df_crofts, rented_area = ifelse(status_a == "Tenanted", total_area, 0))
+df_crofts <- mutate(df_crofts, owned_area = ifelse(status_b == "Owned", total_area, 0))
 
 
 # Create new dataframe
 
 
-df_crofts <- subset(df_crofts, select = c(parish, holding, TotalArea, rentedarea, ownedarea))
+df_crofts <- subset(df_crofts, select = c(parish, holding, total_area, rented_area, owned_area))
 
 
 # Group by parish and holding
 
-df_croftsfinal <- df_crofts %>%
+df_crofts<- df_crofts %>%
   group_by(parish, holding) %>%
-  summarise(
-    CCTotArea = sum(TotalArea),
-    CCRentedArea = sum(rentedarea),
-    CCOwnedArea = sum(ownedarea),
-    numcrofts = sum(TotalArea != 0),
-    numRentedCrofts = sum(rentedarea != 0),
-    numOwnedCrofts = sum(ownedarea != 0),
+  dplyr::summarise(
+    cc_tot_area = sum(total_area),
+    cc_rented_area = sum(rented_area),
+    cc_owned_area = sum(owned_area),
+    num_crofts = sum(total_area != 0),
+    num_rented_crofts = sum(rented_area != 0),
+    num_owned_crofts = sum(owned_area != 0),
     .groups = "rowwise"
   )
 
@@ -292,7 +297,6 @@ df_croftsfinal <- df_crofts %>%
 
 # Export datasets -----------------------------------------------------------
 
-df_names<-c("saf_perm","saf_seas","df_scheme")
 
 # Save to datashare
 
@@ -322,21 +326,76 @@ save(df_croftsfinal, file = paste0(Code_directory, "/crofts_A.rda"))
 # Save to ADM
 
 
-# 
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="saf_perm_A",
+                      dataframe=list_perm_seas[[1]],
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
 
-# 
-# old <- Sys.time()
-# 
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="saf_permA",
-#                       dataframe=allsaf_perm1,
-#                       append_to_existing = FALSE,
-#                       versioned_table=FALSE,
-#                       batch_size = 10000)
-# 
-# new <- Sys.time() - old # calculate difference
-# print(new) # print in nice format
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="saf_seas_A",
+                      dataframe=list_perm_seas[[2]],
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="Ags_SAF_A",
+                      dataframe=df_SAF,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="Ags_nonSAF_A",
+                      dataframe=df_nonSAF,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="Ags_SAF_prev_A",
+                      dataframe=df_SAFprev,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="Ags_nonSAF_prev_A",
+                      dataframe=df_nonSAFprev,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="crofts_A",
+                      dataframe=df_crofts,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
 
 
