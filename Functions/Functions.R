@@ -282,5 +282,249 @@ mutate(x,
 }
 
 
+#B8
 
 
+mutatellolfass<-function(x) {
+  mutate(x,
+           llo_area =
+             ifelse(llo == "Y", area, 0),
+           lfass_area =
+             ifelse((lfass_eligible == "Y" & claimtype == "SFPS"), area, 0))
+}
+
+summaryfids<-function(x) {
+  summarize(x,
+  mlc = unique(mlc),
+  slc = unique(slc),
+  brn = unique(brn),
+  area = sum(area),
+  llo_area = sum(llo_area),
+  lfass_area = sum(lfass_area),
+  field_area = max(field_area),
+  eligible_area = max(eligible_area),
+  .groups = "keep"
+)
+}
+
+aggregatefids<-function(x){
+  summarize(x,
+  area = sum(area),
+  llo_area = sum(llo_area),
+  lfass_area = sum(lfass_area),
+  mlc = unique(mlc),
+  slc = unique(slc),
+  brn = unique(brn),
+  .groups = "keep"
+)
+}
+
+
+# B9
+
+othercropscodes<-function(x) {
+  mutate(x,
+    ncode =
+      ifelse(
+        cens_code == "item41",
+        ifelse(
+          code == "ALMS",
+          "Almonds",
+          ifelse(
+            code == "BW",
+            "Buckwheat",
+            ifelse(
+              code == "CANS",
+              "Canary seed",
+              ifelse(
+                code == "EX-SS",
+                "Ex-structural set-aside",
+                ifelse(
+                  code == "FFS",
+                  "Fibre flax",
+                  ifelse(
+                    code == "GCM",
+                    "Green cover mixtures",
+                    ifelse(code == "HS", "Hemp",
+                           ifelse(
+                             code == "MIL",
+                             "Millet",
+                             ifelse(
+                               code == "MSC",
+                               "Miscanthus",
+                               ifelse(
+                                 code == "PEM",
+                                 "Positive environmental management",
+                                 ifelse(
+                                   code == "RCG",
+                                   "Reed canary grass",
+                                   ifelse(code ==
+                                            "RYE", "Rye",
+                                          ifelse(
+                                            code == "SOR",
+                                            "Sorghum",
+                                            ifelse(
+                                              code == "SRC",
+                                              "Short rotation coppice",
+                                              ifelse(
+                                                code == "TURF",
+                                                "Turf production",
+                                                ifelse(code ==
+                                                         "WBS", "Wild bird seed", code)
+                                              )
+                                            )
+                                          )
+                                   )
+                                 )
+                               )
+                             )
+                           )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+        ""
+      )
+  )
+}
+
+
+ncode<-function(x){
+  mutate(x,
+    item185 =
+      ifelse(cens_code == "item41",
+             ifelse(
+               item185 != "a", paste(item185, ncode), ncode
+             ), ""
+      )
+  )
+}
+
+
+
+censusformat<-function(x){
+  summarise(x,
+    area = sum(area),
+    llo_area = sum(llo_area),
+    lfass_area = sum(lfass_area),
+    mlc = unique(mlc),
+    brn = unique(brn)
+  )
+}
+
+
+extrafields <-  function(x){
+  summarise(x,
+  llo_area = sum(llo_area),
+  lfass_area = sum(lfass_area),
+  mlc = unique(mlc),
+  brn = unique(brn)
+)
+}
+
+
+brnmutate<-function(x) {
+  mutate(x, 
+         parish=str_pad(parish, width = 3, pad = "0"),
+         holding=str_pad(holding, width = 4, pad = "0"),
+         location_type =
+           paste0(
+             parish, "/",
+             holding),
+         location_type =
+           ifelse(location_type == mlc, "Main", "Subcode"))
+}
+
+brnsummary<-function(x) {
+  summarise(x,
+    area = sum(area),
+    mlc = unique(mlc),
+    location_type = unique(location_type)
+  )
+  
+}
+
+newitemssaf<-function(x) {
+  mutate(x,
+    item1 = LLO_area,
+    item2 = item2879 + item2827 + item2828,
+    item68 = item52 + item53 + item55 + item56 + item2323 + item59 + item60 + item61 +
+      item63 + item64 + item65 + item66,
+    item76 = item70 + item71 + item72 + item2832 + item75,
+    item84 = item2324 + item1709 + item80 + item81 + item1710 + item82 + item83,
+    item35 = item68,
+    item37 = item76,
+    item38 = item41 + item84 + item2858 + item2863 +
+      item2859 + item2864 +
+      item2860 + item2865 +
+      item2861,
+    item40 = item14 + item15 + item16 + item18 + item17 + item20 + item3156 + item22 +
+      item19 + item23 + item21 + item24 + item2320 + item27 + item28 +
+      item2034 + item29 + item30 + item31 + item2059 + item32 + item34 + item36 + item2469 + item2470 + item35 + item37 + item38,
+    item46 = item2321 + item2322 + item40,
+    saf_land =
+      ifelse((item47 + item49 + item46 + item9999) > 0, 1, "")
+  )
+}
+
+# Disaggregation functions
+
+summaryvalues<-function(x) {
+mutate(x,
+  barley_27710=item16+item18,
+  oats_17=item17+item20,
+  osr_27720=item19+item23,
+  stockfeed_27725=item29+item30+item31+item2059+item32+item34,
+  veginopen_27730=item52+item53+item55+item56+item2323+item59+item60+item61+item63+item64+item65+item66,
+  fruitinopen_27735=item36+item70+item71+item72+item2832+item75,
+  nursery_27740=item2324+item1709+item80+item81+item1710+item82+item83
+)
+  
+}
+
+
+proportions<-function(x) {
+  mutate(x,
+    prop_16=item16/barley_27710,
+    prop_18=item18/barley_27710,
+    prop_17=item17/oats_17,
+    prop_20=item20/oats_17,
+    prop_19=item19/osr_27720,
+    prop_23=item23/osr_27720,
+    prop_29=item29/stockfeed_27725,
+    prop_30=item30/stockfeed_27725,
+    prop_31=item31/stockfeed_27725,
+    prop_2059=item2059/stockfeed_27725,
+    prop_32=item32/stockfeed_27725,
+    prop_34=item34/stockfeed_27725,
+    prop_52=item52/veginopen_27730,
+    prop_53=item53/veginopen_27730,
+    prop_55=item55/veginopen_27730,
+    prop_56=item56/veginopen_27730,
+    prop_2323=item2323/veginopen_27730,
+    prop_59=item59/veginopen_27730,
+    prop_60=item60/veginopen_27730,
+    prop_61=item61/veginopen_27730,
+    prop_63=item63/veginopen_27730,
+    prop_64=item64/veginopen_27730,
+    prop_65=item65/veginopen_27730,
+    prop_66=item66/veginopen_27730,
+    prop_36=item36/fruitinopen_27735,
+    prop_70=item70/fruitinopen_27735,
+    prop_71=item71/fruitinopen_27735,
+    prop_72=item72/fruitinopen_27735,
+    prop_2832=item2832/fruitinopen_27735,
+    prop_75=item75/fruitinopen_27735,
+    prop_2324=item2324/nursery_27740,
+    prop_1709=item1709/nursery_27740,
+    prop_80=item80/nursery_27740,
+    prop_81=item81/nursery_27740,
+    prop_1710=item1710/nursery_27740,
+    prop_82=item82/nursery_27740,
+    prop_83=item83/nursery_27740,
+  )
+  
+}
