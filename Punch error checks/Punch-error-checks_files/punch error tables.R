@@ -201,7 +201,7 @@ all_punch_errors <- all_punch_errors %>%
                       TRUE ~ 0
       
     ),
-    #Poulty check - if total poultry is greater than 8 times or less than an eighth last year's poultry and the land area has not as much as doubled----------------------------
+    #Poultry check - if total poultry is greater than 8 times or less than an eighth last year's poultry and the land area has not as much as doubled----------------------------
  
     perr3 = case_when (((item170 > 8.*oitem170 & item12 < 2*oitem12) | (item170 < 0.125*oitem170 & item12 > 0.5*oitem12)) &
     ((item170-oitem170) > 150000 | (oitem170-item170) > 100000) &
