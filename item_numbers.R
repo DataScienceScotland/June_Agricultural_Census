@@ -408,8 +408,8 @@ labour_EU_migrant <- "item2536"
 labour_non_EU_migrant <- "item2511"
 
 
-
-
+#parishes NOT included on the Register of Crofts (downloaded 9/5/2023)
+non_crofting_parishes <- c(0:136, 176:227, 231, 242:273, 290:432, 466:585, 635:735, 769:827, 841:868)
 
 
 

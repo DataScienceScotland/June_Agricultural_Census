@@ -318,12 +318,20 @@ all_JAC_form$err30 <- ifelse(round(all_JAC_form[labour_ft_m_bp], digits = 1) != 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 #err31 = err44 in SAS
 #item2249 isn't in all_JAC_form?
-all_JAC_form$err44 <- ifelse(all_JAC_form[owned_croft]> all_JAC_form[area_own], 1, 0)
+all_JAC_form$err31 <- ifelse(all_JAC_form[owned_croft]> all_JAC_form[area_own], 1, 0)
 
-#Crofting checks - to  finish 26/4/23 (SAS coding not clear...)
-# all_JAC_f|m$err45 <- ifelse(all_JAC_f|m[owned_croft] > 0 & (parish <= 136 | parish <= 176 & parish <= 227 | parish == 231 | parish == 242 == parish == 273
-#                                                               | 290 == parish == 432 | 466 == parish == 585 | 635 == parish == 735 
-#                                                               | 769 == parish == 827 | 841 == parish == 868) )
-# 
-# 
+#err32 = err3 in SAS
+#item2249 doesn't exist
+all_JAC_form$err32 <- ifelse (all_JAC_form[owned_croft] > 0 & all_JAC_form$parish %in% non_crofting_parishes, 1, 0)
+
+#err33 = err4 in SAS 
+all_JAC_form$err33 <- ifelse (all_JAC_form[rented_croft] > 0 & all_JAC_form$parish %in% non_crofting_parishes, 1, 0)
+
+
+#migrant worker suppresssion - need to write function
+
+
+#Validation Outputs---------------------------------------------------------------------------------------
+#dataframe of observations (holdings) that have failed any of the validations
+JAC_validation_errors <- all_JAC_form %>% filter(if_any(starts_with("err"), ~ . >0 ))
 
