@@ -58,6 +58,8 @@ df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output1_SecondDrop.x
 df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output1_SecondDrop.xlsx"),sep.names = "_") # called script2 in SAS
 df_seasonal <- read.xlsx(paste0(SAF_directory, "/seasonal_output1_SecondDrop.xlsx"),sep.names = "_") # called script3 in SAS
 
+# 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
+
 df_SAF<-read.csv(paste0(AGS_directory,"/SAFFINAL.csv"))
 df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"),
                     fileEncoding="latin1")
@@ -192,8 +194,6 @@ str(df_nonSAF, list.len = ncol(df_nonSAF))
 
 
 
-
-
 df_SAFprev <- subset(df_SAFprev, select = -c(item9901, X, X.1))
 
 # Change variable types
@@ -231,16 +231,8 @@ df_nonSAF <- df_nonSAF %>%
 str(df_nonSAFprev, list.len = ncol(df_nonSAFprev))
 
 
-# Save to ADM
-
-
 
 # Crofting data -----------------------------------------------------------
-
-
-
-
-
 
 
 
