@@ -62,7 +62,7 @@ all_JAC_form<- left_join(JAC_form, croft, by = c("parish", "holding")) %>%
 #NOTE: a value of 1 in the "err(x)" column = holding data has failed logic of validation test. A value of 0 means data for that holding are fine.
 
 # Section 1 Area of holding--------------------
-#err1 = err2 in SAS
+#err1 = err2 in SAS = match (1740)
 #Total area = area rent + area own
 all_JAC_form$err1 <- ifelse(round(all_JAC_form[total_area], digits = 2) != round(all_JAC_form[area_own]+all_JAC_form[area_rent_21], digits = 2),  1, 0)
 
@@ -70,11 +70,12 @@ all_JAC_form$err1 <- ifelse(round(all_JAC_form[total_area], digits = 2) != round
 
 # Section 2 Seasonal rents--------------------
 
-#err2 = err10 in SAS
-#Total seasonal rent area = area rent in section 1
+#err2 = err10 in SAS = no match (15 vs 18 in SAS)
+#Total seasonal rent area = area rent in section 1 
 all_JAC_form$err2 <- ifelse(round(all_JAC_form[seas_total_area_in], digits = 2) == round(all_JAC_form[area_rent_21], digits = 2)
                             & (all_JAC_form[seas_total_area_in] & all_JAC_form[area_rent_21]> 0) & all_JAC_form$land_data == "ags",  1, 0)
-#err3 = err11 in SAS 
+
+#err3 = err11 in SAS = match (20)
 #new seasonal rent + same location seasonal rent = total seasonal rent area
 all_JAC_form$err3 <- ifelse(round(all_JAC_form[seas_rent_diff_in] + all_JAC_form[seas_rent_same_in], digits = 2) != round(all_JAC_form[seas_total_area_in], digits = 2)
                             & all_JAC_form$land_data != "both",  1, 0)
@@ -90,20 +91,13 @@ all_JAC_form$err4 <-  ifelse(all_JAC_form[other_crops] > 100 & is.na(all_JAC_for
 
 
 #grassland-------------------------------------------------------------------------------------------------------------------------------------------------
-#err5 = err15 in SAS
+#err5 = err15 in SAS = no match (1065 vs 1066 in SAS)
 total7 <- c(total_crops_grass, rough_graze, woodland, other_land)
 all_JAC_form$total7 <- rowSums(all_JAC_form[total7], na.rm =TRUE)
 
 all_JAC_form$err5 <-  
   ifelse(all_JAC_form$land_data == "ags", ifelse(round(all_JAC_form[total_land], digits = 2) != round(all_JAC_form$total7, digits = 2), 1, 0), 0)
 
-##NEED TO FIX: 1065 entries vs SAS 947
-##Noted e.g. P/H: 2/27: item50 = 0 in R but sas (agstemp.validations21) item50 = 2.5?  
-
-# all_JAC_form %>% filter(err5 ==1 & land_data == "ags") %>% select(contains(c(total7, total_land)), err5, total7)
-
-# 
-# all_JAC_form %>% filter(parish == 2, holding == 27) %>%  select(contains(c(total7, total_land)), err5)
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 #Vegetables
@@ -127,7 +121,8 @@ total4 <- c(all_flow_bulb_SAF, bed_pot_plant, fruit_stocks, roses_stocks, orn_tr
 all_JAC_form$total4 <- rowSums(all_JAC_form[total4], na.rm =TRUE)
 #err10 = err22 in SAS
 #all_JAC_form$err10 <-  ifelse(round(all_JAC_form[all_flow_bulb_21], digits = 2) != round(all_JAC_form$total4, digits = 2), 1, 0)
-#err11 = err23 in SAS
+
+#err11 = err23 in SAS = no match (23 vs 25 in SAS)
 total5 <- c(glass_tom_open, glass_other_fruit_open, glass_veg_open, glass_bed_pot_plant_open, 
             glass_nurs_stock_open, glass_strawb_open, glass_rasp_open, glass_blue_open, glass_black_open, glass_unused_open)
 total6 <- c(glass_tom_solid, glass_other_fruit_solid, glass_veg_solid, glass_bed_pot_plant_solid,
@@ -137,11 +132,11 @@ all_JAC_form$total6 <- rowSums(all_JAC_form[total6], na.rm =TRUE)
 all_JAC_form$err11<-  
   ifelse(all_JAC_form$survtype == "Non-SAF", ifelse(round(all_JAC_form$total5, digits = 2) != round(all_JAC_form[tot_open_plastic], digits = 2)| 
                                                       round(all_JAC_form$total6, digits = 2) != round(all_JAC_form[tot_solid_glass], digits = 2),  1, 0), 0)
-#23 obs vs 25 in SAS
 
 
 
-#err12 = err24 in SAS
+
+#err12 = err24 in SAS = match (15)
 all_JAC_form$err12 <- ifelse(all_JAC_form[tot_open_plastic]+all_JAC_form[tot_solid_glass]>0 & (all_JAC_form$total5 + all_JAC_form$total6)<=0, 1, 0 )
 
 
@@ -197,9 +192,9 @@ all_JAC_form$err16 <-  ifelse(round(all_JAC_form[ewes], digits = 1) != all_JAC_f
 total11 <- c(first_hens, moulted_hens, pullets, layer_chicks, table_chicks, cocks, broilers, turkeys, ducks, geese, other_poultry)
 all_JAC_form[total11] <- all_JAC_form[total11] %>% mutate(across(where(is.numeric), ~  ifelse(is.na(.), 0, .)))
 all_JAC_form$total11 <- rowSums(all_JAC_form[total11], na.rm =TRUE)
-#err16 = err27 in SAS
+#err16 = err27 in SAS = match (1)
 all_JAC_form$err16 <- ifelse(round(all_JAC_form$total11, digits = 1) != round(all_JAC_form[total_poultry], digits = 1), 1, 0)
-#err17 = err28 in SAS
+#err17 = err28 in SAS =
 all_JAC_form$err17 <- ifelse(round(all_JAC_form[first_hens], digits = 1) != all_JAC_form[first_hens]|
                                round(all_JAC_form[moulted_hens], digits = 1) != all_JAC_form[moulted_hens]|
                                round(all_JAC_form[pullets], digits = 1) != all_JAC_form[pullets]|
@@ -212,7 +207,7 @@ all_JAC_form$err17 <- ifelse(round(all_JAC_form[first_hens], digits = 1) != all_
                                round(all_JAC_form[geese], digits = 1) != all_JAC_form[geese]|
                                round(all_JAC_form[other_poultry], digits = 1) != all_JAC_form[other_poultry]|
                                round(all_JAC_form[total_poultry], digits = 1) != all_JAC_form[total_poultry], 1, 0)
-#err18 = err29 in SAS
+#err18 = err29 in SAS = match (2)
 all_JAC_form$err18 <- ifelse(round((all_JAC_form[first_hens] + all_JAC_form[moulted_hens] + all_JAC_form[pullets] + all_JAC_form[layer_chicks] +
                                      all_JAC_form[table_chicks] + all_JAC_form[broilers]), digits = 1) == 0 & round(all_JAC_form[cocks], digits = 1) > 9, 1, 0)
 
@@ -266,7 +261,7 @@ all_JAC_form$err21 <- ifelse(round(all_JAC_form[female_goat_kids], digits = 1) !
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 #Section 9 Occupiers
-#err27 = err40 in SAS
+#err27 = err40 in SAS = no match (143 vs 136 in SAS)
 
 all_JAC_form$err27 <- ifelse(all_JAC_form[occupier1_ft] >=1 & all_JAC_form[occupier1_pt_gthalf] >=1|
                              all_JAC_form[occupier1_ft] >=1 & all_JAC_form[occupier1_pt_lthalf] >=1|
@@ -276,7 +271,7 @@ all_JAC_form$err27 <- ifelse(all_JAC_form[occupier1_ft] >=1 & all_JAC_form[occup
                                #not in SAS code but should be (SAS erroneously repeats occupier1_ft and occupier1 no work)- adds 7 more observations to errors
                                all_JAC_form[occupier1_pt_lthalf] >=1 & all_JAC_form[occupier1_no_work] >=1, 1, 0) 
 
-#err28 = err41 in SAS
+#err28 = err41 in SAS = no match (28 vs 23 in SAS)
 all_JAC_form$err28 <- ifelse(all_JAC_form[occupier2_ft] >=1 & all_JAC_form[occupier2_pt_gthalf] >=1|
                                all_JAC_form[occupier2_ft] >=1 & all_JAC_form[occupier2_pt_lthalf] >=1|
                                all_JAC_form[occupier2_pt_gthalf] >=1 & all_JAC_form[occupier2_pt_lthalf] >=1|
@@ -295,7 +290,7 @@ total12 <- c(labour_ft_m_bp, labour_ft_m_fam, labour_ft_m_hired, labour_ft_f_bp,
 
 all_JAC_form$total12 <- rowSums(all_JAC_form[total12], na.rm =TRUE)
 
-#err29 = err42 in SAS
+#err29 = err42 in SAS = match (4)
 all_JAC_form$err29 <- ifelse(round(all_JAC_form[total_labour], digits = 1) != all_JAC_form$total12, 1, 0)
 
 #err30 = err43 in SAS
@@ -333,5 +328,19 @@ all_JAC_form$err33 <- ifelse (all_JAC_form[rented_croft] > 0 & all_JAC_form$pari
 
 #Validation Outputs---------------------------------------------------------------------------------------
 #dataframe of observations (holdings) that have failed any of the validations
-JAC_validation_errors <- all_JAC_form %>% filter(if_any(starts_with("err"), ~ . >0 ))
+JAC_validation_errors <- all_JAC_form %>% filter(if_any(starts_with("err"), ~ . !=0))
+
+#dataframe of observations (holdings) that have passed validations
+clean_JAC <- all_JAC_form %>% filter(if_all(starts_with("err"), ~ . ==0 ))
+
+#dataframe containing summary totals of errors
+#2838 (SAS) vs 2774 (R)
+JAC_validation_error_summary <- JAC_validation_errors%>% ungroup() %>%  select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE))
+JAC_validation_error_summary <- cbind(JAC_validation_error_summary, total_cases_with_errors = nrow(JAC_validation_errors))
+rownames(JAC_validation_error_summary) <- "errors"
+JAC_validation_error_summary <- JAC_validation_error_summary %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
+JAC_validation_error_summary <- JAC_validation_error_summary %>% filter(count !=0)
+
+
+
 
