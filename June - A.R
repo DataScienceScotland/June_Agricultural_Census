@@ -1,7 +1,7 @@
 # This script imports the datasets from SAF, Ags (the census returns) from this year and the previous year, and the Crofting Commission. They are saved as rdas in the datashare
 # Update the directories at the top to get data drops from the correct years.
 # The data used currently is from September 2021.
-# Created by Lucy Nevard 24.02.22 (original scripts created 22.11.22)
+# Created by Lucy Nevard 24.02.22 (original individual  scripts created 22.11.22)
 # Modified by Lucy Nevard 28.02.22
 
 
@@ -46,49 +46,55 @@ server <- "s0196a\\ADM"
 database <- "RuralAndEnvironmentalScienceFarmingStatistics"
 schema <- "juneagriculturalsurvey2023alpha"
 
-# schema <- "agriculture"
+# schema <- "agriculture"  # for the general schema
+
 
 # Import data -------------------------------------------------------------
 
 
-
-# Import datasets separately (or do this directly into a list depending on what other files are in the folder).
+# Import SAF datasets separately (or do this directly into a list depending on what other files are in the folder). Filename will be different for the data drops in June and September.
 
 df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output1_SecondDrop.xlsx"), sep.names = "_") # called script1 in SAS
-df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output1_SecondDrop.xlsx"),sep.names = "_") # called script2 in SAS
+
 df_seasonal <- read.xlsx(paste0(SAF_directory, "/seasonal_output1_SecondDrop.xlsx"),sep.names = "_") # called script3 in SAS
 
-# 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
+# Scheme data is not included in SAF data at this point but useful to have.
+
+df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output1_SecondDrop.xlsx"),sep.names = "_") # called script2 in SAS
+
+# Import Ags data (downloaded from Ags). From 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
 
 df_SAF<-read.csv(paste0(AGS_directory,"/SAFFINAL.csv"))
 df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"),
                     fileEncoding="latin1")
 
+# The previous year's data will still be SAF and NonSAF in 2023 (i.e. 2021 data). 2024, onwards the previous year will be 2023 so only one datafile.
 
 df_SAFprev <- read.csv(paste0(AGS_prev_directory, "/SAF1011.csv"))
 df_nonSAFprev <- read.csv(paste0(AGS_prev_directory, "/NonSAF1011.csv"))
 
-# Import crofts data. Note: using read.csv here creates a df with HoldingID as the index, which we don't want!
+# Import crofts data. Note: using read.csv here creates a df with HoldingID as the index, which we don't want! 
+# Crofts data isn't added to the census dataset until the very end of the process (see E2 in SAS project).
 
 df_crofts <- read_csv(paste0(Croft_directory, "/Register_of_crofts_Holdings_16-9-2021.csv"))
 
-# SAF data ----------------------------------------------------------------
+# Tidy SAF data ----------------------------------------------------------------
 
+# Work with permanent and seasonal in a list
 
 list_perm_seas <- list(df_permanent, df_seasonal)
 
-# Create line variable for list to index by LPID for permanent and seasonal. Number gives instance of each LPID.
+
+# Clean names to conform with good R practice
 
 list_perm_seas <- lapply(list_perm_seas, clean_names)
+
+# Create line variable for list to index by LPID for permanent and seasonal. Number gives instance of each LPID.
 
 list_perm_seas <- lapply(list_perm_seas, LPID_index)
 
 
-
-# Add in the following line to clean variable names - all code will need to be updated to reflect this. 
-# list_perm_seas <- lapply(list_perm_seas, clean_names)
-
-# Create new df and line variable for scheme
+# Clean names and create line variable for scheme data
 
 df_scheme<-clean_names(df_scheme)
 
@@ -98,11 +104,10 @@ df_scheme <- LPID_index(df_scheme)
 
 # Rename and create variables ---------------------------------------------
 
-# Rename and create new variables for permanent and seasonal. Land Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
+# Rename and create new variables for permanent and seasonal. Land_Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
 
 
 list_perm_seas <- lapply(list_perm_seas, rename_perm_seas_vars)
-
 
 
 list_perm_seas <- lapply(list_perm_seas, new_perm_seas_vars)
@@ -154,7 +159,7 @@ df_scheme <- cleaned_datasets(df_scheme)
 
 
 
-# Ags data ----------------------------------------------------------------
+# Tidy Ags data ----------------------------------------------------------------
 
 # Remove two variables from df_SAF. This should be changed to keep all necessary variables
 
