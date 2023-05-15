@@ -2,9 +2,9 @@
 # Then, for the permanent data, it corrects invalid codes (this will need updating every year) and  splits up lines with both SFP code and Other Code. For the seasonal data, it splits up and removes those with only an Other code.
 # Code corrections may need updating yearly depending on SAF data.
 # This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
-
+# Data used currently is from September 2021, as in the most recent version of the SAS project.
 # Created by Lucy Nevard 27.01.23
-# Modified by Lucy Nevard 28.02.23
+# Modified by Lucy Nevard 15.05.23
 
 
 # Before import -----------------------------------------------------------
@@ -42,9 +42,11 @@ schema <- "juneagriculturalsurvey2023alpha"
 # Import SAF data -------------------------------------------------------------
 
 
-# In the code from 2021, the data used last in B6 was AUG - I use SEP here for consistency with rest of previous code.
+# 
 
 list_perm_seas <- loadRData(paste0(Code_directory, "/saflist_permseas_A.rda"))
+
+# Import new code translation table for SAF (these may need updating every year)
 
 newcodetrans <-
   read.csv(paste0(Code_directory, "/NEW_CODE_TRANS21.csv"))

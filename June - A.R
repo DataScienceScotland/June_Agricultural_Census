@@ -1,8 +1,9 @@
-# This script imports the datasets from SAF, Ags (the census returns) from this year and the previous year, and the Crofting Commission. They are saved as rdas in the datashare
+# This script imports the datasets from SAF, Ags (the census returns) from this year and the previous year, and the Crofting Commission. They are saved as rdas in the datashare and tables on the ADM server.
 # Update the directories at the top to get data drops from the correct years.
-# The data used currently is from September 2021.
-# Created by Lucy Nevard 24.02.22 (original individual  scripts created 22.11.22)
-# Modified by Lucy Nevard 28.02.22
+# The data used currently is from September 2021, as in the most recent SAS project. 
+# Based on programs A1, A2, A2.(a) and A3 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
+# Created by Lucy Nevard 24.02.23 (original individual  scripts created 22.11.22)
+# Modified by Lucy Nevard 15.05.23
 
 
 
