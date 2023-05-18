@@ -171,7 +171,7 @@ change_codes<-function(x) {
          slc = ifelse(slc == "", mlc, slc),
          sfp_code =
            recode(as.factor(sfp_code), "TREE" = "TREES", "UNSP" = "EXCL"),
-         sfp_code =
+         other_code =
            recode(as.factor(other_code), "TREE" = "TREES", "UNSP" = "EXCL")
   )
 }
@@ -186,8 +186,8 @@ newvarsother<-function(x)  {
         code = other_code,
         crops = other_code,
         area = other_area,
-        LLO =
-          ifelse(prefix == "LLO-", "Y", ifelse(other_code == "LLO", "Y", LLO)),
+        llo =
+          ifelse(prefix == "LLO-", "Y", ifelse(other_code == "LLO", "Y", llo)),
         other_code =
           ifelse(prefix == "LLO-", substring(other_code, 5), other_code),
         other_code =
@@ -204,8 +204,8 @@ newvarssfp<-function(x)  {
          code = sfp_code,
          crops = sfp_code,
          area = sfp_area,
-         LLO =
-           ifelse(prefix == "LLO-", "1", ifelse(sfp_code == "LLO", "Y", LLO)),
+         llo =
+           ifelse(prefix == "LLO-", "1", ifelse(sfp_code == "LLO", "Y", llo)),
          sfp_code =
            ifelse(prefix == "LLO-", substring(sfp_code, 5), sfp_code),
          sfp_code =
@@ -234,7 +234,7 @@ mutate(x,
 newvarsseas<-function(x)  {
   mutate(x,
   claimtype = "SFPS",
-  LLO = "N",
+  llo = "N",
   code = sfp_code,
   crops = sfp_code,
   area = sfp_area,
