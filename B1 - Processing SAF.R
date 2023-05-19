@@ -1108,4 +1108,6 @@ cens_wide_dups <- cens_wide_final[!duplicated(cens_wide_final[, 1:2]), ]
 
 # Save to datashare
 
-save(cens_wide_final, file = paste0(Code_directory, "/allsaf_final.rda"))
+save(cens_wide_final, file = paste0(Code_directory, "/allsaf_final_B1.rda"))
+
+# Save to ADM server
