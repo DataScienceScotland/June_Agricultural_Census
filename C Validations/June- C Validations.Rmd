@@ -432,3 +432,11 @@ kable(JAC_validation_error_summary, caption = "Count of validation errors")
 
 ```
 
+
+The following table displays the count of possible migrant labour errors for soft fruit holdings. 
+```{r, results = 'markup'} 
+
+kable(check_labour_error_summary, caption = "Count of labour errors for soft fruit holdings")
+
+```
+
