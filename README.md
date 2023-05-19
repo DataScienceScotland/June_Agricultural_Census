@@ -7,3 +7,4 @@ Script B1 processes SAF, including flagging potential errors and converting data
 
 B2 combines the census (Ags) data and the SAF data to make the combined dataset, as known as JAC. B2 is B5 and B10 (from SAS project).
 
+C6-C9 - markdown for flagged errors in SAF dataset.
