@@ -1,8 +1,5 @@
-#JAC Validations for Census form data (C2, C3 IN SAS)
+#JAC Validations for Census form data (C2, C3, C4 IN SAS)
 #NB: when changing for 2023, area_rent_21 (item7) == area_rent (item20026)  
-
-
-
 
 library(tidyverse)
 #yr = this year 20xx
@@ -103,7 +100,7 @@ fbeet_sf <- "item32"
 kale_cab_sf <- "item30"
 
 #Stockfeed - census form
-#All stockfeed – turnips, swedes, kale, rape, maize, fodder beet, silage crops
+#All stockfeed: turnips, swedes, kale, rape, maize, fodder beet, silage crops
 all_stockfeed <- "item27725"
 
 #Veg for human consumption - SAF only
@@ -123,14 +120,14 @@ cauli_broc <- "item61"
 carrots <- "item63"
 lettuce <- "item64"
 rhubarb <- "item65"
-#Other vegetables – area of individual crops which are too small to be sown separately
+#Other vegetables :area of individual crops which are too small to be sown separately
 other_veg <- "item66"
 #Total vegetables
 all_veg_saf <- "item68"
 
 
 #veg- census form
-#All vegetables – e.g. peas, beans, leeks, turnips, carrots, lettuce etc.
+#All vegetables : e.g. peas, beans, leeks, turnips, carrots, lettuce etc.
 all_veg_open <- "item27730"
 all_veg_open_21 <- "item35"
 
@@ -145,7 +142,7 @@ all_fruit_saf <- "item76"
 soft_fruits <- "item37"
 
 #fruit - census form
-#All fruit – strawberries, raspberries, blackcurrant, blueberries, orchard etc.
+#All fruit : strawberries, raspberries, blackcurrant, blueberries, orchard etc.
 all_fruit <- "item27735"
 
 #flowers, bulbs and nursery stock grown in the open- SAF only
@@ -154,14 +151,14 @@ all_fruit <- "item27735"
 all_flow_bulb_SAF <- "item2324"
 #Bedding and pot plants grown in the open
 bed_pot_plant <- "item1709"
-#Fruit stocks – spawn beds, runner beds, stool beds and young plants intended for sale
+#Fruit stocks: spawn beds, runner beds, stool beds and young plants intended for sale
 fruit_stocks <- "item80"
 #Roses and rose stocks
 roses_stocks <- "item81"
 shrubs <- "item1710"
 #Ornamental trees (not forest trees)
 orn_trees <- "item82"
-#Other nursery stock – herbaceous plants, alpines, etc. (not forest trees)
+#Other nursery stock : herbaceous plants, alpines, etc. (not forest trees)
 other_nurs <- "item83"
 
 #flowers, bulbs and nursery stock grown in the open- census form
@@ -230,18 +227,18 @@ fland_gt5 <- "item2470"
 grass_lt5 <- "item2321"
 #Grass 5 years old and older (not seeded or re-seeded in the last 5 years)
 grass_gte5 <- "item2322"
-#Rough grazings – mountain, hill, moor, deer forest situated within the farming unit, enclosed or not. Do not include woods, roads, share in common grazings or land taken seasonally
+#Rough grazings: mountain, hill, moor, deer forest situated within the farming unit, enclosed or not. Do not include woods, roads, share in common grazings or land taken seasonally
 rough_graze <- "item47"
-#Woodland – total area (ha.) of woodland (other than orchards) on the location, including woodland used for commercial or amenity purposes and forest trees
+#Woodland:  total area (ha.) of woodland (other than orchards) on the location, including woodland used for commercial or amenity purposes and forest trees
 woodland <- "item48"
-#Other land – roads, yards, buildings (excluding glasshouses), ponds, derelict land, etc.
+#Other land: roads, yards, buildings (excluding glasshouses), ponds, derelict land, etc.
 other_land <- "item49"
 
 #Total Area of Crops and Grass-SAF
 total_crops_grass <- "item46"
 
 #Total LAND 
-#TOTAL LAND from Section 3 – should equal Total Area Section 1 box 3 (item12)
+#TOTAL LAND from Section 3  should equal Total Area Section 1 box 3 (item12)
 total_land <-  "item50"
 
 #Section 4---------------------------------------------------------------------
@@ -281,7 +278,7 @@ other_lt20_pig <- "item156"
 
 #Section 5---------------------------------------------------------------------
 #Sheep
-#Ewes that were used for breeding in 2023 – number still on farm at 1 June 20xx
+#Ewes that were used for breeding in 2023: number still on farm at 1 June 20xx
 ewes <- "item139"
 #Rams to be used/expected to be used for service 
 rams <- "item140"
@@ -328,7 +325,7 @@ llamas <- "item2473"
 other_camelids <- "item2474"
 #Hives containing a colony of live honey bees, whether owned by you or not
 hives <- "item2826"
-#Other farm livestock not previously mentioned – do not include cattle/buffalo here
+#Other farm livestock not previously mentioned: do not include cattle/buffalo here
 other_livestock <- "item171"
 #Specify type of livestock entered in box 9 (item171) above (please PRINT here)	
 other_livestock_txt <- "item186"
@@ -360,9 +357,9 @@ legal_fin_resp <- "item2980"
 #Occupier 1 details - legal responsibility is assumed
 occupier1_male <-"item2877"
 occupier1_female <- "item2878"
-#Year of birth – enter format ‘YYYY’
+#Year of birth: enter format YYYY
 occupier1_year <- "item27785"
-#Occupier 1 – proportion of time spent working on this location:
+#Occupier 1: proportion of time spent working on this location:
 #full-time
 occupier1_ft <- "item177"
 #Part-time: half-time or more
@@ -372,13 +369,13 @@ occupier1_pt_lthalf <- "item179"
 #no farm work on this location
 occupier1_no_work <- "item2566"
 
-#Occupier 2 details - Occupier 2 – can include formalised relationships (married couples and civil partnerships), cohabiting couples and close family relationships (father, mother, daughter, son and sibling)
+#Occupier 2 details - Occupier 2:  can include formalised relationships (married couples and civil partnerships), cohabiting couples and close family relationships (father, mother, daughter, son and sibling)
 occupier2_male <-"item3056"
 occupier2_female <- "item3057"
 occupier2_legal_fin <- "item27805"
-#Year of birth – enter format ‘YYYY’
+#Year of birth: enter format YYYY
 occupier2_year <- "item27795"
-#Occupier 2 – proportion of time spent working on this location:
+#Occupier 2: proportion of time spent working on this location:
 #full-time
 occupier2_ft <- "item182"
 #Part-time: half-time or more
@@ -393,7 +390,7 @@ occupier2_no_work <- "item2567"
 other_legal_return_21 <- "item2726"
 # spouse_male <-"item3056"
 # spouse_female <- "item3057"
-# #spouse– proportion of time spent working on this location:
+# #spouse: proportion of time spent working on this location:
 # #full-time
 # spouse_ft <- "item182"
 # #Part-time: half-time or more
@@ -860,6 +857,7 @@ rownames(JAC_validation_error_summary) <- "errors"
 JAC_validation_error_summary <- JAC_validation_error_summary %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
 JAC_validation_error_summary <- JAC_validation_error_summary %>% filter(count !=0)
 
+check_labour_error_summary <- check_labour %>% ungroup() %>%  select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE)) %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
 
 
 #R Markdown tables
@@ -1095,10 +1093,10 @@ err42 <-err42 %>%  mutate(error=ifelse(err42== 1 & !is.na(err42), "Error", "No E
 ##@knitr err-summary
 
 JAC_validation_error_summary 
+check_labour_error_summary
 
 
-
-
+#Save Outputs
 
 
 
