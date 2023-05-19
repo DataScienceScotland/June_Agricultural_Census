@@ -53,7 +53,7 @@ punch_June_items_yr1 <- punch_June_items
 
 punch_June_items_yr2 <- punch_June_items
 
-perr1_vars<-c("perr1", "item12", "oitem12", "voitem12", "grass", "ograss", "vograss", "othgrass", "oothgrass", "voothgrass", "item47", "oitem47", "voitem47", "tillage", "otillage", "votillage") 
+perr1_vars<-c("perr1",  "tillage", "otillage", "votillage") 
 perr2_vars <- c("perr2", "item157", "oitem157", "voitem157")
 perr3_vars <- c("perr3", "item170", "oitem170", "voitem170")
 perr4_vars <- c("perr4", "cts312", "octs312", "vocts312")
@@ -307,7 +307,6 @@ keep_perr_vars(perr1_vars)
 assign(name_x, perr_x)
 perr1 <-perr1 %>%  mutate(error=ifelse(perr1== 1, "Error", "No Error"),
                           difference = (tillage-otillage))
-                          
                           
                           
 ##----perr 2----------------------------------------------------------------------------------

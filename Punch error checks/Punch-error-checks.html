@@ -7,7 +7,7 @@
   
   <meta charset="utf-8">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-            <meta name="date" content="2023-03-24">
+            <meta name="date" content="2023-05-16">
     <meta name="generator" content="pandoc">
   <meta name="theme-color" content="#ffffff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -132,11 +132,13 @@
                   <li><a href="#jac-survey-form-punch-error-checks">JAC Survey form Punch Error Checks</a><ul>
                   <li><a href="#punch-error-1">Punch error 1</a></li>
                   <li><a href="#punch-error-2">Punch error 2</a></li>
+                  <li><a href="#punch-error-3">Punch error 3</a></li>
                   <li><a href="#punch-error-7">Punch error 7</a></li>
                   <li><a href="#punch-error-9">Punch error 9</a></li>
                   <li><a href="#punch-error-10">Punch error 10</a></li>
                   <li><a href="#punch-error-13">Punch error 13</a></li>
                   <li><a href="#punch-error-14">Punch error 14</a></li>
+                  <li><a href="#punch-error-15">Punch error 15</a></li>
                   <li><a href="#punch-error-16">Punch error 16</a></li>
                   </ul></li>
                   <li><a href="#punch-error-summary-table">Punch error summary table</a></li>
@@ -153,7 +155,7 @@
                                         <dl class="ds_page-header__metadata ds_metadata">
                                               <div class="ds_metadata__item">
                           <dt class="ds_metadata__key">Last updated</dt>
-                          <dd class="ds_metadata__value">2023-03-24</dd>
+                          <dd class="ds_metadata__value">2023-05-16</dd>
                         </div>
                                                                 </dl>
                   </div>
@@ -167,58 +169,18 @@
 <div id="punch-error-1" class="section level2">
 <h2>Punch error 1</h2>
 <p>The following table displays errors for holdings where: total area has gone up or down by 10% and there has been an increase of grass greater than 5 years in the last year that does not account for the total of last year’s rough grazings, fallow, other land and the difference in total land use area change.</p>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["parish"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["holding"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["survtype"],"name":[3],"type":["chr"],"align":["left"]},{"label":["perr1"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["item12"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["oitem12"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["voitem12"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["grass"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["ograss"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["vograss"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["othgrass"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["oothgrass"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["voothgrass"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["item47"],"name":[14],"type":["dbl"],"align":["right"]},{"label":["oitem47"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["voitem47"],"name":[16],"type":["dbl"],"align":["right"]},{"label":["yr"],"name":[17],"type":["dbl"],"align":["right"]},{"label":["yr1"],"name":[18],"type":["dbl"],"align":["right"]},{"label":["yr2"],"name":[19],"type":["dbl"],"align":["right"]},{"label":["error"],"name":[20],"type":["chr"],"align":["left"]},{"label":["difference"],"name":[21],"type":["dbl"],"align":["right"]}],"data":[],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
 <pre><code>## [1] &quot;No errors found&quot;</code></pre>
-<table style="width:100%;">
+<table>
 <caption>Potential errors for tillage (tillage - item40 + item2321)</caption>
-<colgroup>
-<col width="4%" />
-<col width="4%" />
-<col width="5%" />
-<col width="3%" />
-<col width="4%" />
-<col width="4%" />
-<col width="5%" />
-<col width="3%" />
-<col width="4%" />
-<col width="4%" />
-<col width="5%" />
-<col width="5%" />
-<col width="6%" />
-<col width="4%" />
-<col width="4%" />
-<col width="5%" />
-<col width="4%" />
-<col width="5%" />
-<col width="5%" />
-<col width="3%" />
-<col width="6%" />
-</colgroup>
 <thead>
 <tr class="header">
 <th align="right">parish</th>
 <th align="right">holding</th>
 <th align="left">survtype</th>
 <th align="right">perr1</th>
-<th align="right">item12</th>
-<th align="right">oitem12</th>
-<th align="right">voitem12</th>
-<th align="right">grass</th>
-<th align="right">ograss</th>
-<th align="right">vograss</th>
-<th align="right">othgrass</th>
-<th align="right">oothgrass</th>
-<th align="right">voothgrass</th>
-<th align="right">item47</th>
-<th align="right">oitem47</th>
-<th align="right">voitem47</th>
-<th align="right">tillage</th>
-<th align="right">otillage</th>
-<th align="right">votillage</th>
+<th align="right">yr</th>
+<th align="right">yr1</th>
+<th align="right">yr2</th>
 <th align="left">error</th>
 <th align="right">difference</th>
 </tr>
@@ -269,30 +231,12 @@
 <td align="left">Error</td>
 <td align="right">765.5</td>
 </tr>
-<tr class="odd">
-<td align="right">## Punch</td>
-<td align="right">error 3</td>
-<td align="left"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="left"></td>
-<td align="right"></td>
-</tr>
-<tr class="even">
-<td align="right">The follo</td>
-<td align="right">wing table</td>
-<td align="left">displays p</td>
-<td align="right">ossible</td>
-<td align="right">error</td>
-<td align="right">s for h</td>
-<td align="right">oldings</td>
-<td align="left">where t</td>
-<td align="right">here are suspicious changes in total poultry numbers</td>
-</tr>
 </tbody>
 </table>
+</div>
+<div id="punch-error-3" class="section level2">
+<h2>Punch error 3</h2>
+<p>The following table displays possible errors for holdings where there are suspicious changes in total poultry numbers</p>
 <pre><code>## [1] &quot;Errors found&quot;</code></pre>
 <table>
 <caption>Potential errors for total poultry (item170)</caption>
@@ -398,96 +342,16 @@
 <td align="left">Error</td>
 <td align="right">85196.0</td>
 </tr>
-<tr class="odd">
-<td align="right">&lt;!– ## P</td>
-<td align="right">unch error</td>
-<td align="left">4 –&gt;</td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="left"></td>
-<td align="right"></td>
-</tr>
-<tr class="even">
-<td align="right">&lt;!– The</td>
-<td align="right">following</td>
-<td align="left">table displ</td>
-<td align="right">ays poss</td>
-<td align="right">ible erro</td>
-<td align="right">rs for ho</td>
-<td align="right">ldings wh</td>
-<td align="left">ere ther</td>
-<td align="right">e are suspicious changes in total cattle numbers –&gt;</td>
-</tr>
-<tr class="odd">
-<td align="right">&lt;!– ```{</td>
-<td align="right">r, punch e</td>
-<td align="left">rror tables</td>
-<td align="right">-perr4,</td>
-<td align="right">results =</td>
-<td align="right">‘markup’</td>
-<td align="right">} –&gt;</td>
-<td align="left"></td>
-<td align="right"></td>
-</tr>
-<tr class="even">
-<td align="right">&lt;!– perr</td>
-<td align="right">4 &lt;- perr4</td>
-<td align="left">%&gt;% filter</td>
-<td align="right">(error =</td>
-<td align="right">= “Error”</td>
-<td align="right">) %&gt;% –</td>
-<td align="right">&gt;</td>
-<td align="left"></td>
-<td align="right"></td>
-</tr>
-<tr class="odd">
-<td align="right">&lt;!– re</td>
-<td align="right">name(yr =</td>
-<td align="left">cts312, yr1</td>
-<td align="right">= octs3</td>
-<td align="right">12, yr2 =</td>
-<td align="right">vocts312)</td>
-<td align="right">–&gt;</td>
-<td align="left"></td>
-<td align="right"></td>
-</tr>
-<tr class="even">
-<td align="right">&lt;!– ifel</td>
-<td align="right">se(nrow(pe</td>
-<td align="left">rr4) ==0,</td>
-<td align="right">"No erro</td>
-<td align="right">rs found"</td>
-<td align="right">, "Errors</td>
-<td align="right">found")</td>
-<td align="left">–&gt;</td>
-<td align="right"></td>
-</tr>
-<tr class="odd">
-<td align="right">&lt;!– kabl</td>
-<td align="right">e(perr4, c</td>
-<td align="left">aption = "P</td>
-<td align="right">otential</td>
-<td align="right">errors f</td>
-<td align="right">or total</td>
-<td align="right">cattle (c</td>
-<td align="left">ts312)"</td>
-<td align="right">) –&gt;</td>
-</tr>
-<tr class="even">
-<td align="right">&lt;!– ```</td>
-<td align="right">–&gt;</td>
-<td align="left"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="left"></td>
-<td align="right"></td>
-</tr>
 </tbody>
 </table>
+<!-- ## Punch error 4 -->
+<!-- The following table displays possible errors for holdings where there are suspicious changes in total cattle numbers -->
+<!-- ```{r, punch error tables-perr4, results = 'markup'}  -->
+<!-- perr4 <- perr4 %>% filter(error == "Error") %>%  -->
+<!--   rename(yr = cts312, yr1 = octs312, yr2 =vocts312) -->
+<!-- ifelse(nrow(perr4) ==0,  "No errors found", "Errors found") -->
+<!-- kable(perr4, caption = "Potential errors for total cattle (cts312)" ) -->
+<!-- ``` -->
 <!-- ## Punch error 5 -->
 <!-- The following table displays possible errors for holdings where dairy has been introduced to a beef holding -->
 <!-- ```{r, punch error tables-perr5, results = 'markup'}  -->
@@ -579,7 +443,7 @@
 <!-- perr11 <- perr11 %>% filter(error == "Error") %>%  -->
 <!--   rename(yr = male, yr1 = omale, yr2 =vomale) -->
 <!-- ifelse(nrow(perr10) ==0,  "No errors found", "Errors found") -->
-<!-- kable(perr11, caption = "Potential ntroduction of male cattle to holding with only female cattle (excluding bulls for service)" ) -->
+<!-- kable(perr11, caption = "Potential introduction of male cattle to holding with only female cattle (excluding bulls for service)" ) -->
 <!-- ``` -->
 <!-- ##Punch error 12 -->
 <!-- The following table displays possible errors for holdings where there has been an introduction of female cattle (not for breeding) to holding with only male cattle' -->
@@ -624,9 +488,9 @@
 <th align="right">holding</th>
 <th align="left">survtype</th>
 <th align="right">perr14</th>
-<th align="right">yr</th>
-<th align="right">yr1</th>
-<th align="right">yr2</th>
+<th align="right">item94</th>
+<th align="right">oitem94</th>
+<th align="right">voitem94</th>
 <th align="left">error</th>
 </tr>
 </thead>
@@ -721,28 +585,12 @@
 <td align="right">156</td>
 <td align="left">Error</td>
 </tr>
-<tr class="even">
-<td align="right">## Punch</td>
-<td align="right">error 15</td>
-<td align="left"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="left"></td>
-</tr>
-<tr class="odd">
-<td align="right">The follo</td>
-<td align="right">wing table</td>
-<td align="left">displays p</td>
-<td align="right">ossible e</td>
-<td align="right">rrors</td>
-<td align="right">for ho</td>
-<td align="right">ldings</td>
-<td align="left">where there is a large change in total land area</td>
-</tr>
 </tbody>
 </table>
+</div>
+<div id="punch-error-15" class="section level2">
+<h2>Punch error 15</h2>
+<p>The following table displays possible errors for holdings where there is a large change in total land are</p>
 <pre><code>## [1] &quot;No errors found&quot;</code></pre>
 <table>
 <caption>Potential errors for large change in total land area (item50)</caption>
@@ -797,7 +645,7 @@
 <h1>Punch error summary table</h1>
 <p>The following table displays the count of punch errors grouped by “survtype”. The count of observations per survtype is given.</p>
 <table>
-<caption>Count of punch errors by survtype (observations of survtype given in Count column</caption>
+<caption>Count of punch errors by survtype (observations of survtype given in Count column)</caption>
 <thead>
 <tr class="header">
 <th align="left">survtype</th>
@@ -818,7 +666,7 @@
 <tr class="odd">
 <td align="left">Non-SAF</td>
 <td align="right">7178</td>
-<td align="right">1</td>
+<td align="right">2</td>
 <td align="right">0</td>
 <td align="right">8</td>
 <td align="right">0</td>
@@ -846,7 +694,7 @@
 <tr class="odd">
 <td align="left">SAF</td>
 <td align="right">14909</td>
-<td align="right">9</td>
+<td align="right">10</td>
 <td align="right">2</td>
 <td align="right">0</td>
 <td align="right">0</td>

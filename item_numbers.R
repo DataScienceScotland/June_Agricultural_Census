@@ -161,7 +161,18 @@ glass_black_solid <- "item2866"
 tot_open_plastic <- "item85"
 #Glass clad structure greenhouses (Total solid floor area)
 tot_solid_glass <- "item86"
-protect_tom <- "item87"
+
+#Summary items for glasshouse crops (ie open soil item + solid floor item)
+glass_tom_tot <- "item87"
+glass_strawb_tot <- "item2556"
+glass_rasp_tot <- "item2557"
+glass_black_tot <- "item6000"
+glass_blue_tot <- "item2836"
+glass_other_fruit_tot <- "item2036"
+glass_veg_tot <- "item2037"
+glass_bed_pot_plant_tot <- "item1711"
+glass_hardy_nurse_tot <- "item1943"
+glass_unused_tot <- "item6001"
 
 #glasshouses- census form
 #All crops/plants
