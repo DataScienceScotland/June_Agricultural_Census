@@ -490,12 +490,12 @@ all_JAC_form<- left_join(JAC_form, croft, by = c("parish", "holding")) %>%
 all_JAC_form$err1 <- ifelse(round(all_JAC_form[total_area], digits = 2) != round(all_JAC_form[area_own]+all_JAC_form[area_rent_21], digits = 2),  1, 0)
 
 #Total area is zero but area own or area rented >0
-#all_JAC_form$err37 <- ifelse((all_JAC_form[total_area] == 0 |  is.na(all_JAC_form[total_area])) & (all_JAC_form[area_own]| all_JAC_form[area_rent_21] > 0), 1, 0)
+all_JAC_form$err37 <- ifelse((all_JAC_form[total_area] == 0 |  is.na(all_JAC_form[total_area])) & (all_JAC_form[area_own]| all_JAC_form[area_rent_21] > 0), 1, 0)
 
 #Total area is zero and area owned and area rented =0
-# all_JAC_form$err38 <- ifelse((all_JAC_form[total_area] == 0 |  is.na(all_JAC_form[total_area])) & 
-#                                (all_JAC_form[area_own] == 0 |  is.na(all_JAC_form[area_own])) & 
-#                                all_JAC_form[area_rent_21] == 0 |  is.na(all_JAC_form[area_rent_21]), 1, 0)
+all_JAC_form$err38 <- ifelse((all_JAC_form[total_area] == 0 |  is.na(all_JAC_form[total_area])) & 
+                                (all_JAC_form[area_own] == 0 |  is.na(all_JAC_form[area_own])) & 
+                               all_JAC_form[area_rent_21] == 0 |  is.na(all_JAC_form[area_rent_21]), 1, 0)
 
 
 # Section 2 Seasonal rents--------------------
@@ -550,6 +550,7 @@ all_JAC_form$err9 <-  ifelse(round(all_JAC_form[soft_fruits], digits = 2) != rou
 
 total4 <- c(all_flow_bulb_SAF, bed_pot_plant, fruit_stocks, roses_stocks, orn_trees, shrubs, other_nurs)
 all_JAC_form$total4 <- rowSums(all_JAC_form[total4], na.rm =TRUE)
+
 #err10 = err22 in SAS
 #all_JAC_form$err10 <-  ifelse(round(all_JAC_form[all_flow_bulb_21], digits = 2) != round(all_JAC_form$total4, digits = 2), 1, 0)
 
@@ -844,11 +845,11 @@ check_labour$err42 <- ifelse(ifelse(check_labour$brn<0 | is.na(check_labour$brn)
 #Validation Outputs---------------------------------------------------------------------------------------
 #dataframe of observations (holdings) that have failed any of the validations - are we including NAs as errors? should there be NAs at this stage?
 
-#2949 including NA
-JAC_validation_errors_NA <- all_JAC_form %>% filter(if_any(starts_with("err"), ~ . !=0 | is.na(.))) 
+#2949 including NA, remove err37 and err38 (new checks for 2023)
+JAC_validation_errors_NA <- all_JAC_form %>% select(-err37, -err38) %>%  filter(if_any(starts_with("err"), ~ . !=0 | is.na(.))) 
 
-#2774 without NA
-JAC_validation_errors <- all_JAC_form %>% filter(if_any(starts_with("err"), ~ . !=0))
+#2774 without NA, remove err37 and err38 (new checks for 2023)
+JAC_validation_errors <- all_JAC_form %>% select(-err37, -err38) %>%  filter(if_any(starts_with("err"), ~ . !=0))
 
 #dataframe of observations (holdings) that have passed validations
 clean_JAC <- all_JAC_form %>% filter(if_all(starts_with("err"), ~ . ==0 )) %>% select(-matches("err|total"))

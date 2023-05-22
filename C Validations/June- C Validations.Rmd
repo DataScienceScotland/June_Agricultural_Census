@@ -418,7 +418,7 @@ kable(err41, caption = "Holdings where soft fruit labour is too low" )
 ## Error 42
 The following table displays possible errors for holdings where soft fruit labour is too high 
 ```{r, June - C-Validations-err42, results = 'markup'} 
-ifelse(nrow(err42) ==0,  "No errors found", "Errors found- che- check for punch errors or misunderstanding of requirement of people/days in labour questions")
+ifelse(nrow(err42) ==0,  "No errors found", "Errors found- check for punch errors or misunderstanding of requirement of people/days in labour questions")
 err42 <- err42 %>% rename("Total soft fruit area (holding) = sumfruit" = "sumfruit", "Total labour FTE (holding) = lab_returned" = "lab_returned", "SLR (holding) = slr_fruit" = "slr_fruit")
 kable(err42, caption = "Holdings where soft fruit labour is too high" )
 
