@@ -13,7 +13,7 @@ loadRData <- function(fileName) {
 
 
 # The following two functions are for looking at how much memory is taken up by each object in the environment
-
+# Taken from online
 # Main function
 
 .ls.objects <- function(pos = 1, pattern, order.by,
@@ -55,7 +55,7 @@ lsos <- function(..., n = 10) {
 }
 
 
-# flatten function
+# flatten function, useful for flattening a list into dataframes. Taken from online.
 
 flatten <- function(data) {
   ListCols <- sapply(data, is.list)
@@ -64,14 +64,14 @@ flatten <- function(data) {
 # Functions used in A -----------------------------------------------------
 
 
-# Create line variable to index by LPID. Number gives instance of each LPID.
+# Create "line" variable to index by LPID. Number gives instance of each LPID.
 
 LPID_index <- function(x) {
   setDT(x)[, line := seq(1, .N), by = lpid]
 }
 
 
-# Rename select variables in permanent and seasonal datasets
+# Rename selected variables in permanent and seasonal datasets
 rename_perm_seas_vars <- function(x) {
   dplyr::rename(x,
     brn = "business_reference_number",
@@ -81,7 +81,7 @@ rename_perm_seas_vars <- function(x) {
     field_area = "land_parcel_area",
     lfass_eligible = lfass,
     eligible_area = "bps_eligible_area",
-    LLO = "land_leased_out",
+    llo = "land_leased_out",
     land_use = "land_use",
     land_use_area = "land_use_area",
     bps_claimed_area = "bps_claimed_area"
@@ -104,7 +104,7 @@ new_perm_seas_vars <- function(x) {
 }
 
 
-# Rename select variables in scheme dataset
+# Rename selected variables in scheme dataset
 rename_scheme_vars <- function(x) {
   dplyr::rename(x,
          brn = "business_reference_number",
@@ -141,7 +141,7 @@ missing_field_area <- function(x) {
 }
 
 
-# Find eligible areas in permanent and seasonal
+# Find missing eligible areas in permanent and seasonal
 missing_eligible_area <- function(x) {
   x[is.na(eligible_area)]
 }
@@ -252,6 +252,31 @@ parishholdingmlc<-function(x)  {
   )
 }
 
+# Correct variable types for perm
+
+perm_variables<-function(x)    {
+  mutate(x,
+  parish=as.numeric(parish),
+  holding=as.numeric(holding),
+  code=as.factor(code),
+  crops=as.factor(crops),
+  area=round(as.numeric(area),3),
+  line=as.numeric(line)
+)
+}
+# Correct variable types for seas
+
+seas_variables<-function(x)    {
+  mutate(x,
+    sfp_code=as.factor(sfp_code),
+    parish=as.numeric(parish),
+    holding=as.numeric(holding),
+    code=as.factor(code),
+    crops=as.factor(crops),
+    line=as.numeric(line),
+    area=round(as.numeric(area),3)
+  )
+}
 
 
 #B7
@@ -471,6 +496,9 @@ newitemssaf<-function(x) {
 }
 
 
+
+
+# Functions for B10 -------------------------------------------------------
 
 
 
