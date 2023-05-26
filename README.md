@@ -10,5 +10,6 @@ B2 combines the census (Ags) data and the SAF data to make the combined dataset,
 C6-C9 - markdown for flagged errors in SAF dataset.
 
 Folders: Punch Error Checks contains C1 Ags data punch error checks script and markdown
-         C Validations contains C2:C5 Ags data validation script and markdown. 
-         "item_numbers.R" includes item numbers which are manually pasted into "June - C _ Validations.R" script as objects.
+Folders: Validations contains C2:C5 Ags data validation script and markdown. 
+
+"item_numbers.R" includes item numbers which are manually pasted into "June - C _ Validations.R" script as objects.
