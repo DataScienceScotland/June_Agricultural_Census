@@ -30,7 +30,12 @@ schema <- "juneagriculturalsurvey2023alpha"
 
 #item_lists----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #source("item_numbers.R") - can't use source when using markdown
-#manual copy paste from "item_numbers.R" file - 17th May 2023
+#manual copy paste from "item_numbers.R" file - 23rd  May 2023
+##Individual item numbers JAC 2023
+
+#NB new item numbers for 2023 have 5 digits
+
+
 ##Individual item numbers JAC 2023
 
 #NB new item numbers for 2023 have 5 digits
@@ -71,6 +76,17 @@ winter_oats <- "item17"
 spring_oats <- "item20"
 winter_rape <- "item19"
 spring_rape <-  "item23"
+triticale <- "item15"
+linseed <- "item21"
+
+#Grains- SAF only
+rye <- "item3156"
+mixed_grain <- "item22"
+
+#protein crops - SAF only
+beans_combining <- "item27"
+peas_combining <- "item28"
+lupins <- "item2034"
 
 #Cereals and oilseed - census form
 all_barley <- "item27710"
@@ -100,7 +116,7 @@ fbeet_sf <- "item32"
 kale_cab_sf <- "item30"
 
 #Stockfeed - census form
-#All stockfeed: turnips, swedes, kale, rape, maize, fodder beet, silage crops
+#All stockfeed – turnips, swedes, kale, rape, maize, fodder beet, silage crops
 all_stockfeed <- "item27725"
 
 #Veg for human consumption - SAF only
@@ -120,14 +136,14 @@ cauli_broc <- "item61"
 carrots <- "item63"
 lettuce <- "item64"
 rhubarb <- "item65"
-#Other vegetables :area of individual crops which are too small to be sown separately
+#Other vegetables – area of individual crops which are too small to be sown separately
 other_veg <- "item66"
 #Total vegetables
 all_veg_saf <- "item68"
 
 
 #veg- census form
-#All vegetables : e.g. peas, beans, leeks, turnips, carrots, lettuce etc.
+#All vegetables – e.g. peas, beans, leeks, turnips, carrots, lettuce etc.
 all_veg_open <- "item27730"
 all_veg_open_21 <- "item35"
 
@@ -142,24 +158,24 @@ all_fruit_saf <- "item76"
 soft_fruits <- "item37"
 
 #fruit - census form
-#All fruit : strawberries, raspberries, blackcurrant, blueberries, orchard etc.
+#All fruit – strawberries, raspberries, blackcurrant, blueberries, orchard etc.
 all_fruit <- "item27735"
 
 #flowers, bulbs and nursery stock grown in the open- SAF only
-
 #Bulbs/flowers grown for the production of dry bulbs and/or cut flowers in the open
 all_flow_bulb_SAF <- "item2324"
 #Bedding and pot plants grown in the open
 bed_pot_plant <- "item1709"
-#Fruit stocks: spawn beds, runner beds, stool beds and young plants intended for sale
+#Fruit stocks – spawn beds, runner beds, stool beds and young plants intended for sale
 fruit_stocks <- "item80"
 #Roses and rose stocks
 roses_stocks <- "item81"
 shrubs <- "item1710"
 #Ornamental trees (not forest trees)
 orn_trees <- "item82"
-#Other nursery stock : herbaceous plants, alpines, etc. (not forest trees)
+#Other nursery stock – herbaceous plants, alpines, etc. (not forest trees)
 other_nurs <- "item83"
+aromatic_plants <-  "item2319"
 
 #flowers, bulbs and nursery stock grown in the open- census form
 #All flowers, bulbs and nursery stocks
@@ -227,18 +243,18 @@ fland_gt5 <- "item2470"
 grass_lt5 <- "item2321"
 #Grass 5 years old and older (not seeded or re-seeded in the last 5 years)
 grass_gte5 <- "item2322"
-#Rough grazings: mountain, hill, moor, deer forest situated within the farming unit, enclosed or not. Do not include woods, roads, share in common grazings or land taken seasonally
+#Rough grazings – mountain, hill, moor, deer forest situated within the farming unit, enclosed or not. Do not include woods, roads, share in common grazings or land taken seasonally
 rough_graze <- "item47"
-#Woodland:  total area (ha.) of woodland (other than orchards) on the location, including woodland used for commercial or amenity purposes and forest trees
+#Woodland – total area (ha.) of woodland (other than orchards) on the location, including woodland used for commercial or amenity purposes and forest trees
 woodland <- "item48"
-#Other land: roads, yards, buildings (excluding glasshouses), ponds, derelict land, etc.
+#Other land – roads, yards, buildings (excluding glasshouses), ponds, derelict land, etc.
 other_land <- "item49"
 
 #Total Area of Crops and Grass-SAF
 total_crops_grass <- "item46"
 
 #Total LAND 
-#TOTAL LAND from Section 3  should equal Total Area Section 1 box 3 (item12)
+#TOTAL LAND from Section 3 – should equal Total Area Section 1 box 3 (item12)
 total_land <-  "item50"
 
 #Section 4---------------------------------------------------------------------
@@ -278,7 +294,7 @@ other_lt20_pig <- "item156"
 
 #Section 5---------------------------------------------------------------------
 #Sheep
-#Ewes that were used for breeding in 2023: number still on farm at 1 June 20xx
+#Ewes that were used for breeding in 2023 – number still on farm at 1 June 20xx
 ewes <- "item139"
 #Rams to be used/expected to be used for service 
 rams <- "item140"
@@ -325,7 +341,7 @@ llamas <- "item2473"
 other_camelids <- "item2474"
 #Hives containing a colony of live honey bees, whether owned by you or not
 hives <- "item2826"
-#Other farm livestock not previously mentioned: do not include cattle/buffalo here
+#Other farm livestock not previously mentioned – do not include cattle/buffalo here
 other_livestock <- "item171"
 #Specify type of livestock entered in box 9 (item171) above (please PRINT here)	
 other_livestock_txt <- "item186"
@@ -357,9 +373,9 @@ legal_fin_resp <- "item2980"
 #Occupier 1 details - legal responsibility is assumed
 occupier1_male <-"item2877"
 occupier1_female <- "item2878"
-#Year of birth: enter format YYYY
+#Year of birth – enter format ‘YYYY’
 occupier1_year <- "item27785"
-#Occupier 1: proportion of time spent working on this location:
+#Occupier 1 – proportion of time spent working on this location:
 #full-time
 occupier1_ft <- "item177"
 #Part-time: half-time or more
@@ -369,13 +385,13 @@ occupier1_pt_lthalf <- "item179"
 #no farm work on this location
 occupier1_no_work <- "item2566"
 
-#Occupier 2 details - Occupier 2:  can include formalised relationships (married couples and civil partnerships), cohabiting couples and close family relationships (father, mother, daughter, son and sibling)
+#Occupier 2 details - Occupier 2 – can include formalised relationships (married couples and civil partnerships), cohabiting couples and close family relationships (father, mother, daughter, son and sibling)
 occupier2_male <-"item3056"
 occupier2_female <- "item3057"
 occupier2_legal_fin <- "item27805"
-#Year of birth: enter format YYYY
+#Year of birth – enter format ‘YYYY’
 occupier2_year <- "item27795"
-#Occupier 2: proportion of time spent working on this location:
+#Occupier 2 – proportion of time spent working on this location:
 #full-time
 occupier2_ft <- "item182"
 #Part-time: half-time or more
@@ -390,7 +406,7 @@ occupier2_no_work <- "item2567"
 other_legal_return_21 <- "item2726"
 # spouse_male <-"item3056"
 # spouse_female <- "item3057"
-# #spouse: proportion of time spent working on this location:
+# #spouse– proportion of time spent working on this location:
 # #full-time
 # spouse_ft <- "item182"
 # #Part-time: half-time or more
@@ -484,13 +500,16 @@ all_JAC_form<- left_join(JAC_form, croft, by = c("parish", "holding")) %>%
 #NOTE: a value of 1 in the "err(x)" column = holding data has failed logic of validation test. A value of 0 means data for that holding are fine.
 
 # Section 1 Area of holding--------------------
-#err1 = err2 in SAS = match (1740)
+#err1 = err2 in SAS = match (1740) (now 1262 with 3ha margin of error added to code!)
 
-#Total area not equal to area rent + area own
-all_JAC_form$err1 <- ifelse(round(all_JAC_form[total_area], digits = 2) != round(all_JAC_form[area_own]+all_JAC_form[area_rent_21], digits = 2),  1, 0)
+#Total area not equal to area rent + area own (3 ha margin)
+all_JAC_form$err1 <- ifelse(abs(round(all_JAC_form[total_area], digits = 2) - round(all_JAC_form[area_own]+all_JAC_form[area_rent_21], digits = 2)) > 3,  1, 0)
+all_JAC_form$err1_diff <-  round(rowSums((all_JAC_form[area_own] + all_JAC_form[area_rent_21])- all_JAC_form[total_area]), digits = 2)
+all_JAC_form$err1_diff <- abs(all_JAC_form$err1_diff)
 
 #Total area is zero but area own or area rented >0
 all_JAC_form$err37 <- ifelse((all_JAC_form[total_area] == 0 |  is.na(all_JAC_form[total_area])) & (all_JAC_form[area_own]| all_JAC_form[area_rent_21] > 0), 1, 0)
+
 
 #Total area is zero and area owned and area rented =0
 all_JAC_form$err38 <- ifelse((all_JAC_form[total_area] == 0 |  is.na(all_JAC_form[total_area])) & 
@@ -507,8 +526,14 @@ all_JAC_form$err2 <- ifelse(round(all_JAC_form[seas_total_area_in], digits = 2) 
 
 #err3 = err11 in SAS = match (20)
 #new seasonal rent + same location seasonal rent = total seasonal rent area
-all_JAC_form$err3 <- ifelse(round(all_JAC_form[seas_rent_diff_in] + all_JAC_form[seas_rent_same_in], digits = 2) != round(all_JAC_form[seas_total_area_in], digits = 2)
-                            & all_JAC_form$land_data != "both",  1, 0)
+all_JAC_form$err3 <- ifelse(!is.na(all_JAC_form[seas_total_area_in]), ifelse((round(all_JAC_form[seas_rent_diff_in] + all_JAC_form[seas_rent_same_in], digits = 2) != round(all_JAC_form[seas_total_area_in], digits = 2))
+                            & all_JAC_form$land_data != "both",  1, 0), 0)
+
+all_JAC_form$err3_diff <- round(rowSums(all_JAC_form[seas_total_area_in] - (all_JAC_form[seas_rent_diff_in] + all_JAC_form[seas_rent_same_in])), digits = 2)
+
+#err43 Land seasonally rented out not greater than total area
+all_JAC_form$err43 <- ifelse(round(all_JAC_form[seas_area_rent_out], digits = 2) - round(all_JAC_form[total_area], digits = 2) >3,  1, 0)
+all_JAC_form$err43_diff <- round(rowSums(all_JAC_form[seas_area_rent_out] - all_JAC_form[total_area]), digits = 2)
 
 
 # Section 3 Land Use --------------------------
@@ -517,34 +542,60 @@ all_JAC_form$err3 <- ifelse(round(all_JAC_form[seas_rent_diff_in] + all_JAC_form
 
 #name of other crop given if area > 100 ha
 #err4 = err13 in SAS
-all_JAC_form$err4 <-  ifelse(all_JAC_form[other_crops] > 100 & is.na(all_JAC_form[other_crops_text]),  1, 0)
+all_JAC_form$err4 <-  ifelse(all_JAC_form[other_crops] > 100 && (is.na(all_JAC_form[other_crops_text])| all_JAC_form[other_crops_text] ==""),  1, 0)
 
+#Other crop specified but area not given  
+all_JAC_form$err44 <-  ifelse((!is.na(all_JAC_form[other_crops_text]) | !all_JAC_form[other_crops_text] =="") && all_JAC_form[other_crops]<0,  1, 0)
 
 #grassland-------------------------------------------------------------------------------------------------------------------------------------------------
-#err5 = err15 in SAS = no match (1065 vs 1066 in SAS)
+#total area of crops and grassland, rough grazing, woodland and other land is not equal to total land
+#err5 = err15 in SAS = no match (1065 vs 1066 in SAS - now added 3 ha threshold - 420)
+
+
 total7 <- c(total_crops_grass, rough_graze, woodland, other_land)
 all_JAC_form$total7 <- rowSums(all_JAC_form[total7], na.rm =TRUE)
 
 all_JAC_form$err5 <-  
-  ifelse(all_JAC_form$land_data == "ags", ifelse(round(all_JAC_form[total_land], digits = 2) != round(all_JAC_form$total7, digits = 2), 1, 0), 0)
+  ifelse(all_JAC_form$land_data == "ags", ifelse(abs(round(all_JAC_form[total_land], digits = 2) - round(all_JAC_form$total7, digits = 2))>3, 1, 0), 0)
+all_JAC_form$err5_diff <- round(rowSums(all_JAC_form[total_land]- all_JAC_form$total7), digits=2)
+all_JAC_form$err5_diff <- abs(all_JAC_form$err5_diff)
 
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 #Vegetables
 total2 <- c(peas, beans,leeks, turn_swed, cab_sav, brussel, calabrese, cauli_broc, carrots,lettuce, rhubarb, other_veg) 
 all_JAC_form$total2 <- rowSums(all_JAC_form[total2], na.rm =TRUE)
+
 #err6 = err18 in SAS
+# sum of itemised veg for human consumption not equal to all veg (SAF)
 #all_JAC_form$err6 <-  ifelse(round(all_JAC_form[all_veg_saf], digits = 2) != round(all_JAC_form$total2, digits = 2), 1, 0)
+#all_JAC_form$err6_diff <- round(rowSums(all_JAC_form[all_veg_saf]- all_JAC_form$total2), digits=2)
+#all_JAC_form$err6_diff <- abs(all_JAC_form$err6_diff)
+
 #err7 = err19 in SAS
-all_JAC_form$err7 <-  ifelse(round(all_JAC_form[all_veg_saf], digits = 2) != round(all_JAC_form[all_veg_open_21], digits = 2), 1, 0)
+#all veg from SAF not equal to all veg (census form)
+all_JAC_form$err7 <-  ifelse(!is.na(all_JAC_form[all_veg_saf]) & !is.na(all_JAC_form[all_veg_open_21]), ifelse(round(all_JAC_form[all_veg_saf], digits = 2) != 
+                                                                                                                round(all_JAC_form[all_veg_open_21], digits = 2), 1, 0), 0)
+all_JAC_form$err7_diff <- round(rowSums(all_JAC_form[all_veg_saf] - all_JAC_form[all_veg_open_21]), digits = 2)
+all_JAC_form$err7_diff <- abs(all_JAC_form$err7_diff)
 
 #Soft fruit
 total3 <- c(strawberries, raspberries, blackcurrants, blueberries, mixed_soft_fruit)
 all_JAC_form$total3 <- rowSums(all_JAC_form[total3], na.rm =TRUE)
+
 #err8 = err20 in SAS
+# sum of itemised soft fruit not equal to all soft fruit (SAF)
 #all_JAC_form$err8 <-  ifelse(round(all_JAC_form[all_fruit_saf], digits = 2) != round(all_JAC_form$total3, digits = 2), 1, 0)
+#all_JAC_form$err8_diff <- round(rowSums(all_JAC_form[all_fruit_saf]- all_JAC_form$total3), digits=2)
+#all_JAC_form$err8_diff <- abs(all_JAC_form$err8_diff)
+
+
 #err9 = err21 in SAS
-all_JAC_form$err9 <-  ifelse(round(all_JAC_form[soft_fruits], digits = 2) != round(all_JAC_form[all_fruit_saf], digits = 2), 1, 0)
+#all soft fruit from SAF not equal to all soft fruit (census form)
+all_JAC_form$err9 <-  ifelse(!is.na(all_JAC_form[soft_fruits]) & !is.na(all_JAC_form[all_fruit_saf]), ifelse(round(all_JAC_form[soft_fruits], digits = 2) !=
+                                                                                                               round(all_JAC_form[all_fruit_saf], digits = 2), 1, 0), 0)
+all_JAC_form$err9_diff <- round(rowSums(all_JAC_form[soft_fruits] - all_JAC_form[all_fruit_saf]), digits = 2)
+all_JAC_form$err9_diff <- abs(all_JAC_form$err9_diff)
 
 #Flowers, bulbs and nursery stock grown in the open
 
@@ -552,11 +603,18 @@ total4 <- c(all_flow_bulb_SAF, bed_pot_plant, fruit_stocks, roses_stocks, orn_tr
 all_JAC_form$total4 <- rowSums(all_JAC_form[total4], na.rm =TRUE)
 
 #err10 = err22 in SAS
-#all_JAC_form$err10 <-  ifelse(round(all_JAC_form[all_flow_bulb_21], digits = 2) != round(all_JAC_form$total4, digits = 2), 1, 0)
+#sum of itemised flowers bulbs and nursery stock in the open not equal to summary total 
+all_JAC_form$err10 <-  ifelse(!is.na(all_JAC_form[all_flow_bulb_21]) & !is.na(all_JAC_form$total4), ifelse(round(all_JAC_form[all_flow_bulb_21], digits = 2) != 
+                                                                                                             round(all_JAC_form$total4, digits = 2), 1, 0), 0)
+all_JAC_form$err10_diff <- round(rowSums(all_JAC_form[all_flow_bulb_21] - all_JAC_form$total4), digits = 2)
+all_JAC_form$err10_diff <- abs(all_JAC_form$err10_diff)
+
+
 
 #glasshouses
 
 #err11 = err23 in SAS = no match (23 vs 25 in SAS)
+#area of itemised glasshouse crops larger than area of glasshouse (total)
 total5 <- c(glass_tom_open, glass_other_fruit_open, glass_veg_open, glass_bed_pot_plant_open, 
             glass_nurs_stock_open, glass_strawb_open, glass_rasp_open, glass_blue_open, glass_black_open, glass_unused_open)
 total6 <- c(glass_tom_solid, glass_other_fruit_solid, glass_veg_solid, glass_bed_pot_plant_solid,
@@ -566,13 +624,25 @@ all_JAC_form$total5 <- rowSums(all_JAC_form[total5], na.rm =TRUE)
 
 all_JAC_form$total6 <- rowSums(all_JAC_form[total6], na.rm =TRUE)
 
+
 all_JAC_form$err11<-  
   ifelse(all_JAC_form$survtype == "Non-SAF", ifelse((round(all_JAC_form$total5, digits = 2) != round(all_JAC_form[tot_open_plastic], digits = 2))| 
                                                       (round(all_JAC_form$total6, digits = 2) != round(all_JAC_form[tot_solid_glass], digits = 2)),  1, 0), 0)
 
-#err12 = err24 in SAS = match (15)
-all_JAC_form$err12 <- ifelse(all_JAC_form[tot_open_plastic]+all_JAC_form[tot_solid_glass]>0 & (all_JAC_form$total5 + all_JAC_form$total6)<=0, 1, 0 )
+all_JAC_form$err11open_diff <- round(rowSums(all_JAC_form[tot_open_plastic] - all_JAC_form$total5), digits = 2)
+all_JAC_form$err11open_diff <- abs(all_JAC_form$err11open_diff)
+  
+all_JAC_form$err11solid_diff <- round(rowSums(all_JAC_form[tot_solid_glass] - all_JAC_form$total6), digits = 2)
+all_JAC_form$err11solid_diff <- abs(all_JAC_form$err11solid_diff)
 
+  
+#err12 = err24 in SAS = match (15)
+#glasshouse totals non zero but sum of individual items less than or equal to zero
+all_JAC_form$err12 <- ifelse(!is.na(all_JAC_form[tot_open_plastic]) & !is.na(all_JAC_form[tot_solid_glass]) & !is.na(all_JAC_form$total5) & !is.na(all_JAC_form$total6), 
+                             ifelse(all_JAC_form[tot_open_plastic]+all_JAC_form[tot_solid_glass]>0 & (all_JAC_form$total5 + all_JAC_form$total6)<=0, 1, 0), 0)
+                             
+                             
+all_JAC_form$err12_diff <- round(rowSums((all_JAC_form[tot_open_plastic] + all_JAC_form[tot_solid_glass]) - (all_JAC_form$total5 + all_JAC_form$total6)), digits = 2)
 
 
 #2023 version - not itemised, using summary values. If SAF data use above code 
@@ -580,14 +650,59 @@ all_JAC_form$err12 <- ifelse(all_JAC_form[tot_open_plastic]+all_JAC_form[tot_sol
 #total6b <- c(all_glass_solid, glass_unused_solid)
 #all_JAC_form$total5b <- rowSums(all_JAC_form[total5b], na.rm =TRUE)
 #all_JAC_form$total6b <- rowSums(all_JAC_form[total6b], na.rm =TRUE)
+
 # all_JAC_form$err11<-  
 #   ifelse((round(all_JAC_form$total5b, digits = 2) != round(all_JAC_form[tot_open_plastic], digits = 2))| 
 #                                                       (round(all_JAC_form$total6b, digits = 2) != round(all_JAC_form[tot_solid_glass], digits = 2)),  1, 0)
 
-#all_JAC_form$err12 <- ifelse(all_JAC_form[tot_open_plastic]+all_JAC_form[tot_solid_glass]>0 & (all_JAC_form$total5b + all_JAC_form$total6b)<=0, 1, 0 )
+
+# all_JAC_form$err11open_diff <- round(rowSums(all_JAC_form[tot_open_plastic] - all_JAC_form$total5b), digits = 2)
+# all_JAC_form$err11open_diff <- abs(all_JAC_form$err11open_diff)
+# 
+# all_JAC_form$err11solid_diff <- round(rowSums(all_JAC_form[tot_solid_glass] - all_JAC_form$total6b), digits = 2)
+# all_JAC_form$err11solid_diff <- abs(all_JAC_form$err11solid_diff)
+
+# all_JAC_form$err12 <- ifelse(!is.na(all_JAC_form[tot_open_plastic]) & !is.na(all_JAC_form[tot_solid_glass]) & !is.na(all_JAC_form$total5b) & !is.na(all_JAC_form$total6b), 
+#                              ifelse(all_JAC_form[tot_open_plastic]+all_JAC_form[tot_solid_glass]>0 & (all_JAC_form$total5b + all_JAC_form$total6b)<=0, 1, 0), 0)
+# 
+# 
+# all_JAC_form$err12_diff <- round(rowSums((all_JAC_form[tot_open_plastic] + all_JAC_form[tot_solid_glass]) - (all_JAC_form$total5b + all_JAC_form$total6b)), digits = 2)
+# 
 
 
 
+#Total land use area does not equal the sum of the outdoor areas and glasshouses (3ha margin of error)
+
+total13 <- c(wheat, winter_barley, spring_barley, winter_oats, spring_oats, winter_rape, spring_rape, triticale, mixed_grain, rye,
+             linseed, peas_combining, beans_combining, seed_potatoes, ware_potatoes, lupins, turn_swed_sf, kale_cab_sf, rape_sf,
+             maize, fbeet_sf, other_sf, peas, beans, leeks, cab_sav, brussel, calabrese, cauli_broc, turn_swed, carrots, lettuce, rhubarb,
+             other_veg, orchard_fruit, strawberries, raspberries, blackcurrants, blueberries, mixed_soft_fruit, bed_pot_plant, all_flow_bulb_SAF, 
+             fruit_stocks, roses_stocks, shrubs, orn_trees, aromatic_plants, other_nurs, tot_open_plastic, tot_solid_glass, other_crops, fland_lte5, fland_gt5, grass_lt5, grass_gte5,
+             rough_graze, woodland, other_land)
+
+#for 2023 onwards- census form using summary values w/out SAF returns (may need to do ifelse survtype == Non-SAF?)
+# total13b <- c(wheat, all_barley, all_oats, all_rape, seed_potatoes, ware_potatoes, all_stockfeed, all_veg_open, all_fruit, all_flow_bulb,  
+#                          tot_open_plastic, tot_solid_glass, other_crops, fland_lte5, fland_gt5, grass_lt5, grass_gte5,
+#                          rough_graze, woodland, other_land)
+
+
+all_JAC_form$total13 <- rowSums(all_JAC_form %>% ungroup %>%  select(any_of(total13)), na.rm =TRUE)
+#all_JAC_form$total13 <- rowSums(all_JAC_form %>% ungroup %>%  select(any_of(total13b)), na.rm =TRUE)
+
+#(may need to do ifelse survtype == Non-SAF? (or SAF))
+all_JAC_form$err45 <- ifelse(!is.na(all_JAC_form[total_land]), ifelse(abs(all_JAC_form[total_land] - all_JAC_form$total13)>3, 1, 0), 0)
+all_JAC_form$err45_diff <- round(rowSums(all_JAC_form[total_land] - all_JAC_form$total13), digits = 2)
+#all_JAC_form$err45_diff <- round(rowSums(all_JAC_form[total_land] - all_JAC_form$total13b), digits = 2)
+all_JAC_form$err45_diff <- abs(all_JAC_form$err45_diff)
+
+
+#Total at end of land use section equal to total area 
+#item50 not collected on SAF (partial) census forms- use for up to 2021
+all_JAC_form$err46 <- ifelse(!is.na(all_JAC_form[total_land]) & !is.na(all_JAC_form[total_area]), ifelse(all_JAC_form$survtype != "SAF" & abs(all_JAC_form[total_land] - all_JAC_form[total_area])>3, 1, 0), 0)
+all_JAC_form$err46_diff <- round(rowSums(all_JAC_form[total_land] - all_JAC_form[total_area]), digits = 2)
+all_JAC_form$err46_diff <- abs(all_JAC_form$err46_diff)
+
+#all_JAC_form$err46 <- ifelse(all_JAC_form[total_land] != all_JAC_form[total_area], 1, 0)
 
 # Section 4 Pigs--------------------
 
@@ -596,8 +711,14 @@ all_JAC_form$err12 <- ifelse(all_JAC_form[tot_open_plastic]+all_JAC_form[tot_sol
 total10_21 <- c(sows_pig, gilts_pig, other_sows_pig, barren_sows_pig, gilts_50_pig, boars_pig, other_110_pig, other_80_110_pig, other_50_80_pig, other_20_50_pig, other_lt20_pig)
 
 all_JAC_form$total10 <-rowSums(all_JAC_form[total10_21], na.rm =TRUE)
+
+#Total pigs is not equal to sum of individual pig items
 #err13 = err25 in SAS
 all_JAC_form$err13 <-  ifelse(round(all_JAC_form$total10, digits = 1) != round(all_JAC_form[total_pig], digits = 1), 1, 0)
+all_JAC_form$err13_diff <- round(rowSums(all_JAC_form[total_pig] - all_JAC_form$total10), digits = 2)
+all_JAC_form$err13_diff <- abs(all_JAC_form$err13_diff)
+
+#Pigs not given as whole numbers
 #err14 = err26 in SAS
 all_JAC_form$err14 <-  ifelse(round(all_JAC_form[sows_pig], digits = 1) != all_JAC_form[sows_pig]|
                                 round(all_JAC_form[gilts_pig], digits = 1) != all_JAC_form[gilts_pig]|
@@ -626,8 +747,14 @@ all_JAC_form$err14 <-  ifelse(round(all_JAC_form[sows_pig], digits = 1) != all_J
 
 total9 <- c(ewes, rams, breed_other_sheep, no_breed_other_sheep, lambs)
 all_JAC_form$total9 <- rowSums(all_JAC_form[total9], na.rm =TRUE)
+
+#Total sheep not equal to sum of individual sheep items
 #err15 = err30 in SAS
 all_JAC_form$err15 <-  ifelse(round(all_JAC_form$total9, digits = 1) != round(all_JAC_form[total_sheep], digits = 1), 1, 0)
+all_JAC_form$err15_diff <- round(rowSums(all_JAC_form[total_sheep] - all_JAC_form$total9), digits = 2)
+all_JAC_form$err15_diff <- abs(all_JAC_form$err15_diff)
+
+#Sheep not given as whole numbers
 #err16 = err31 in SAS
 all_JAC_form$err16 <-  ifelse(round(all_JAC_form[ewes], digits = 1) != all_JAC_form[ewes]|
                                 round(all_JAC_form[rams], digits = 1) != all_JAC_form[rams]|
@@ -641,8 +768,14 @@ all_JAC_form$err16 <-  ifelse(round(all_JAC_form[ewes], digits = 1) != all_JAC_f
 total11 <- c(first_hens, moulted_hens, pullets, layer_chicks, table_chicks, cocks, broilers, turkeys, ducks, geese, other_poultry)
 all_JAC_form[total11] <- all_JAC_form[total11] %>% mutate(across(where(is.numeric), ~  ifelse(is.na(.), 0, .)))
 all_JAC_form$total11 <- rowSums(all_JAC_form[total11], na.rm =TRUE)
+
+#Total poultry not equal to sum of individual poultry items
 #err17 = err27 in SAS = match (1)
 all_JAC_form$err17 <- ifelse(round(all_JAC_form$total11, digits = 1) != round(all_JAC_form[total_poultry], digits = 1), 1, 0)
+all_JAC_form$err17_diff <- round(rowSums(all_JAC_form[total_poultry] - all_JAC_form$total11), digits = 2)
+all_JAC_form$err17_diff <- abs(all_JAC_form$err17_diff)
+
+#Poultry not given as whole numbers
 #err18 = err28 in SAS 
 all_JAC_form$err18 <- ifelse(round(all_JAC_form[first_hens], digits = 1) != all_JAC_form[first_hens]|
                                round(all_JAC_form[moulted_hens], digits = 1) != all_JAC_form[moulted_hens]|
@@ -656,33 +789,48 @@ all_JAC_form$err18 <- ifelse(round(all_JAC_form[first_hens], digits = 1) != all_
                                round(all_JAC_form[geese], digits = 1) != all_JAC_form[geese]|
                                round(all_JAC_form[other_poultry], digits = 1) != all_JAC_form[other_poultry]|
                                round(all_JAC_form[total_poultry], digits = 1) != all_JAC_form[total_poultry], 1, 0)
+
+
+#Egg producing fowl = 0, cocks greater than 9 
 #err19 = err29 in SAS = match (2)
 all_JAC_form$err19 <- ifelse(round((all_JAC_form[first_hens] + all_JAC_form[moulted_hens] + all_JAC_form[pullets] + all_JAC_form[layer_chicks] +
                                      all_JAC_form[table_chicks] + all_JAC_form[broilers]), digits = 1) == 0 & round(all_JAC_form[cocks], digits = 1) > 9, 1, 0)
 
 
 #Section 7 Miscellaneous Livestock--------------------
+
+#Not all deer given as whole numbers
 #err20 = err32 in SAS
 all_JAC_form$err20 <- ifelse(round(all_JAC_form[deer], digits = 1) != all_JAC_form[deer], 1, 0)
+
+#Not all camelids given as whole numbers
 #err21 = err35 in SAS
 all_JAC_form$err21 <- ifelse(round(all_JAC_form[alpacas], digits = 1) != all_JAC_form[alpacas]|
                                round(all_JAC_form[llamas], digits = 1) != all_JAC_form[llamas]|
                                round(all_JAC_form[other_camelids], digits = 1) != all_JAC_form[other_camelids], 1, 0)
+
+#Not all beehives given as whole numbers
 #err22 = err36 in SAS
 all_JAC_form$err22 <- ifelse(round(all_JAC_form[hives], digits = 1) != all_JAC_form[hives], 1, 0)
 
+#Not all other livestock given as whole numbers
 #err23 = err37 in SAS
 all_JAC_form$err23 <- ifelse(round(all_JAC_form[other_livestock], digits = 1) != all_JAC_form[other_livestock], 1, 0)
 
+#Other livestock is non-zero but no name is given
 #err24 = err38 in SAS
-all_JAC_form$err24 <- ifelse(all_JAC_form[other_livestock]>0 & is.na(all_JAC_form[other_livestock_txt]), 1, 0)
+all_JAC_form$err24 <-  ifelse(all_JAC_form[other_livestock] > 0 && (is.na(all_JAC_form[other_livestock_txt])| all_JAC_form[other_livestock_text] ==""),  1, 0)
+
+#Other livestock specified but number not given  
+all_JAC_form$err47 <-  ifelse((!is.na(all_JAC_form[other_livestock]) | !all_JAC_form[other_livestock] =="") && all_JAC_form[other_livestock]<0,  1, 0)
 
 #items for and up to 2021 - not for 2023 (if running for 2023 and beyond comment this section out)-----------------------------------------------------------
+#Not all horses given as whole numbers
 #err25 = err33 in SAS
 all_JAC_form$err25 <- ifelse(round(all_JAC_form[agri_horses], digits = 1) != all_JAC_form[agri_horses]|
                                round(all_JAC_form[other_horse_pony], digits = 1) != all_JAC_form[other_horse_pony]|
                                round(all_JAC_form[donkeys], digits = 1) != all_JAC_form[donkeys], 1, 0)
-
+#Not all goats given as whole numbers
 #err26 = err34 in SAS
 all_JAC_form$err26 <- ifelse(round(all_JAC_form[female_goat_kids], digits = 1) != all_JAC_form[female_goat_kids]|
                                round(all_JAC_form[other_female_goat], digits = 1) != all_JAC_form[other_female_goat]|
@@ -701,15 +849,45 @@ all_JAC_form$err26 <- ifelse(round(all_JAC_form[female_goat_kids], digits = 1) !
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 #Section 8 Legal Responsbility
 
+#Other legal return box is ticked (labour details provided on another form) and Occupier 1 or occupier 2 work hours provided
 #err29 = err39 in SAS
-#item2726 doesn't exist?
+#item2726 is removed in B10
+#2021
 # all_JAC_form$err29 <- ifelse(all_JAC_form[other_legal_return_21] ==1 & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
 #                                                                         all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] +
 #                                                                           all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
 #                                                                           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]) >0, 1, 0)
+#2023 onwards
+# all_JAC_form$err29 <- ifelse(all_JAC_form[other_legal_return] ==1 & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
+#                                                                         all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] +
+#                                                                           all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+#                                                                           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]) >0, 1, 0)
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# #Labour details NOT provided on another form this year & no Occupier 1 or occupier 2 work hours provided
+# all_JAC_form$err52 <- ifelse(all_JAC_form[other_legal_return_21] ==0 & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
+#                                                                           all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+#                                                                           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]) <0, 1, 0)
+# #2023 onwards
+# all_JAC_form$err52 <- ifelse(all_JAC_form[other_legal_return] ==0 & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
+#                                                                           all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+#                                                                           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]) <0, 1, 0)
+
+
+#Legal and financial responsbility not indicated for Occupier 2 (when any Occupier 2 details have been provided for Occupier 2)
+# all_JAC_form$err53 <- ifelse((all_JAC_form[occupier2_legal_fin] == 0 | all_JAC_form[occupier2_legal_fin] == "" | is.na(all_JAC_form[occupier2_legal_fin])) & (all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+#                                all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work])>0, 1,0)
+
+
+#Legal and financial responsbility indicated for Occupier 2 but no working time answered
+# all_JAC_form$err54 <- ifelse(all_JAC_form[occupier2_legal_fin]> 0& (all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+#                                all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work])<=0, 1,0)
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------
 #Section 9 Occupiers
+
+#More than one working time option provided for occuppier 1
 #err30 = err40 in SAS = no match (143 vs 136 in SAS)
 
 all_JAC_form$err30 <- ifelse(all_JAC_form[occupier1_ft] >=1 & all_JAC_form[occupier1_pt_gthalf] >=1|
@@ -720,6 +898,7 @@ all_JAC_form$err30 <- ifelse(all_JAC_form[occupier1_ft] >=1 & all_JAC_form[occup
                                #not in SAS code but should be (SAS erroneously repeats occupier1_ft and occupier1 no work)- adds 7 more observations to errors
                                all_JAC_form[occupier1_pt_lthalf] >=1 & all_JAC_form[occupier1_no_work] >=1, 1, 0) 
 
+#More than one working time option provided for occuppier 2
 #err31 = err41 in SAS = no match (28 vs 23 in SAS)
 all_JAC_form$err31 <- ifelse(all_JAC_form[occupier2_ft] >=1 & all_JAC_form[occupier2_pt_gthalf] >=1|
                                all_JAC_form[occupier2_ft] >=1 & all_JAC_form[occupier2_pt_lthalf] >=1|
@@ -729,6 +908,27 @@ all_JAC_form$err31 <- ifelse(all_JAC_form[occupier2_ft] >=1 & all_JAC_form[occup
                                #not in SAS code but should be (SAS erroneously repeats occupier1_ft and occupier1 no work)- adds 5 more observations to errors
                                all_JAC_form[occupier2_pt_lthalf] >=1 & all_JAC_form[occupier2_no_work] >=1, 1, 0) 
 
+
+#both male and female selected for occupier 1 or 2
+all_JAC_form$err48 <- ifelse((all_JAC_form[occupier1_male] >0 & all_JAC_form[occupier1_female]>0) | (all_JAC_form[occupier2_male] >0 & all_JAC_form[occupier2_female]>0), 1, 0 )
+
+#gender selected but no working hours given
+#occupier1
+all_JAC_form$err49 <- ifelse((all_JAC_form[occupier1_male]>0 || all_JAC_form[occupier1_female] >0)  & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
+                                            all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work])<=0, 1, 0)
+#occupier2
+all_JAC_form$err50 <- ifelse((all_JAC_form[occupier2_male]>0 || all_JAC_form[occupier2_female] >0)  & (all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+                                                                                                         all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work])<=0, 1, 0)
+
+#2023 check if valid Year of birth for occupier 1 and 2
+#all_JAC_form$err51 <- ifelse(all_JAC_form[occupier1_year]<1923 | all_JAC_form[occupier1_year]>2008 | all_JAC_form[occupier2_year]<1923 | all_JAC_form[occupier1_year]>2008, 1,0)
+
+
+#Occupier 2 details given but not occupier 1
+all_JAC_form$err55 <-  ifelse((all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] + all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work] + all_JAC_form[occupier2_female] +
+                                all_JAC_form[occupier2_male]>0) & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] + all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + 
+                                                                     all_JAC_form[occupier1_female] + all_JAC_form[occupier1_male] <=0), 1, 0)
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Section 10 Other labour on the location
 total12 <- c(labour_ft_m_bp, labour_ft_m_fam, labour_ft_m_hired, labour_ft_f_bp, labour_ft_f_fam, labour_ft_f_hired, 
@@ -736,10 +936,13 @@ total12 <- c(labour_ft_m_bp, labour_ft_m_fam, labour_ft_m_hired, labour_ft_f_bp,
              labour_cas_m, labour_cas_f)
 
 all_JAC_form$total12 <- rowSums(all_JAC_form[total12], na.rm =TRUE)
-
+#total labour  not equal to sum of individual items
 #err32 = err42 in SAS = match (4)
 all_JAC_form$err32 <- ifelse(round(all_JAC_form[total_labour], digits = 1) != all_JAC_form$total12, 1, 0)
+all_JAC_form$err32_diff <- round(rowSums(all_JAC_form[total_labour] - all_JAC_form$total12), digits = 2)
+all_JAC_form$err32_diff <- abs(all_JAC_form$err32_diff)
 
+#Not all labour given as whole numbers
 #err33 = err43 in SAS
 all_JAC_form$err33 <- ifelse(round(all_JAC_form[labour_ft_m_bp], digits = 1) != all_JAC_form[labour_ft_m_bp]|
                                round(all_JAC_form[labour_ft_m_hired], digits = 1) != all_JAC_form[labour_ft_m_hired]|
@@ -843,20 +1046,23 @@ check_labour$err41 <- ifelse(ifelse(check_labour$brn<0 | is.na(check_labour$brn)
 check_labour$err42 <- ifelse(ifelse(check_labour$brn<0 | is.na(check_labour$brn), abs(check_labour$diff_lab_nobrn) > 30 & check_labour$lab_returned > 3*check_labour$slr_fruit, 0), 1, 0)
 
 #Validation Outputs---------------------------------------------------------------------------------------
+
+new_validations <- c("err37", "err38", "err43", "err44", "err45", "err46", "err47", "err48", "err49", "err50","err55" )
+
 #dataframe of observations (holdings) that have failed any of the validations - are we including NAs as errors? should there be NAs at this stage?
 
-#2949 including NA, remove err37 and err38 (new checks for 2023)
-JAC_validation_errors_NA <- all_JAC_form %>% select(-err37, -err38) %>%  filter(if_any(starts_with("err"), ~ . !=0 | is.na(.))) 
+#2949 including NA, remove new checks for 2023 for QA against SAS
+JAC_validation_errors_NA <- all_JAC_form %>% select(-all_of(new_validations)) %>% select(!ends_with("diff")) %>%  filter(if_any(starts_with("err"), ~ . !=0 | is.na(.))) 
 
-#2774 without NA, remove err37 and err38 (new checks for 2023)
-JAC_validation_errors <- all_JAC_form %>% select(-err37, -err38) %>%  filter(if_any(starts_with("err"), ~ . !=0))
+#2774 without NA, remove new checks for 2023 for QA against SAS
+JAC_validation_errors <- all_JAC_form %>% select(-all_of(new_validations)) %>%  select(!ends_with("diff")) %>%  filter(if_any(starts_with("err"), ~ . !=0))
 
 #dataframe of observations (holdings) that have passed validations
 clean_JAC <- all_JAC_form %>% filter(if_all(starts_with("err"), ~ . ==0 )) %>% select(-matches("err|total"))
 
 #dataframe containing summary totals of errors
 #2838 (SAS) vs 2774 (R) (NAs removed)
-JAC_validation_error_summary <- JAC_validation_errors%>% ungroup() %>%  select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE))
+JAC_validation_error_summary <- JAC_validation_errors%>% ungroup() %>%  select(starts_with("err"))%>% select(!ends_with("diff")) %>% summarize(across(everything(), sum, na.rm = TRUE))
 JAC_validation_error_summary <- cbind(JAC_validation_error_summary, total_cases_with_errors = nrow(JAC_validation_errors))
 rownames(JAC_validation_error_summary) <- "errors"
 JAC_validation_error_summary <- JAC_validation_error_summary %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
@@ -864,7 +1070,7 @@ JAC_validation_error_summary <- JAC_validation_error_summary %>% filter(count !=
 
 
 #2838 (SAS) vs 2949 (R) (NAs included)
-JAC_validation_error_summary_NA <- JAC_validation_errors_NA%>% ungroup() %>%  select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE))
+JAC_validation_error_summary_NA <- JAC_validation_errors_NA%>% ungroup() %>%  select(starts_with("err")) %>% select(!ends_with("diff")) %>% summarize(across(everything(), sum, na.rm = TRUE))
 JAC_validation_error_summary_NA <- cbind(JAC_validation_error_summary_NA, total_cases_with_errors = nrow(JAC_validation_errors_NA))
 rownames(JAC_validation_error_summary_NA) <- "errors"
 JAC_validation_error_summary_NA <- JAC_validation_error_summary_NA %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
@@ -901,12 +1107,23 @@ SAS_R_comparison <- SAS_R_comparison %>% mutate(difference =SAS_error_count - co
 SAS_R_NAcomparison <- cbind(JAC_validation_error_summary_NA, SAS_errors)
 SAS_R_NAcomparison <- SAS_R_NAcomparison %>% mutate(difference =SAS_error_count - count)
 
+#new validations summary
+
+#dataframe of observations (holdings) that have failed any of the new validations - 
+JAC_new_validation_errors <- all_JAC_form %>% select(all_of(new_validations)) %>%  filter(if_any(starts_with("err"), ~ . !=0))
+JAC_new_validation_error_summary <- JAC_new_validation_errors%>% ungroup() %>%  select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE))
+JAC_new_validation_error_summary <- cbind(JAC_new_validation_error_summary, total_cases_with_errors = nrow(JAC_new_validation_errors))
+rownames(JAC_new_validation_error_summary) <- "errors"
+JAC_new_validation_error_summary <- JAC_new_validation_error_summary %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
+JAC_new_validation_error_summary <- JAC_new_validation_error_summary %>% filter(count !=0)
+
+
 
 #R Markdown tables
 ##----err 1----------------------------------------------------------------------------------------------
 ##@knitr err1
 
-err1 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(area_own, area_rent_21, total_area)), err1)     
+err1 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(area_own, area_rent_21, total_area)), err1, err1_diff)     
 err1 <-err1 %>%  mutate(error=ifelse(err1== 1 | is.na(err1), "Error", "No Error")) %>% filter(error == "Error")
 
 err37 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(area_own, area_rent_21, total_area)), err37)     
@@ -925,8 +1142,15 @@ err2 <-err2 %>%  mutate(error=ifelse(err2== 1 | is.na(err2), "Error", "No Error"
 ##----err 3----------------------------------------------------------------------------------------------
 ##@knitr err3
 
-err3 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(seas_total_area_in, seas_rent_diff_in, seas_rent_same_in)), err3)     
-err3 <-err3 %>%  mutate(error=ifelse(err3== 1 | is.na(err3), "Error", "No Error"))%>% filter(error == "Error")
+err3 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(seas_total_area_in, seas_rent_diff_in, seas_rent_same_in)), err3, err3_diff)     
+err3 <- err3 %>%  mutate(error=ifelse(err3== 1 | is.na(err3), "Error", "No Error")) %>% filter(error == "Error")
+
+##----err 43----------------------------------------------------------------------------------------------
+##@knitr err43
+
+err43 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(seas_area_rent_out, total_area)), err43, err43_diff)     
+err43 <-err43 %>%  mutate(error=ifelse(err43== 1 | is.na(err43), "Error", "No Error"))%>% filter(error == "Error")
+
 
 
 ##----err 4----------------------------------------------------------------------------------------------
@@ -935,11 +1159,16 @@ err3 <-err3 %>%  mutate(error=ifelse(err3== 1 | is.na(err3), "Error", "No Error"
 err4 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(other_crops, other_crops_text)), err4)     
 err4 <-err4 %>%  mutate(error=ifelse(err4== 1 | is.na(err4), "Error", "No Error"))%>% filter(error == "Error")
 
+##----err 44----------------------------------------------------------------------------------------------
+##@knitr err44
+
+err44 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(other_crops, other_crops_text)), err44)     
+err44 <-err44 %>%  mutate(error=ifelse(err44== 1 | is.na(err44), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 5----------------------------------------------------------------------------------------------
 ##@knitr err5
 
-err5 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total_crops_grass, rough_graze, woodland, other_land)), total7, err5)     
+err5 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total_crops_grass, rough_graze, woodland, other_land, total_area)), total7, err5, err5_diff)     
 err5 <-err5 %>%  mutate(error=ifelse(err5== 1 | is.na(err5), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 6----------------------------------------------------------------------------------------------
@@ -950,7 +1179,7 @@ err5 <-err5 %>%  mutate(error=ifelse(err5== 1 | is.na(err5), "Error", "No Error"
 ##----err 7----------------------------------------------------------------------------------------------
 ##@knitr err7
 #change all_veg_open_21 to all_veg_open for 2023
-err7 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(all_veg_saf, all_veg_open_21)), err7)     
+err7 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(all_veg_saf, all_veg_open_21)), err7, err7_diff)     
 err7 <-err7 %>%  mutate(error=ifelse(err7== 1 | is.na(err7), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 8----------------------------------------------------------------------------------------------
@@ -961,29 +1190,39 @@ err7 <-err7 %>%  mutate(error=ifelse(err7== 1 | is.na(err7), "Error", "No Error"
 
 ##----err 9----------------------------------------------------------------------------------------------
 ##@knitr err9
-err9 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(soft_fruits, all_fruit_saf)), err9)     
+err9 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(soft_fruits, all_fruit_saf)), err9, err9_diff)     
 err9 <-err9 %>%  mutate(error=ifelse(err9== 1 |is.na(err9), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 10----------------------------------------------------------------------------------------------
 ##@knitr err10
 #change all_flow_bulb_21 to all_flow_bulb for 2023
-#err10 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(all_flow_bulb_21, total4)), err10)     
-#err10 <-err10 %>%  mutate(error=ifelse(err10== 1 & |is.na(err10), "Error", "No Error"))%>% filter(error == "Error")
+err10 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(all_flow_bulb_21, total4)), err10, err10_diff)     
+err10 <-err10 %>%  mutate(error=ifelse(err10== 1 |is.na(err10), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 11----------------------------------------------------------------------------------------------
 ##@knitr err11
-err11 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total5, tot_open_plastic, total6, tot_solid_glass)), err11)     
+err11 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total5, tot_open_plastic, total6, tot_solid_glass)), err11, err11open_diff, err11solid_diff)
 err11 <-err11 %>%  mutate(error=ifelse(err11== 1 | is.na(err11), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 12----------------------------------------------------------------------------------------------
 ##@knitr err12
-err12 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total5, tot_open_plastic, total6, tot_solid_glass)), err12)     
+err12 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total5, tot_open_plastic, total6, tot_solid_glass)), err12, err12_diff)     
 err12 <-err12 %>%  mutate(error=ifelse(err12== 1 | is.na(err12), "Error", "No Error"))%>% filter(error == "Error")
+
+##----err 45----------------------------------------------------------------------------------------------
+##@knitr err45
+err45 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(total_land), total13, err45, err45_diff)     
+err45 <-err45 %>%  mutate(error=ifelse(err45== 1 | is.na(err45), "Error", "No Error"))%>% filter(error == "Error")
+
+##----err 46----------------------------------------------------------------------------------------------
+##@knitr err46
+err46 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total_land, total_area)), err46, err46_diff)     
+err46 <-err46 %>%  mutate(error=ifelse(err46== 1 | is.na(err46), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 13----------------------------------------------------------------------------------------------
 ##@knitr err13
 #change total10_21 to total10 for 2023
-err13 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total10_21, total_pig)), err13)     
+err13 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total10_21, total_pig)), err13, err13_diff)     
 err13 <-err13 %>%  mutate(error=ifelse(err13== 1 | is.na(err13), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 14----------------------------------------------------------------------------------------------
@@ -994,7 +1233,7 @@ err14 <-err14 %>%  mutate(error=ifelse(err14== 1 | is.na(err14), "Error", "No Er
 
 ##----err 15----------------------------------------------------------------------------------------------
 ##@knitr err15
-err15 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total9, total_sheep)), total9, err15)     
+err15 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total9, total_sheep)), total9, err15, err15_diff)     
 err15 <-err15 %>%  mutate(error=ifelse(err15== 1 | is.na(err15), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 16----------------------------------------------------------------------------------------------
@@ -1004,7 +1243,7 @@ err16 <-err16 %>%  mutate(error=ifelse(err16== 1 | is.na(err16), "Error", "No Er
 
 ##----err 17----------------------------------------------------------------------------------------------
 ##@knitr err17
-err17 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total11, total_poultry)), total11, err17)     
+err17 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(total11, total_poultry)), total11, err17, err17_diff)     
 err17 <-err17 %>%  mutate(error=ifelse(err17== 1 | is.na(err17), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 18----------------------------------------------------------------------------------------------
@@ -1042,6 +1281,12 @@ err23 <-err23 %>%  mutate(error=ifelse(err23== 1 | is.na(err23), "Error", "No Er
 err24 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(other_livestock, other_livestock_txt)), err24)  
 err24 <-err24 %>%  mutate(error=ifelse(err24== 1 | is.na(err24), "Error", "No Error"))%>% filter(error == "Error")
 
+##----err 47----------------------------------------------------------------------------------------------
+##@knitr err47
+err47 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(other_livestock, other_livestock_txt)), err47)  
+err47 <-err47 %>%  mutate(error=ifelse(err47== 1 | is.na(err47), "Error", "No Error"))%>% filter(error == "Error")
+
+
 ##----err 25----------------------------------------------------------------------------------------------
 ##@knitr err25
 err25 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(agri_horses, other_horse_pony, donkeys)), err25)  
@@ -1068,10 +1313,26 @@ err26 <-err26 %>%  mutate(error=ifelse(err26== 1 | is.na(err26), "Error", "No Er
 #                                                                      occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err29)  
 #err29 <-err29 %>%  mutate(error=ifelse(err29== 1 | is.na(err29), "Error", "No Error"))%>% filter(error == "Error")
 
+##----err 52----------------------------------------------------------------------------------------------
+##@knitr err52
+#err52 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(other_legal_return_21, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work,
+#                                                                      occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err52)  
+#err52 <-err52 %>%  mutate(error=ifelse(err52== 1 | is.na(err52), "Error", "No Error"))%>% filter(error == "Error")
+
+##----err 53----------------------------------------------------------------------------------------------
+##@knitr err53
+#err53 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier2_legal_fin, occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err53)  
+#err53 <-err53 %>%  mutate(error=ifelse(err53== 1 | is.na(err53), "Error", "No Error"))%>% filter(error == "Error")
+
+
+##----err 54----------------------------------------------------------------------------------------------
+##@knitr err54
+#err54 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier2_legal_fin, occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err54)  
+#err54 <-err54 %>%  mutate(error=ifelse(err54== 1 | is.na(err54), "Error", "No Error"))%>% filter(error == "Error")
 
 
 ##----err 30----------------------------------------------------------------------------------------------
-##@knitr err29
+##@knitr err30
 err30 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err30)  
 err30 <-err30 %>%  mutate(error=ifelse(err30== 1 | is.na(err30), "Error", "No Error"))%>% filter(error == "Error")
 
@@ -1080,6 +1341,32 @@ err30 <-err30 %>%  mutate(error=ifelse(err30== 1 | is.na(err30), "Error", "No Er
 err31 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err31)  
 err31 <-err31 %>%  mutate(error=ifelse(err31== 1 | is.na(err31), "Error", "No Error"))%>% filter(error == "Error")
 
+##----err 48----------------------------------------------------------------------------------------------
+##@knitr err48
+err48 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier1_female, occupier1_male, occupier2_female, occupier2_male)), err48)  
+err48 <-err48 %>%  mutate(error=ifelse(err48== 1 | is.na(err48), "Error", "No Error"))%>% filter(error == "Error")
+
+##----err 49----------------------------------------------------------------------------------------------
+##@knitr err49
+err49 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier1_female, occupier1_male, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err49)  
+err49 <-err49 %>%  mutate(error=ifelse(err49== 1 | is.na(err49), "Error", "No Error"))%>% filter(error == "Error")
+
+##----err 50----------------------------------------------------------------------------------------------
+##@knitr err50
+err50 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier1_female, occupier1_male, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err50)  
+err50 <-err50 %>%  mutate(error=ifelse(err50== 1 | is.na(err50), "Error", "No Error"))%>% filter(error == "Error")
+
+
+##----err 51----------------------------------------------------------------------------------------------
+##@knitr err51
+# err51 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier1_year, occupier2_year)), err51)  
+# err51 <-err51 %>%  mutate(error=ifelse(err51== 1 | is.na(err51), "Error", "No Error"))%>% filter(error == "Error")
+
+##----err 55----------------------------------------------------------------------------------------------
+##@knitr err55
+err55 <- all_JAC_form %>% select(parish, holding, survtype,  all_of(c(occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work, occupier1_male, occupier1_female,
+                                                                     occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work, occupier2_female, occupier2_male)), err55)
+err55 <-err55 %>%  mutate(error=ifelse(err55== 1 | is.na(err55), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 32----------------------------------------------------------------------------------------------
 ##@knitr err32
@@ -1134,8 +1421,12 @@ err42 <-err42 %>%  mutate(error=ifelse(err42== 1 | is.na(err42), "Error", "No Er
 ##----err-summary----------------------------------------------------------------------------------------------
 ##@knitr err-summary
 
-JAC_validation_error_summary 
+JAC_validation_error_summary
+JAC_validation_error_summary_NA
+SAS_R_comparison
+SAS_R_NAcomparison
 check_labour_error_summary
+JAC_new_validation_error_summary
 
 
 #Save Outputs----------------------------------------------------------------------------------------------

@@ -38,6 +38,17 @@ winter_oats <- "item17"
 spring_oats <- "item20"
 winter_rape <- "item19"
 spring_rape <-  "item23"
+triticale <- "item15"
+linseed <- "item21"
+
+#Grains- SAF only
+rye <- "item3156"
+mixed_grain <- "item22"
+
+#protein crops - SAF only
+beans_combining <- "item27"
+peas_combining <- "item28"
+lupins <- "item2034"
 
 #Cereals and oilseed - census form
 all_barley <- "item27710"
@@ -113,7 +124,6 @@ soft_fruits <- "item37"
 all_fruit <- "item27735"
 
 #flowers, bulbs and nursery stock grown in the open- SAF only
-
 #Bulbs/flowers grown for the production of dry bulbs and/or cut flowers in the open
 all_flow_bulb_SAF <- "item2324"
 #Bedding and pot plants grown in the open
@@ -127,6 +137,7 @@ shrubs <- "item1710"
 orn_trees <- "item82"
 #Other nursery stock – herbaceous plants, alpines, etc. (not forest trees)
 other_nurs <- "item83"
+aromatic_plants <-  "item2319"
 
 #flowers, bulbs and nursery stock grown in the open- census form
 #All flowers, bulbs and nursery stocks
