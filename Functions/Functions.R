@@ -1,3 +1,6 @@
+# This script contains all the functions for the June project and is loaded at the start of all the June scripts. 
+# Some functions may need updating yearly. As they were written for the 2021 data, some may be updated for 2023.
+# Modified by Lucy Nevard 30.05.23
 
 # General functions -------------------------------------------------------
 
@@ -66,6 +69,7 @@ flatten <- function(data) {
 
 # Create "line" variable to index by LPID. Number gives instance of each LPID.
 
+
 LPID_index <- function(x) {
   setDT(x)[, line := seq(1, .N), by = lpid]
 }
@@ -93,8 +97,6 @@ new_perm_seas_vars <- function(x) {
   mutate(x,
     slc = substr(slc, 4, 11),
     mlc = substr(mlc, 4, 11),
-    parish = str_remove(substr(slc, 1, 3), "^0+"),
-    holding = str_remove(substr(slc, 5, 8), "^0+"),
     land_use = str_replace_all(land_use, "_", "-"),
     sfp_area = bps_claimed_area,
     sfp_code = land_use,
@@ -103,6 +105,22 @@ new_perm_seas_vars <- function(x) {
   )
 }
 
+# Create parish and holding from slc in permanent
+parishholdingperm<-function(x) {
+  mutate(x,
+         parish = str_remove(substr(slc, 1, 3), "^0+"),
+         holding = str_remove(substr(slc, 5, 8), "^0+")
+  )
+}
+
+# Create parish and holding from mlc in seasonal
+
+parishholdingseas<-function(x) {
+  mutate(x,
+         parish = str_remove(substr(mlc, 1, 3), "^0+"),
+         holding = str_remove(substr(mlc, 5, 8), "^0+")
+  )
+}
 
 # Rename selected variables in scheme dataset
 rename_scheme_vars <- function(x) {
@@ -158,7 +176,10 @@ cleaned_datasets <- function(x) {
 
 # Functions for B --------------------------------------------------------
 
-# B6
+# B6 
+
+
+# Correct areas and change codes. Check if this needs updating every year. 
 
 change_codes<-function(x) {
   mutate(x,
@@ -176,7 +197,8 @@ change_codes<-function(x) {
   )
 }
 
-# create new variables
+
+# create new variables for "other" land in permanent
 
 newvarsother<-function(x)  {
   mutate(x,
@@ -195,6 +217,7 @@ newvarsother<-function(x)  {
 )
 }
 
+# Create new variables for "sfp" land in permanent 
 
 newvarssfp<-function(x)  {
   mutate(x,
@@ -216,7 +239,7 @@ newvarssfp<-function(x)  {
 }
 
 
-# create parish and holding from slc
+# create parish and holding from slc in permanent
 
 
 parishholdingslc<-function(x)  {
@@ -227,8 +250,7 @@ mutate(x,
 }
 
 
-# Seasonal
-
+# Create new variables in seasonal 
 
 
 newvarsseas<-function(x)  {
@@ -242,7 +264,7 @@ newvarsseas<-function(x)  {
 )
 }
 
-# create parish and holding from slc
+# create parish and holding from mlc in seasonal
 
 
 parishholdingmlc<-function(x)  {
@@ -280,6 +302,8 @@ seas_variables<-function(x)    {
 
 
 #B7
+
+# Create "line" variable to index by fid (field ID).
 
 fid_index   <-  function(x) {
   setDT(x)[, line := seq(1, .N), by = fid]
