@@ -79,7 +79,8 @@ df_nonSAFprev <- read.csv(paste0(AGS_prev_directory, "/NonSAF1011.csv"))
 
 df_crofts <- read_csv(paste0(Croft_directory, "/Register_of_crofts_Holdings_16-9-2021.csv"))
 
-# Tidy SAF data ----------------------------------------------------------------
+# Permanent and seasonal ----------------------------------------------------------------
+
 
 # Work with permanent and seasonal in a list
 
@@ -95,15 +96,6 @@ list_perm_seas <- lapply(list_perm_seas, clean_names)
 list_perm_seas <- lapply(list_perm_seas, LPID_index)
 
 
-# Clean names and create line variable for scheme data
-
-df_scheme<-clean_names(df_scheme)
-
-df_scheme <- LPID_index(df_scheme)
-
-
-
-# Rename and create variables ---------------------------------------------
 
 # Rename and create new variables for permanent and seasonal. Land_Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
 
@@ -113,12 +105,27 @@ list_perm_seas <- lapply(list_perm_seas, rename_perm_seas_vars)
 
 list_perm_seas <- lapply(list_perm_seas, new_perm_seas_vars)
 
+# Create parish and holding from slc (permanent data) and mlc (seasonal data)
+
+list_perm_seas[[1]]<-parishholdingperm(list_perm_seas[[1]])
+list_perm_seas[[2]]<-parishholdingseas(list_perm_seas[[2]])
+
+
+# Scheme data -------------------------------------------------------------
+
+
+# Clean names and create line variable for scheme data
+
+df_scheme<-clean_names(df_scheme)
+
+df_scheme <- LPID_index(df_scheme)
+
+
 # rename and create new variables in scheme.
 
 df_scheme <- rename_scheme_vars(df_scheme)
 
 df_scheme <- new_scheme_vars(df_scheme)
-
 
 
 # Create dfs for missing obs ----------------------------------------------
