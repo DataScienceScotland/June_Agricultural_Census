@@ -168,7 +168,10 @@ missing_eligible_area <- function(x) {
 # Remove NAs from datasets
 
 cleaned_datasets <- function(x) {
-  x[!is.na(brn) | !is.na(mlc) | !is.na(slc)]
+  filter(
+    x,
+         !is.na(brn), !is.na(mlc), !is.na(slc)
+  )
 }
 
 
