@@ -1,7 +1,9 @@
-##Code to combine Ags (SAF and Non-SAF aka full and parital AGS/JAC) and SAF datasets
+##Code to combine Ags (SAF and Non-SAF aka full and partial AGS/JAC) and SAF datasets
 ## Based on sections B5 and B10 from the SAS project.
 ##NB June 2023 will only have one form - so no need to import and join df_SAF(ags) and df_Non_SAF to form the census (ags) dataset. It will just be imported as is....
+##
 ##Written by Jackie Massaya 31/01/2023
+##Modified by Lucy Nevard 08.06.23
 
 
 rm(list = ls())
@@ -23,7 +25,7 @@ yr1 <- (yr - 1)
 #Load the June Survey return (SAFags (df_SAF) and Non-SAFags (df_nonSAF)) datasets (outputs saved from A2)
 
 output_path <-
-  "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/"
+  "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023/"
 sas_agscens_path <- "//s0177a/sasdata1/ags/census/agscens/"
 
 load(paste0(output_path, "SAF_ags_", yr, ".rda"))

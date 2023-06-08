@@ -1,9 +1,9 @@
 # This script imports the datasets from SAF, Ags (the census returns) from this year and the previous year, and the Crofting Commission. They are saved as rdas in the datashare and tables on the ADM server.
 # Update the directories at the top to get data drops from the correct years.
-# The data used currently is from May 2023, Only SAF data available at time of writing. 
+# The data used currently is from May 2023, Only SAF data available at time of writing but is modified in prep for Ags data.
 # This script is Based on programs A1, A2, A2.(a) and A3 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Created by Lucy Nevard 24.02.23 (original individual scripts created 22.11.22),
-# Modified by Lucy Nevard 05.06.23
+# Modified by Lucy Nevard 08.06.23
 
 
 
@@ -33,8 +33,9 @@ source("Functions/Functions.R")
 # Data drop file paths for import
 
 SAF_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June23/Data Drops/SAF")
-# AGS_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June21/Data Drops/AGS")
-# AGS_prev_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June20/Data Drops/AGS/2019") # This is the exact directory used in the SAS project. Unclear why it's in a 2019 folder. 
+AGS_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June23/Data Drops/AGS")
+#AGS_prev_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June20/Data Drops/AGS/2019") # This is the exact directory used in the SAS project for the 2021 analysis. Unclear why it's in a 2019 folder.
+#Decide when to bring in 2021 Ags data - probably not necessary at this stage. All code regarding prev year's data has been commented out. 
 # Croft_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June21")
 
 # Datashare file path for export
@@ -65,9 +66,9 @@ df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output1.xlsx"),sep.names =
 
 # Import Ags data (downloaded from Ags). From 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
 
-# df_SAF<-read.csv(paste0(AGS_directory,"/SAFFINAL.csv"))
-# df_nonSAF<-read.csv(paste0(AGS_directory,"/NonSAFFINAL.csv"),
-#                     fileEncoding="latin1")
+
+df_nonSAF<-read.csv(paste0(AGS_directory,"/.csv"),
+                     fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # The previous year's data will still be SAF and NonSAF in 2023 (i.e. 2021 data). 2024 onwards, the previous year will be 2023 so only one datafile.
 
@@ -169,42 +170,24 @@ df_scheme <- cleaned_datasets(df_scheme)
 # 
 # # The following two bits on df_SAF and df_nonSAF could be done more efficiently in a list. 
 # 
-# # Remove two variables from df_SAF. Should this be changed to keep all necessary variables?
-# 
-# df_SAF <- subset(df_SAF, select = -c(item21310, X))
-# 
-# # Check variable types are correct
-# 
-# str(df_SAF, list.len = ncol(df_SAF))
-# 
-# # Change variable types as needed
-# 
-# df_SAF <- df_SAF %>%
-#   mutate(
-#     item186 = as.character(item186)
-#   )
-# 
-# 
-# 
-# 
-# 
+
 # # Formatting non-SAF df ---------------------------------------------------
-# 
-# df_nonSAF <- subset(df_nonSAF, select = -c(item21310, X))
-# 
-# 
-# # Check variables types are correct
-# 
-# str(df_nonSAF, list.len = ncol(df_nonSAF))
-# 
-# # Change variable types as needed
-# 
-# df_nonSAF <- df_nonSAF %>%
-#   mutate(
-#     item185 = as.character(item185),
-#     item186 = as.character(item186)
-#   )
-# 
+
+df_nonSAF <- subset(df_nonSAF, select = -c(item21310, X))
+
+
+# Check variables types are correct
+
+str(df_nonSAF, list.len = ncol(df_nonSAF))
+
+# Change variable types as needed
+
+df_nonSAF <- df_nonSAF %>%
+  mutate(
+    item185 = as.character(item185),
+    item186 = as.character(item186)
+  )
+
 # 
 # # Ags data previous year --------------------------------------------------
 # 
@@ -230,7 +213,7 @@ df_scheme <- cleaned_datasets(df_scheme)
 # 
 # 
 # 
-# # Formatting non-SAF df ---------------------------------------------------
+# # Formatting non-SAF df prev ---------------------------------------------------
 # 
 # df_nonSAFprev <- subset(df_nonSAFprev, select = -c(item9901, X))
 # 
@@ -327,9 +310,9 @@ save(df_scheme, file = paste0(Code_directory, "/saf_scheme_A_2023.rda"))
 
 # # Save rdas
 # 
-# save(df_SAF, file = paste0(Code_directory, "/Ags_SAF_A.rda"))
-# save(df_nonSAF, file = paste0(Code_directory, "/Ags_nonSAF_A.rda"))
-# 
+
+save(df_nonSAF, file = paste0(Code_directory, "/Ags_A_2023.rda"))
+
 # # Save rdas
 # 
 # save(df_SAFprev, file = paste0(Code_directory, "/Ags_SAFprev_A.rda"))
@@ -375,25 +358,16 @@ write_dataframe_to_db(server=server,
                       batch_size = 10000)
 
 
-# 
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="Ags_SAF_A",
-#                       dataframe=df_SAF,
-#                       append_to_existing = FALSE,
-#                       versioned_table=FALSE,
-#                       batch_size = 10000)
-# 
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="Ags_nonSAF_A",
-#                       dataframe=df_nonSAF,
-#                       append_to_existing = FALSE,
-#                       versioned_table=FALSE,
-#                       batch_size = 10000)
-# 
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="Ags_A_2023",
+                      dataframe=df_nonSAF,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
 # 
 # 
 # write_dataframe_to_db(server=server,
