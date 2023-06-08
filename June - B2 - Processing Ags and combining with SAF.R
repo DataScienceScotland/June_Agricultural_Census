@@ -602,3 +602,28 @@ returns_21_sum <-
   rename(Sum = 1)
 returns_21_count <-
   returns_21_summary %>% group_by(everything) %>% count()
+
+
+# Merge in total area and total rented area from 1st June address file (RP&S). 
+
+addressfileorig<-read_sas(paste0(sas_agscens_path, "address_occid_01jun23.sas7bdat"))
+
+addressfile<-clean_names(addressfileorig)
+
+addressfile<-addressfile %>% 
+  select(c(parish, holding, tot_area, tot_own_area, totrented_area)) %>% 
+  rename(rps_totarea_june="tot_area",
+         rps_totowned_june = "tot_own_area",
+         rps_totrented_june = "totrented_area") %>% 
+  mutate(parish=as.integer(parish),
+         holding=as.integer(holding))
+
+
+FJSaddress<-left_join(FJS, addressfile, by=c("parish", "holding"))
+
+
+FJScheck<-FJSaddress %>% 
+  select(parish, holding, item7, item11, item12, rps_totarea_june, rps_totowned_june, rps_totrented_june)
+
+
+save(FJSaddress, file = paste0(output_path, "/combined_data_withareas.rda"))
