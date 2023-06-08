@@ -4,11 +4,10 @@
 # This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
 # Data used currently is from September 2021, as in the most recent version of the SAS project.
 # Created by Lucy Nevard 27.01.23
-# Modified by Lucy Nevard 15.05.23
+# Modified by Lucy Nevard 30.05.23
 
 
 # Before import -----------------------------------------------------------
-
 
 
 # Clear environment prior
@@ -20,6 +19,8 @@ rm(list = ls())
 library(tidyverse)
 library(data.table)
 library(janitor)
+library(RtoSQLServer)
+library(haven)
 
 
 # Load functions
@@ -29,8 +30,10 @@ source("Functions/Functions.R")
 
 # Datashare file path for import and export
 
-Code_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023")
+Code_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023")
 sas_agstemp_path <- "//s0177a/sasdata1/ags/census/agstemp/"
+sas_agscens_path <- "//s0177a/sasdata1/ags/census/agscens/"
+
 # ADM schema for export
 
 server <- "s0196a\\ADM"
@@ -40,18 +43,42 @@ schema <- "juneagriculturalsurvey2023alpha"
 
 # Import SAF data -------------------------------------------------------------
 
+# From the ADM server and create list
 
-# 
 
-list_perm_seas <- loadRData(paste0(Code_directory, "/saflist_permseas_A.rda"))
+saf_perm <- read_table_from_db(server=server, 
+                               database=database, 
+                               schema=schema, 
+                               table_name="saf_perm_A_2023")
+
+saf_seas <- read_table_from_db(server=server, 
+                               database=database, 
+                               schema=schema, 
+                               table_name="saf_seas_A_2023")
+
+# Reading in from ADM creates a new variable with id. Remove.
+
+saf_perm<-saf_perm %>% 
+  select(-saf_perm_a_2023id)
+
+saf_seas<-saf_seas%>% 
+  select(-saf_seas_a_2023id)
+
+list_perm_seas<-list(saf_perm,saf_seas)
+
+# Or from the datashare
+
+# list_perm_seas <- loadRData(paste0(Code_directory, "/saflist_permseas_A.rda"))
+
 
 # Import new code translation table for SAF (these may need updating every year)
+# Check codes in saf_perm 2021
+
 
 newcodetrans <-
-  read.csv(paste0(Code_directory, "/NEW_CODE_TRANS21.csv"))
+  read.csv(paste0(Code_directory, "/NEW_CODE_TRANS23.csv"))
 
-# Or import from ADM 
-# 
+
 
 # B6 of SAS code - Corrections ----------------------------------------------------------
 
@@ -63,7 +90,7 @@ newcodetrans <-
 
 list_perm_seas<-lapply(list_perm_seas, clean_names)
 
-# For SAF codes - this might change year to year. But those below might still be used.
+# For SAF codes - this might change year to year so would need to be updated in the FUnctions script. But those below might still be used.
 # Manual corrections should also mbe included here and change from year to year. None from the 2021 SAS project.
 
 list_perm_seas <- lapply(list_perm_seas, change_codes)
@@ -72,9 +99,7 @@ list_perm_seas <- lapply(list_perm_seas, change_codes)
 # Unlist permanent and seasonal.  ---------------------------------------
 
 
-# Tidy this up in future.
-
-#  Create separate dfs for permanent and seasonal.
+# Create separate dfs for permanent and seasonal.
 
 names(list_perm_seas) <- c("perm", "seas")
 
@@ -87,7 +112,8 @@ saf_perm$landtype <- "PERM"
 saf_seas$landtype <- "SEAS"
 
 
-# Remove rows of all NAS. Couldn't figure out how to do this in a list.
+# Remove rows of all NAs. Couldn't figure out how to do this in a list. This could be moved to Script A.
+# There are no rows of all NAs at this point in the 2023 dataset.
 
 
 saf_perm <- saf_perm[rowSums(is.na(saf_perm)) != ncol(saf_perm), ]
@@ -97,14 +123,14 @@ saf_seas <- saf_seas[rowSums(is.na(saf_seas)) != ncol(saf_seas), ]
 
 # Permanent - split up SAF datalines into claimtype other or sfp --------
 
-# Reformat df with claimtype as "OTHER"other" or "sfp" (Single Farm Payment) and "line" variable increasing by 0.01 if OTHER.
-# LLO flags also assigned
+# Reformat df with claimtype as "other" or "sfp" (Single Farm Payment) and "line" variable increasing by 0.01 if OTHER.
+# LLO flags also assigned within newvarsother and newvarssfp functions
 
 # Other claimtype df
 
 saf_permother <- filter(saf_perm, saf_perm$other_area > 0)
 
-# 
+# Create variables in saf_permother
 
 saf_permother <- newvarsother(saf_permother)
 
@@ -113,6 +139,7 @@ saf_permother <- newvarsother(saf_permother)
 
 saf_permsfp <- filter(saf_perm, saf_perm$sfp_area > 0)
 
+# Create variables in saf_permsfp
 
 saf_permsfp <- newvarssfp(saf_permsfp)
 
@@ -131,15 +158,18 @@ saf_perm<- saf_perm %>%
 
 # Create correct parish and holding from "slc" (Single Location Code)
 
-saf_perm <- parishholdingslc(saf_perm)
+saf_perm <- parishholdingperm(saf_perm)
                         
+# Correct variable types
 
+saf_perm<-perm_variables(saf_perm)
+  
 # The SAS code here has tables to see what errors are left in the permanent df - not clear what we're looking for at this point and there aren't any fixes in the code, so I've left this out for now.
 
 
 #  Seasonal - filter out "Other" holdings, keep only SFP  --------------------------------------------------------------
 # According to desk notes, the data for "other" is too messy to be reliable. The seasonal data is therefore an underestimate.
-
+# LLO flags also assigned within newvarsseas function
 
 saf_seas <- filter(saf_seas, saf_seas$sfp_area > 0)
 
@@ -150,82 +180,70 @@ saf_seas<-newvarsseas(saf_seas)
 
 # Create correct parish and holding from mlc (main location code)
 
-saf_seas<-parishholdingmlc(saf_seas)
+saf_seas<-parishholdingseas(saf_seas)
 
-
-
-# Compare with SAS outputs
-
-sas_saf_perm<-read_sas(paste0(sas_agstemp_path, "permanent_sheets21.sas7bdat"))
-sas_saf_seas<-read_sas(paste0(sas_agstemp_path, "seasonal_sheets21.sas7bdat"))
-
-sas_saf_perm<-clean_names(sas_saf_perm)
-sas_saf_seas<-clean_names(sas_saf_seas)
-
-sas_saf_perm <- sas_saf_perm %>% mutate_all(na_if,"")
-sas_saf_seas <- sas_saf_seas %>% mutate_all(na_if,"")
-
-
-saf_perm<-saf_perm %>% 
-  mutate(
-    parish=as.numeric(parish),
-    holding=as.numeric(holding),
-    code=as.factor(code),
-    crops=as.factor(crops),
-    area=round(as.numeric(area),3)
-  )
-
-sas_saf_perm<-sas_saf_perm %>% 
-  mutate(
-    sfp_code=as.factor(sfp_code),
-    code=as.factor(code),
-    crops=as.factor(crops),
-    area=round(as.numeric(area),3))
-  
-perm_compare <- as.data.frame(compare_df_cols(saf_perm,sas_saf_perm))
-
-compare_perm<-setdiff(saf_perm, sas_saf_perm) # 10 differences
-compare_perm2<-setdiff(sas_saf_perm, saf_perm) # 12 differences...
-
-
-diff1 <- mapply(setdiff, saf_perm, sas_saf_perm)
-
-diff2<-sapply(diff1, length)   
-
-
-
-comb_1<- compare_perm[1, ]
-comb_2 <- compare_perm2[1, ]
-
-compare <- rbind(comb_1,comb_2)
-
-
-# compare seasonal. As of 19.05.23 this still needs to be checked. 
+# Remove unnecessary variables 
 
 saf_seas<-saf_seas %>% 
-  select(-c(other_area,other_code)) %>% 
-  mutate(
-    parish=as.numeric(parish),
-    holding=as.numeric(holding),
-    code=as.factor(code),
-    crops=as.factor(crops),
-    line=as.numeric(line),
-    area=round(as.numeric(area),3)
-  )
+select(-c(other_area, other_code))
 
-sas_saf_seas<-sas_saf_seas %>% 
-  mutate(
-    sfp_code=as.factor(sfp_code),
-    code=as.factor(code),
-    crops=as.factor(crops),
-    line=as.numeric(line),
-    area=round(as.numeric(area),3))
+# Correct variable types
+
+saf_seas<-seas_variables(saf_seas)
+
+# Compare with SAS code --------------------------------------------------------
 
 
 
-seas_compare <- as.data.frame(compare_df_cols(saf_seas,sas_saf_seas))
-
-
+# Comment in the following section to compare current datasets with SAS outputs. There are 12 differences in the perm dataset and 1 difference in the seas dataset. 
+# Check when we have time. 
+# 
+# sas_saf_perm<-read_sas(paste0(sas_agstemp_path, "permanent_sheets21.sas7bdat"))
+# sas_saf_seas<-read_sas(paste0(sas_agstemp_path, "seasonal_sheets21.sas7bdat"))
+# 
+# sas_saf_perm<-clean_names(sas_saf_perm)
+# sas_saf_seas<-clean_names(sas_saf_seas)
+# 
+# sas_saf_perm <- sas_saf_perm %>% mutate_all(na_if,"")
+# sas_saf_seas <- sas_saf_seas %>% mutate_all(na_if,"")
+# 
+# 
+# sas_saf_perm<-perm_variables(sas_saf_perm)
+#   
+# perm_compare <- as.data.frame(compare_df_cols(saf_perm,sas_saf_perm))
+# 
+# compare_perm<-setdiff(saf_perm, sas_saf_perm) # 10 differences
+# compare_perm2<-setdiff(sas_saf_perm, saf_perm) # 12 differences...
+# 
+# 
+# diff1 <- mapply(setdiff, saf_perm, sas_saf_perm)
+# 
+# diff2<-sapply(diff1, length)   
+# 
+# 
+# 
+# comb_1<- compare_perm[1, ]
+# comb_2 <- compare_perm2[1, ]
+# 
+# compare <- rbind(comb_1,comb_2)
+# 
+# 
+# # compare seasonal.
+# 
+# 
+# sas_saf_seas<-seas_variables(sas_saf_seas)
+# 
+# seas_compare <- as.data.frame(compare_df_cols(saf_seas,sas_saf_seas))
+# 
+# 
+# compare_seas<-setdiff(saf_seas, sas_saf_seas) # 1 difference
+# compare_seas2<-setdiff(sas_saf_seas, saf_seas) # 1 difference...
+# 
+# 
+# diff1 <- mapply(setdiff, saf_seas, sas_saf_seas)
+# 
+# diff2<-sapply(diff1, length)   
+# 
 
 # Save separate permanent and seasonal datasets --------------------------
 
@@ -239,25 +257,12 @@ seas_compare <- as.data.frame(compare_df_cols(saf_seas,sas_saf_seas))
 
 
 
-# Save to ADM
-#
-#
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="allsaf_perm_B6",
-#                       dataframe=allsaf_perm,
-#                       append_to_existing = FALSE,
-#                       batch_size=1000,
-#                       versioned_table=FALSE)
 
+# B7 of SAS code - checks and flagging potential errors----------------------------------------------------------
 
-
-
-
-
-# B7 of SAS code ----------------------------------------------------------
-
+# Flag numbers: 
+# 1. Field ID (FID) recorded as belonging to multiple holdings (Single Location Code: SLC) on permanent sheets where one reported it as seasonally let out (LLO). A permanent tenancy may incorrectly 
+# 7. FID recorded as belonging to multiple holdings (SLC) without any reported as seasonally let out (LLO).
 
 # Limits for checking against
 
@@ -267,12 +272,7 @@ under_report_percent <- 0.5
 over_report_percent <- 1.1
 
 
-
-
 # Permanent dataset - checks and error flags -----------------------------------
-
-
-
 
 # Check frequency of fids (field id), whether multiple holdings are using the same fid.
 
@@ -286,6 +286,8 @@ fidfreqs<-fidfreqsorig %>%
   flatten() %>% 
   dplyr::rename(fid_uses_by_slc = count)
 
+# Index by FID (create line variable)
+
 fids<-fid_index(fidfreqsorig)
 
 fids<-fids %>%
@@ -294,10 +296,10 @@ fids<-fids %>%
 
 fidfreqsfinal<-merge(fidfreqs, fids, by="fid")
 
-fids_with_multiple_slcs<-fidfreqsfinal %>% 
+fids_with_multiple_slcs<-fidfreqsfinal %>% # There are no fids with multiple slcs in the 2023 dataset. Cross-check using the SAS code. 
   filter(holdings_using_fid>1)
 
-# Filter out lmc () claimtype 
+# Filter out LMC claimtype. Note: check what LMC stands for. 
  
 saf_perm_notlmc<-saf_perm %>% 
   filter(claimtype!="LMC")
@@ -305,9 +307,7 @@ saf_perm_notlmc<-saf_perm %>%
 fids_with_multiple_slcs<-merge(fids_with_multiple_slcs, saf_perm_notlmc, by=c("slc","fid"))
 
 
-
-
-# LLO. Assign flags 1 and 7. 
+# FIDs with land let out (llo)
 
 fids_with_llo<-saf_perm %>% 
   filter(llo=="Y") %>% 
@@ -321,7 +321,7 @@ fids_with_llo<-saf_perm %>%
 saf_perm_notlmc<-saf_perm %>% 
   filter(claimtype!="LMC")
 
-fids_with_multiple_slcs <- fids_with_multiple_slcs[c('fid', 'slc')] # filter doesn't work on an empty df
+fids_with_multiple_slcs <- fids_with_multiple_slcs[c('fid', 'slc')] # using indexing because filter doesn't work on an empty df
 
 # do the following two statements in a list
 
@@ -334,17 +334,16 @@ saf_perm<-left_join(saf_perm, fids_with_llo, by=c("slc","fid"))
 llo_error<-inner_join(saf_perm,fids_with_multiple_slcs,fids_with_llo, by=c("slc","fid"))
 
 
-llo_error<-llo_error %>% 
-  filter(llo=="Y")
-# %>% 
-# mutate(flag1=1,
-#        flag7=0)
+flag1<-llo_error %>% 
+  filter(llo=="Y") %>%
+  mutate(flag1=1,
+       flag7=0)
 
 
 flag7<-inner_join(saf_perm,fids_with_multiple_slcs,by=c("slc","fid"))
 
 
-flag7<-anti_join(flag7,llo_error,by=c("slc","fid"))
+flag7<-anti_join(flag7,flag1,by=c("slc","fid"))
 
 flag7<-flag7 %>% 
   select(slc, fid) %>% 
@@ -353,7 +352,8 @@ flag7<-flag7 %>%
 
 
 
-# merge flag7 with saf_perm if it has rows in it. Currently it is empty.
+# merge flag7 here with saf_perm if it has rows in it. Currently it is empty so we don't. 
+# Check in SAS code whether we merge flag1 with safperm too. It's empty anyway.
 
 
 # create flag1 and flag7 in saf_perm
@@ -364,7 +364,7 @@ saf_perm<-saf_perm %>%
 
 
 
-# Dataframes for different error flags ------------------------------------
+# Dataframes for different error flags
 # Select variables, group by fid and summarise
 
 checkareasummary <- saf_perm %>%
@@ -564,10 +564,7 @@ finalsaf_perm <- df_list %>% reduce(full_join, by = c("brn", "fid", "line", "cla
 
 
 
-
 # Seasonal dataset flagging ----------------------------------------------
-
-
 
 
 # Flag fids which look like permanent lets (slc=mlc).
@@ -695,13 +692,11 @@ finalsaf_seas <- df_list_seas %>% reduce(full_join, by = c("brn", "fid", "line",
 
 
 
-# Save to datashare
-
-
-save(finalsaf_perm, file = paste0(Code_directory, "/allsaf_perm_B7.rda"))
-save(finalsaf_seas, file = paste0(Code_directory, "/allsaf_seas_B7.rda"))
-
-
+# Save to datashare. Not necessary as they are saved at the end of the script.
+# 
+# 
+# save(finalsaf_perm, file = paste0(Code_directory, "/allsaf_perm_B7.rda"))
+# save(finalsaf_seas, file = paste0(Code_directory, "/allsaf_seas_B7.rda"))
 
 
 
@@ -715,8 +710,15 @@ saf_seascurr<-finalsaf_seas
 
 # Last year's data must be read in from a csv - R struggles with the xlsx
 
-saf_prev <- read.csv(paste0(Code_directory, "/ALLSAF20.csv"))
+saf_prev <- read_table_from_db(server=server, 
+                               database=database, 
+                               schema=schema, 
+                               table_name="allsaf_B8_2022")  
 
+# Reading in from ADM creates a new variable with id. Remove if necessary.
+
+saf_prev<-saf_prev %>% 
+  select(-allsaf_B8_2022ID)
 
 # rename area in current seasonal data
 
@@ -747,8 +749,7 @@ saf_seasprev_cph <- saf_seasprev_cph %>%
     holding = as.numeric(holding)
   )
 
-saf_seascurr_fid <- saf_seascurr_fid %>%
-  select(-c("other_area", "other_code")) %>% 
+saf_seascurr_fid <- saf_seascurr_fid %>% 
   mutate(
     parish = as.numeric(parish),
     holding = as.numeric(holding)) %>% 
@@ -807,8 +808,13 @@ pfdscurr_seas <- split %>%
 
 # Remove flagged entries if required  (SAF validations also in C)
 
+cols<-as.data.frame(compare_df_cols(saf_permcurr, pfdscurr_seas))
 
-pfds_finalcurr <- rbind(saf_permcurr, pfdscurr_seas, fill = TRUE)
+pfdscurr_seas<-pfdscurr_seas %>% 
+  mutate( code= as.factor(code),
+          llo=as.character(llo))
+
+pfds_finalcurr <- bind_rows(saf_permcurr, pfdscurr_seas)
 
 
 pfds_corrections1 <- pfds_finalcurr %>%
@@ -862,7 +868,7 @@ saf_seascurr <- pfds_finalcurr %>%
   filter(landtype == "SEAS")
 
 
-saf_permseas<-rbind(saf_permcurr,allsaf_seascurr)
+saf_permseas<-rbind(saf_permcurr,saf_seascurr)
 
 # Keep necessary variables of combined dataset
 
@@ -871,13 +877,53 @@ saf_curr <- pfds_finalcurr %>%
 
 # Save corrections and combined allsaf flagged dataset to datashare
 
-save(saf_curr, file = paste0(Code_directory, "/allsaf_B8.rda"))
+save(saf_curr, file = paste0(Code_directory, "/allsaf_B8_2023.rda"))
 
-save(pfds_finalcurr, file = paste0(Code_directory, "/allsaf_B8flags.rda"))
+save(pfds_finalcurr, file = paste0(Code_directory, "/allsaf_B8flags_2023.rda"))
 
-save(saf_permseas, file = paste0(Code_directory, "/allsaf_B8permseas.rda"))
+save(saf_permseas, file = paste0(Code_directory, "/allsaf_B8permseas_2023.rda"))
 
-save(pfdscorrections, file = paste0(Code_directory, "/allsaf_B8corrections.rda"))
+save(pfdscorrections, file = paste0(Code_directory, "/allsaf_B8corrections_2023.rda"))
+
+# Save to ADM server
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="allsaf_B8_2023",
+                      dataframe=saf_curr,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="allsaf_B8flags_2023",
+                      dataframe=pfds_finalcurr,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="allsaf_B8permseas_2023",
+                      dataframe=saf_permseas,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="allsaf_B8corrections_2023",
+                      dataframe=pfdscorrections,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
 
 
 
@@ -911,7 +957,7 @@ aggregate1 <- allsaf_fids %>%
 allsaf_reduced <- allsaf %>%
   select(parish, holding, mlc, brn, area)
 
-rm(allsaf, allsaf_fids)
+rm(allsaf_fids)
 
 
 
@@ -921,7 +967,7 @@ rm(allsaf, allsaf_fids)
 # Translate codes to June items based on translation table (this will probably be updated every year)
 
 aggregate1$code <- as.factor(aggregate1$code)
-newcodetrans21$code <- as.factor(newcodetrans21$code)
+newcodetrans$code <- as.factor(newcodetrans$code)
 
 cens_coded <- merge(aggregate1, newcodetrans, by = "code", all.x = TRUE)
 
@@ -993,16 +1039,17 @@ extra_fields <- census_format %>%
 
 #brns dataset
 
+allsaf<-allsaf %>% 
+  drop_na(c(parish, holding, brn, mlc, area))
 
 brns <- allsaf %>%
   select(parish, holding, brn, mlc, area) %>%
   brnmutate() %>%  
   group_by(parish, holding, brn) %>%
   brnsummary() %>% 
-  group_by(parish, holding) %>% 
-  summarise_all(unique) # distinct doesn't work here, why?
-
-
+  distinct(parish, holding, .keep_all=TRUE) 
+  
+  
 
 # Reformat dataset --------------------------------------------------------
 
@@ -1159,7 +1206,7 @@ cens_wide_final<-list %>% reduce(left_join, by = c("parish","holding"))
 
 
 cens_wide_final <- cens_wide_final %>%
-  newitemssaf()  # check this function works.
+  newitemssaf()  
 
 
 
@@ -1171,7 +1218,8 @@ cens_wide_final[is.na(cens_wide_final)] <- 0
 
 # Remove any stray duplicates.
 
-cens_wide_dups <- cens_wide_final[!duplicated(cens_wide_final[, 1:2]), ]
+cens_wide_dups <- cens_wide_final[duplicated(cens_wide_final[, 1:2]), ]
+cens_wide_final <- cens_wide_final[!duplicated(cens_wide_final[, 1:2]), ]
 
 
 
@@ -1179,6 +1227,16 @@ cens_wide_dups <- cens_wide_final[!duplicated(cens_wide_final[, 1:2]), ]
 
 # Save to datashare
 
-save(cens_wide_final, file = paste0(Code_directory, "/allsaf_final_B1.rda"))
+save(cens_wide_final, file = paste0(Code_directory, "/allsaf_final_2023.rda"))
 
 # Save to ADM server
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="allsaf_final_2023",
+                      dataframe=cens_wide_final,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
