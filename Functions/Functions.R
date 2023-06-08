@@ -182,7 +182,7 @@ cleaned_datasets <- function(x) {
 # B6 
 
 
-# Correct areas and change codes. Check if this needs updating every year. 
+# Correct areas and change codes. Check if this needs updating every year. Removed TREE -> TREES edit for 2023. 
 
 change_codes<-function(x) {
   mutate(x,
@@ -194,9 +194,9 @@ change_codes<-function(x) {
            ifelse(land_use_area < bps_claimed_area, bps_claimed_area, land_use_area),
          slc = ifelse(slc == "", mlc, slc),
          sfp_code =
-           recode(as.factor(sfp_code), "TREE" = "TREES", "UNSP" = "EXCL"),
+           recode(as.factor(sfp_code), "UNSP" = "EXCL"),
          other_code =
-           recode(as.factor(other_code), "TREE" = "TREES", "UNSP" = "EXCL")
+           recode(as.factor(other_code), "UNSP" = "EXCL")
   )
 }
 
@@ -242,15 +242,6 @@ newvarssfp<-function(x)  {
 }
 
 
-# create parish and holding from slc in permanent
-
-
-parishholdingslc<-function(x)  {
-mutate(x,
-  parish = str_remove(substr(slc, 1, 3), "^0+"),
-  holding = str_remove(substr(slc, 5, 8), "^0+"),
-)
-}
 
 
 # Create new variables in seasonal 
@@ -265,16 +256,6 @@ newvarsseas<-function(x)  {
   area = sfp_area,
   slc = ifelse(slc == "", mlc, slc)
 )
-}
-
-# create parish and holding from mlc in seasonal
-
-
-parishholdingmlc<-function(x)  {
-  mutate(x,
-         parish = str_remove(substr(mlc, 1, 3), "^0+"),
-         holding = str_remove(substr(mlc, 5, 8), "^0+"),
-  )
 }
 
 # Correct variable types for perm
@@ -501,7 +482,7 @@ brnsummary<-function(x) {
 
 newitemssaf<-function(x) {
   mutate(x,
-    item1 = LLO_area,
+    item1 = llo_area,
     item2 = item2879 + item2827 + item2828,
     item68 = item52 + item53 + item55 + item56 + item2323 + item59 + item60 + item61 +
       item63 + item64 + item65 + item66,
