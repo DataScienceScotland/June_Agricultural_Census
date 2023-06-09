@@ -1,9 +1,10 @@
 # This script imports the datasets from SAF, Ags (the census returns) from this year and the previous year, and the Crofting Commission. They are saved as rdas in the datashare and tables on the ADM server.
 # Update the directories at the top to get data drops from the correct years.
-# The data used currently is from May 2023, Only SAF data available at time of writing but is modified in prep for Ags data.
+# The data used currently is from May 2023, Only SAF and Ags data available at the moment.
+# Edit to bring in CTS data as well.
 # This script is Based on programs A1, A2, A2.(a) and A3 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Created by Lucy Nevard 24.02.23 (original individual scripts created 22.11.22),
-# Modified by Lucy Nevard 08.06.23
+# Modified by Lucy Nevard 09.06.23
 
 
 
@@ -67,7 +68,7 @@ df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output1.xlsx"),sep.names =
 # Import Ags data (downloaded from Ags). From 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
 
 
-df_nonSAF<-read.csv(paste0(AGS_directory,"/.csv"),
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_090623.csv"),
                      fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # The previous year's data will still be SAF and NonSAF in 2023 (i.e. 2021 data). 2024 onwards, the previous year will be 2023 so only one datafile.

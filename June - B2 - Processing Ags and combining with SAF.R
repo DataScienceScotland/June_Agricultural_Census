@@ -1,7 +1,7 @@
 ##Code to combine Ags (SAF and Non-SAF aka full and partial AGS/JAC) and SAF datasets
 ## Based on sections B5 and B10 from the SAS project.
 ##NB June 2023 will only have one form - so no need to import and join df_SAF(ags) and df_Non_SAF to form the census (ags) dataset. It will just be imported as is....
-##
+##Data from 2023 - 9th June. First data extract from Ags.
 ##Written by Jackie Massaya 31/01/2023
 ##Modified by Lucy Nevard 08.06.23
 
@@ -18,69 +18,70 @@ library(skimr)
 library(haven)
 source("Functions/Functions.R")
 source("Scripts/Item categories.R")
-#change year here
-yr <- 21
-yr1 <- (yr - 1)
+#change year here. 
+yr <- 23
+yr1 <- (yr - 2)  # this should normally be yr-1 but no census in 2022. 
 
-#Load the June Survey return (SAFags (df_SAF) and Non-SAFags (df_nonSAF)) datasets (outputs saved from A2)
 
 output_path <-
   "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023/"
 sas_agscens_path <- "//s0177a/sasdata1/ags/census/agscens/"
 
-load(paste0(output_path, "SAF_ags_", yr, ".rda"))
-load(paste0(output_path, "nonSAF_ags_", yr, ".rda"))
 
-#Load SAF data previous modules- cleaned, combined formatted with census item numbers
+server <- "s0196a\\ADM"
+database <- "RuralAndEnvironmentalScienceFarmingStatistics"
+schema <- "juneagriculturalsurvey2023alpha"  # schema will change each year and need updating here. The table names can therefore stay the same 2024 onwards (will need editing below).
 
-all_SAF<-loadRData(paste0(output_path, "allsaf_final.rda"))
+#Load the June Survey return dataset (output saved from A)
+# Load from ADM
+
+all_ags <- read_table_from_db(server=server, 
+                              database=database, 
+                              schema=schema, 
+                              table_name="Ags_A_2023")
+
+# Load from datashare
+# load(paste0(output_path, "nonSAF_ags_", yr, ".rda"))
+
+# Load SAF data previous modules- cleaned, combined formatted with census item numbers
+# Load from ADM
+
+all_saf <- read_table_from_db(server=server, 
+                               database=database, 
+                               schema=schema, 
+                               table_name="allsaf_final_2023")
+
+
+# Load fromdatashare
+# all_saf<-loadRData(paste0(output_path, "allsaf_final.rda"))
 
 ####TO DO loop through lists, keep only items for nonSAF and SAF
 
 ##NB SAS code replaces missing numeric values with zeros, as imputation is for missing data only.
 
-Non_SAF  <-
-  df_nonSAF %>% group_by(parish, holding) %>% arrange(by_group = TRUE)
+all_ags  <-
+  all_ags %>% group_by(parish, holding) %>% arrange(by_group = TRUE)
 
 
-Non_SAF <- Non_SAF %>% add_land_other() %>%
+all_ags <- all_ags %>% add_land_other() %>%
   mutate(survdata = as.factor("full"),
          i = 1 + length(c(all_glasshouse, "item85", "item86"))) %>%
   mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .)))  # if the last line doesn't work, restart the session
 
 
 
-glasshouse_cols <- names(Non_SAF) %in% all_glasshouse
-Non_SAF[glasshouse_cols] <-
-  Non_SAF[glasshouse_cols] %>% mutate(across(where(is.numeric), ~ .x / 10000))
+glasshouse_cols <- names(all_ags) %in% all_glasshouse
+all_ags[glasshouse_cols] <-
+  all_ags[glasshouse_cols] %>% mutate(across(where(is.numeric), ~ .x / 10000))
 
-SAF_ags <-
-  df_SAF %>% group_by(parish, holding) %>% arrange(by_group = TRUE)
-SAF_ags <-  SAF_ags %>% add_land_other() %>%
-  mutate(survdata = as.factor("part"),
-         i = 1 + length(c(all_glasshouse, "item85", "item86"))) %>%
-  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .)))
-
-glasshouse_cols <- names(SAF_ags) %in% all_glasshouse
-SAF_ags[glasshouse_cols] <-
-  SAF_ags[glasshouse_cols] %>% mutate(across(where(is.numeric), ~ .x / 10000))
-
-rm(df_SAF, df_nonSAF)
-
-#combine Non_SAF and SAF_ags into one df - the full ags census dataset
-##for June 2023, no need to do this, as will just be one dataset from the start.
-all_ags <- bind_rows(Non_SAF, SAF_ags)
-
-
-rm(Non_SAF, SAF_ags)
 
 #split SAF into seasonal data and non-seasonal
-SAF_SEAS_ONLY <- all_SAF %>%
+SAF_SEAS_ONLY <- all_saf %>%
   filter(saf_land != 1) %>%
   select(parish, holding, mlc, brn, item2827, item2828, item2)
 
 
-all_SAF <- all_SAF %>% filter (saf_land == 1)
+all_saf <- all_saf %>% filter (saf_land == 1)
 
 
 #join all_SAF and all_ags
@@ -89,7 +90,7 @@ all_SAF <- all_SAF %>% filter (saf_land == 1)
 
 SAF_JAC_inner <-
   inner_join(
-    all_SAF,
+    all_saf,
     all_ags,
     by = c('parish', 'holding'),
     all = TRUE,
@@ -98,7 +99,7 @@ SAF_JAC_inner <-
 
 SAF_JAC_SAF_anti <-
   anti_join(
-    all_SAF,
+    all_saf,
     all_ags,
     by = c('parish', 'holding'),
     all = TRUE,
@@ -108,7 +109,7 @@ SAF_JAC_SAF_anti <-
 SAF_JAC_JAC_anti <-
   anti_join(
     all_ags,
-    all_SAF,
+    all_saf,
     by = c('parish', 'holding'),
     all = TRUE,
     suffix = c(".SAF", ".ags")
@@ -126,15 +127,7 @@ both_SAF_JAC_inner_full <- SAF_JAC_inner %>%
     imptype = as.factor("none")
   )
 
-#for 2023, delete partial- full only
-both_SAF_JAC_inner_partial <- SAF_JAC_inner %>%
-  filter(survdata == "part") %>%
-  mutate(
-    land_data = as.factor("saf"),
-    other_data = as.factor("yes"),
-    saf_data = as.factor("complete"),
-    imptype = as.factor("none")
-  )
+
 
 SAF_anti <- SAF_JAC_SAF_anti %>%
   mutate(
@@ -155,28 +148,21 @@ JAC_anti_full <- SAF_JAC_JAC_anti %>%
     imptype = as.factor("none")
   )
 
-JAC_anti_partial <- SAF_JAC_JAC_anti %>%
-  filter(survdata == "part") %>%
-  mutate(
-    land_data = as.factor("none"),
-    other_data = as.factor("yes"),
-    saf_data = as.factor("none"),
-    imptype = as.factor("SAF")
-  )
-
 
 inner_SAF_JAC <-
-  bind_rows(both_SAF_JAC_inner_full, both_SAF_JAC_inner_partial) %>%
+both_SAF_JAC_inner_full %>%
   #keep only SAF data for inner-join data
   select(!contains(".ags"))
 
 #change names for binding with anti JAC and SAF.
 names(inner_SAF_JAC) <- gsub(".SAF", "", names(inner_SAF_JAC))
 #names(inner_SAF_JAC)
-anti_JAC <- bind_rows(JAC_anti_full, JAC_anti_partial)
+anti_JAC <- JAC_anti_full
 full_JAC_SAF <-  bind_rows(inner_SAF_JAC, anti_JAC)
 full_JAC_SAF <- bind_rows(full_JAC_SAF, SAF_anti)
 
+
+  
 #names(SAF_SEAS_ONLY)
 
 #reorder columns
@@ -194,11 +180,12 @@ full_JAC_SAF <-
     contains(string_answers),
     mlc,
     brn,
-    LFASS_area,
+    lfass_area,
     everything()
   )
+
 full_JAC_SAF <-
-  full_JAC_SAF %>% select(!c(item3166, submisType, maderight, item2726)) %>% arrange(by_group = TRUE)
+  full_JAC_SAF %>% select(!c(submisType, maderight)) %>% arrange(by_group = TRUE)  # original script also took out item3166 and item2726 but these don't exist
 
 
 
@@ -247,18 +234,16 @@ FJS_anti <-
             all = TRUE)
 FJS <- bind_rows(FJS_anti, FJS_SEAS) %>% arrange(by_group = TRUE)
 
-#******QA **************WRITE CSV TO DO MANUAL CORRECTIONS IN SAS********************* QA****
-write.csv(FJS, (paste0(output_path, "full_JAC_SAF_no_corr.csv")))
+#******QA **************DO MANUAL CORRECTIONS HERE??********************* QA****
 
 
-#read in manually corrected dataset
-full_JAC_SAF_corr <-
-  read.csv(paste0(output_path, "full_JAC_SAF_corr.csv")) %>%
+
+full_JAC_SAF_corr <- FJS %>%
   group_by(parish, holding) %>% arrange(by_group = TRUE)
 
 
 check_glasshouse <-
-  FJS %>% ungroup() %>% filter(land_data == "saf" &
+  full_JAC_SAF_corr %>% ungroup() %>% filter(land_data == "saf" &
                                  sum(item85, item86) > 0)
 
 
@@ -266,14 +251,14 @@ check_glasshouse <-
 #dealing with NAs - remove from sum to get value. Remove "na.rm = TRUE" to return NA (otherwise get zeros, imputation for genuinely missing values not zeros)
 full_JAC_SAF <-
   full_JAC_SAF_corr %>% mutate(
-    item87 = sum(item2713, item2707, na.rm = TRUE),
-    item2036 = sum(item2714, item2708),
+    #item87 = sum(item2713, item2707, na.rm = TRUE),
+    #item2036 = sum(item2714, item2708),
     
-    item2037 = sum(item2715, item2709),
+    #item2037 = sum(item2715, item2709),
     
     
-    item1711 = sum(item2716, item2710),
-    item1943 = sum(item2717, item2711),
+    #item1711 = sum(item2716, item2710),
+    #item1943 = sum(item2717, item2711),
     
     item2556 = sum(item2858, item2863, na.rm = TRUE),
     
@@ -281,7 +266,7 @@ full_JAC_SAF <-
     
     item2836 = sum(item2860, item2865, na.rm = TRUE),
     
-    item6000 = sum(item2861, item2866, na.rm = TRUE),
+    #item6000 = sum(item2861, item2866, na.rm = TRUE),
     item6001 = sum(item2862, item2867),
     
     item68 = sum(
@@ -357,9 +342,7 @@ full_JAC_SAF <-
       item82,
       item83,
       na.rm = TRUE
-    ),
-    item87 = sum(item2713, item2707, na.rm = TRUE)
-    
+    )
   )
 
 
@@ -370,15 +353,15 @@ full_JAC_SAF <-
     item85 = case_when(
       survtype == "SAF" &
         land_data == "saf"  ~ sum(
-          item2713,
+          #item2713,
           item2858,
           item2859,
           item2860,
           item2861,
-          item2714,
-          item2715,
-          item2716,
-          item2717,
+          #item2714,
+          #item2715,
+          #item2716,
+          #item2717,
           item2862,
           na.rm = TRUE
         ),
@@ -393,11 +376,11 @@ full_JAC_SAF <-
           item2863,
           item2864,
           item2865,
-          item2866,
-          item2708,
-          item2709,
-          item2710,
-          item2711,
+          #item2866,
+          #item2708,
+          #item2709,
+          #item2710,
+          #item2711,
           item2867,
           na.rm = TRUE
         ),
@@ -448,34 +431,23 @@ rm(
   SAF_JAC_SAF_anti
 )
 
-####checks with SAS outputs##########
 
-SAS_combined <-
-  read.csv(paste0(output_path, "COMBINED_DATA.csv"),
-           na.strings = c("", ".", "NA"))
+
 
 #order columns according to SAS_combined
 
-full_JAC_SAF <- full_JAC_SAF[names(SAS_combined)]
-FJS <- full_JAC_SAF %>% select(-c(i, item185, item186))
-SAS <- SAS_combined %>% select(-c(i, item185, item186))
 
-SAS <- SAS %>%
-  mutate(across(
-    starts_with('item'),
-    ~ ifelse(survtype != "SAF only" & is.na(.), 0, .)
-  ))
+FJS <- full_JAC_SAF %>% select(-c(i, item185, item186))
 
 FJS$survtype <- as.factor(FJS$survtype)
 FJS$saf_data <- as.factor(FJS$saf_data)
 
-SAS$survtype <- as.factor(SAS$survtype)
-SAS$saf_data <- as.factor(SAS$saf_data)
-
-levels(FJS$survtype)[levels(FJS$survtype) == "SAF_only"] <-
-  "SAF only"
-levels(FJS$saf_data)[levels(FJS$saf_data) == "seasonal"] <-
-  "seasonal only"
+# 
+# 
+# levels(FJS$survtype)[levels(FJS$survtype) == "SAF_only"] <-
+#   "SAF only"
+# levels(FJS$saf_data)[levels(FJS$saf_data) == "seasonal"] <-
+#   "seasonal only"
 
 
 
@@ -486,129 +458,78 @@ FJS <- FJS %>%
 FJS <- FJS %>%
   mutate(across(
     starts_with('item'),
-    ~ ifelse(survtype != "SAF only" & is.na(.), 0, .)
+    ~ ifelse(survtype != "SAF_only" & is.na(.), 0, .)
   ))
 
 
 
-FJS <- FJS %>% 
-  mutate(item46=(round(as.numeric(item46),3)),
-         item40=(round(as.numeric(item40),3)),
-         item2=(round(as.numeric(item2),3)),
-         item68=(round(as.numeric(item68),3)),
-         item35=(round(as.numeric(item35),3)),
-         item38=(round(as.numeric(item38),3)),
-         item37=(round(as.numeric(item37),3)),
-         item76=(round(as.numeric(item76),3)),
-         item84=(round(as.numeric(item84),3)),
-         item85=(round(as.numeric(item85),3)),
-         item86=(round(as.numeric(item86),3)),
-         item2037=(round(as.numeric(item2037),3)),
-         item2861=(round(as.numeric(item2861),3)),
-         item87=(round(as.numeric(item87),3)),
-         item2036=(round(as.numeric(item2036),3)),
-         item1711=(round(as.numeric(item1711),3)),
-         item6000=(round(as.numeric(item6000),3)),
-         item6001=(round(as.numeric(item6001),3)))
+# FJS <- FJS %>% 
+#   mutate(item46=(round(as.numeric(item46),3)),
+#          item40=(round(as.numeric(item40),3)),
+#          item2=(round(as.numeric(item2),3)),
+#          item68=(round(as.numeric(item68),3)),
+#          item35=(round(as.numeric(item35),3)),
+#          item38=(round(as.numeric(item38),3)),
+#          item37=(round(as.numeric(item37),3)),
+#          item76=(round(as.numeric(item76),3)),
+#          item84=(round(as.numeric(item84),3)),
+#          item85=(round(as.numeric(item85),3)),
+#          item86=(round(as.numeric(item86),3)),
+#          item2037=(round(as.numeric(item2037),3)),
+#          item2861=(round(as.numeric(item2861),3)),
+#          item87=(round(as.numeric(item87),3)),
+#          item2036=(round(as.numeric(item2036),3)),
+#          item1711=(round(as.numeric(item1711),3)),
+#          item6000=(round(as.numeric(item6000),3)),
+#          item6001=(round(as.numeric(item6001),3)))
          
-SAS <- SAS %>% 
-  mutate(item46=(round(as.numeric(item46),3)),
-         item40=(round(as.numeric(item40),3)),
-         item2=(round(as.numeric(item2),3)),
-         item68=(round(as.numeric(item68),3)),
-         item35=(round(as.numeric(item35),3)),
-         item38=(round(as.numeric(item38),3)),
-         item37=(round(as.numeric(item37),3)),
-         item76=(round(as.numeric(item76),3)),
-         item84=(round(as.numeric(item84),3)),
-         item85=(round(as.numeric(item85),3)),
-         item86=(round(as.numeric(item86),3)),
-         item2037=(round(as.numeric(item2037),3)),
-         item2861=(round(as.numeric(item2861),3)),
-         item87=(round(as.numeric(item87),3)),
-         item2036=(round(as.numeric(item2036),3)),
-         item1711=(round(as.numeric(item1711),3)),
-         item6000=(round(as.numeric(item6000),3)),
-         item6001=(round(as.numeric(item6001),3)))
-
-
-#compare column classes
-
-
-
-FJS_SAS_compare <- as.data.frame(compare_df_cols(FJS, SAS))
-
-
-
-
-comb_fjs <- setdiff(FJS, SAS)
-comb_fjs2 <- setdiff(SAS, FJS)
-
-# 
-# comb_fjssample <- comb_fjs[1, ]
-# comb_fjs2sample <- comb_fjs2[1, ]
-# 
-# compare <- rbind(comb_fjssample, comb_fjs2sample)
-
-
-
-diff4 <- mapply(setdiff, comb_fjs, comb_fjs2)
-
-diff5<-sapply(diff4, length)   # 10 differences...
-
-
-
-
-#files to explore differences in excel
-
-write.csv(comb_fjs, (paste0(output_path, "june_diff.csv")))
-write.csv(comb_fjs2, (paste0(output_path, "SAS_diff.csv")))
 
 
 
 ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~
   ~  ~  ~ #additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #duplicates
-  full_JAC_SAF %>% distinct() %>% nrow()
+#duplicates
+#full_JAC_SAF %>% distinct() %>% nrow() # check and edit this - currently does nothing
 
 #glasshouse check
-glasshouse_check <-
-  full_JAC_SAF %>% select(parish,
-                          holding,
-                          survtype,
-                          land_data,
-                          other_data,
-                          all_of(all_glasshouse)) %>%
-  mutate(sum_glasshouse = rowSums(across(contains(all_glasshouse)))) %>%
-  filter(sum_glasshouse > 0)
+# glasshouse_check <-
+#   full_JAC_SAF %>% select(parish,
+#                           holding,
+#                           survtype,
+#                           land_data,
+#                           other_data,
+#                           all_of(all_glasshouse)) %>%
+#   mutate(sum_glasshouse = rowSums(across(contains(all_glasshouse)))) %>%  # check this - it returns error in all_of(all_glasshouse)
+#   filter(sum_glasshouse > 0)
 
-#returns check
-prev_yr_data <-
-  read_sas(paste0(sas_agscens_path, "june", yr1, ".sas7bdat"))
-prev_yr_data_ph <- prev_yr_data %>% select(parish, holding)
-returns <- full_JAC_SAF %>% select(parish, holding, other_data) %>%
-  inner_join(., prev_yr_data_ph, by = c("parish", "holding"))
-#returns <- inner_join(returns, prev_yr_data_ph, by = c("parish", "holding"))
+#returns check. Run these when census is closed, i.e. returns are completed.
 
-returns_21 <-
-  inner_join(full_JAC_SAF, returns, by = c("parish", "holding", "other_data"))
-
-#check if other_data cols are identical
-#identical(returns_21$other_data.x, returns_21$other_data.y)
-
-data.table(returns_21)
-
-returns_21_summary <- returns_21 %>% select(where(is.numeric))
-returns_21_sum <-
-  as.data.frame(colSums(returns_21_summary, na.rm = TRUE)) %>%
-  rename(Sum = 1)
-returns_21_count <-
-  returns_21_summary %>% group_by(everything) %>% count()
+# prev_yr_data <-
+#   read_sas(paste0(sas_agscens_path, "june", yr1, ".sas7bdat"))
+# prev_yr_data_ph <- prev_yr_data %>% select(parish, holding)
+# returns <- full_JAC_SAF %>% select(parish, holding, other_data) %>%
+#   inner_join(., prev_yr_data_ph, by = c("parish", "holding"))
+# #returns <- inner_join(returns, prev_yr_data_ph, by = c("parish", "holding"))
+# 
+# returns_23 <-
+#   inner_join(full_JAC_SAF, returns, by = c("parish", "holding", "other_data"))
+# 
+# #check if other_data cols are identical
+# #identical(returns_21$other_data.x, returns_21$other_data.y)
+# 
+# data.table(returns_23)
+# 
+# returns_23_summary <- returns_23 %>% select(where(is.numeric))
+# returns_23_sum <-
+#   as.data.frame(colSums(returns_23_summary, na.rm = TRUE)) %>%
+#   rename(Sum = 1)
+# returns_23_count <-
+#   returns_23_summary %>% group_by_all() %>% count()
 
 
 # Merge in total area and total rented area from 1st June address file (RP&S). 
 
-addressfileorig<-read_sas(paste0(sas_agscens_path, "address_occid_01jun23.sas7bdat"))
+addressfileorig<-read_sas(paste0(sas_agscens_path, "address_occid_01jun", yr, ".sas7bdat"))
 
 addressfile<-clean_names(addressfileorig)
 
@@ -625,7 +546,20 @@ FJSaddress<-left_join(FJS, addressfile, by=c("parish", "holding"))
 
 
 FJScheck<-FJSaddress %>% 
-  select(parish, holding, item7, item11, item12, rps_totarea_june, rps_totowned_june, rps_totrented_june)
+  select(parish, holding, survtype, item20026, item11, item12, rps_totarea_june, rps_totowned_june, rps_totrented_june)
+
+# Save to datashare
+
+save(FJSaddress, file = paste0(output_path, "/combined_data_2023.rda"))
+
+# Save to ADM server
 
 
-save(FJSaddress, file = paste0(output_path, "/combined_data_withareas.rda"))
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="combined_data_2023",
+                      dataframe=FJSaddress,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
