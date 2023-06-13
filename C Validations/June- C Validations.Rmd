@@ -34,11 +34,11 @@ output:
 library(tidyverse)
 library(knitr)
 #yr = this year 20xx
-yr <- 2021
+yr <- 2023
 yr1 <- yr-1 
 yr2 <-  yr-2
 yr3 <-  yr-3
-yr_list <- c(yr, yr1, yr2)
+yr_list <- c(yr, yr2, yr3)
 
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -95,6 +95,24 @@ The following table displays potential errors for holdings where total area is z
 
   ifelse(nrow(err38) ==0, "No errors found", "Errors found ")
 kable(err38, caption = "Total area of holding is zero or missing AND area owned and area rented are zero or missing")
+
+```
+
+## Error 57
+The following table displays potential errors for holdings where area rented is greater/less than RP&S value by 20ha or more. The column "Errx_diff" gives the difference (x = error number).
+```{r, June - C-Validations-err57, results = 'markup'}
+
+  ifelse(nrow(err57) ==0, "No errors found", "Errors found ")
+kable(err57, caption = "Total area rented greater/less than RP&S value by 20ha or more")
+
+```
+
+## Error 59
+The following table displays potential errors for holdings where area owned greater/less than RP&S value by 20ha or more. The column "Errx_diff" gives the difference (x = error number).
+```{r, June - C-Validations-err59, results = 'markup'}
+
+  ifelse(nrow(err59) ==0, "No errors found", "Errors found ")
+kable(err59, caption = "Total area owned greater/less than RP&S value by 20ha or more")
 
 ```
 
@@ -327,69 +345,69 @@ kable(err47, caption = "Other livestock have been named (item186) but number (it
 
 ```
 
-## Error 25
-The following table displays possible errors for holdings where not all horses/donkeys are given as whole numbers
-```{r, June - C-Validations-err25, results = 'markup'} 
-ifelse(nrow(err25) ==0,  "No errors found", "Errors found")
-kable(err25, caption = " Not all horses/donkeys (item95:96/item2868 are given as whole numbers" )
-
-```
-
-## Error 26
-The following table displays possible errors for holdings where not all goats are given as whole numbers
-```{r, June - C-Validations-err26, results = 'markup'} 
-ifelse(nrow(err26) ==0,  "No errors found", "Errors found")
-kable(err26, caption = " Not all goats (item98, item1712:1713) are given as whole numbers" )
-
-```
-
-
-<!-- ## Error 27 -->
+<!-- ## Error 25 -->
 <!-- The following table displays possible errors for holdings where not all horses/donkeys are given as whole numbers -->
 <!-- ```{r, June - C-Validations-err25, results = 'markup'}  -->
-<!-- ifelse(nrow(err27) ==0,  "No errors found", "Errors found") -->
-<!-- kable(err27, caption = " Not all horses/donkeys (item27775/item2868 are given as whole numbers" ) -->
+<!-- ifelse(nrow(err25) ==0,  "No errors found", "Errors found") -->
+<!-- kable(err25, caption = " Not all horses/donkeys (item95:96/item2868 are given as whole numbers" ) -->
 
 <!-- ``` -->
-<!-- ## Error 28 -->
+
+<!-- ## Error 26 -->
 <!-- The following table displays possible errors for holdings where not all goats are given as whole numbers -->
 <!-- ```{r, June - C-Validations-err26, results = 'markup'}  -->
-<!-- ifelse(nrow(err27) ==0,  "No errors found", "Errors found") -->
-<!-- kable(err27, caption = " Not all goats (item27780) are given as whole numbers" ) -->
+<!-- ifelse(nrow(err26) ==0,  "No errors found", "Errors found") -->
+<!-- kable(err26, caption = " Not all goats (item98, item1712:1713) are given as whole numbers" ) -->
 
 <!-- ``` -->
+
+
+## Error 27
+The following table displays possible errors for holdings where not all horses/donkeys are given as whole numbers
+```{r, June - C-Validations-err25, results = 'markup'}
+ifelse(nrow(err27) ==0,  "No errors found", "Errors found")
+kable(err27, caption = " Not all horses/donkeys (item27775/item2868 are given as whole numbers" )
+
+```
+## Error 28
+The following table displays possible errors for holdings where not all goats are given as whole numbers
+```{r, June - C-Validations-err26, results = 'markup'}
+ifelse(nrow(err27) ==0,  "No errors found", "Errors found")
+kable(err27, caption = " Not all goats (item27780) are given as whole numbers" )
+
+```
 
 # Section 8 Legal Responsibility
-<!-- ##Error29 -->
-<!-- The following table displays possible errors for holdings where the legal responsbility box is ticked (item2980) but no details for occupier1/2 are given -->
-<!-- ```{r, June - C-Validations-err29, results = 'markup'}  -->
-<!-- ifelse(nrow(err29) ==0,  "No errors found", "Errors found") -->
-<!-- kable(err29, caption = "Legal responsbility box is ticked (item2980) but no details for occupier1/2 are given" ) -->
-<!-- ``` -->
+##Error29
+The following table displays possible errors for holdings where the legal responsbility box is ticked (item2980) but no details for occupier1/2 are given
+```{r, June - C-Validations-err29, results = 'markup'}
+ifelse(nrow(err29) ==0,  "No errors found", "Errors found")
+kable(err29, caption = "Legal responsbility box is ticked (item2980) but no details for occupier1/2 are given" )
+```
 
-<!-- ## Error 52 -->
-<!-- The following table displays possible errors for holdings where labour details NOT provided on another form this year & no Occupier 1 or occupier 2 work hours provided -->
-<!-- ```{r, June - C-Validations-err52, results = 'markup'}  -->
-<!-- ifelse(nrow(err52) ==0,  "No errors found", "Errors found") -->
-<!-- kable(err52, caption = "Labour details NOT provided on another form this year & no Occupier 1 or occupier 2 work hours provided" ) -->
+## Error 52
+The following table displays possible errors for holdings where labour details NOT provided on another form this year & no Occupier 1 or occupier 2 work hours provided
+```{r, June - C-Validations-err52, results = 'markup'}
+ifelse(nrow(err52) ==0,  "No errors found", "Errors found")
+kable(err52, caption = "Labour details NOT provided on another form this year & no Occupier 1 or occupier 2 work hours provided" )
 
-<!-- ``` -->
+```
 
-<!-- ## Error 53 -->
-<!-- The following table displays possible errors for holdings where legal and financial responsbility not indicated for Occupier 2 (when any Occupier 2 details have been provided for Occupier 2) -->
-<!-- ```{r, June - C-Validations-err53, results = 'markup'}  -->
-<!-- ifelse(nrow(err53) ==0,  "No errors found", "Errors found") -->
-<!-- kable(err53, caption = "Legal and financial responsbility not indicated for Occupier 2 (when any Occupier 2 details have been provided for Occupier 2)" ) -->
+## Error 53
+The following table displays possible errors for holdings where legal and financial responsbility not indicated for Occupier 2 (when any Occupier 2 details have been provided for Occupier 2)
+```{r, June - C-Validations-err53, results = 'markup'}
+ifelse(nrow(err53) ==0,  "No errors found", "Errors found")
+kable(err53, caption = "Legal and financial responsbility not indicated for Occupier 2 (when any Occupier 2 details have been provided for Occupier 2)" )
 
-<!-- ``` -->
+```
 
-<!-- ## Error 54 -->
-<!-- The following table displays possible errors for holdings where legal and financial responsbility indicated for Occupier 2 but no working time answered) -->
-<!-- ```{r, June - C-Validations-err54, results = 'markup'}  -->
-<!-- ifelse(nrow(err54) ==0,  "No errors found", "Errors found") -->
-<!-- kable(err54, caption = "Legal and financial responsbility indicated for Occupier 2 but no working time answered" ) -->
+## Error 54
+The following table displays possible errors for holdings where legal and financial responsbility indicated for Occupier 2 but no working time answered)
+```{r, June - C-Validations-err54, results = 'markup'}
+ifelse(nrow(err54) ==0,  "No errors found", "Errors found")
+kable(err54, caption = "Legal and financial responsbility indicated for Occupier 2 but no working time answered" )
 
-<!-- ``` -->
+```
 
 # Section 9 Occupiers
 ## Error 30
@@ -433,13 +451,13 @@ kable(err50, caption = "Occupier 2 gender selected but no working hours given" )
 ```
 
 
-<!-- ## Error 51 -->
-<!-- The following table displays possible errors for holdings where year of birth for occupier 1 or 2 is not valid (ie before 1923 or after 2008) -->
-<!-- ```{r, June - C-Validations-err51, results = 'markup'}  -->
-<!-- ifelse(nrow(err51) ==0,  "No errors found", "Errors found") -->
-<!-- kable(err51, caption = "Year of birth for occupier 1 or 2 is not valid (ie before 1923 or after 2008)" ) -->
+## Error 51
+The following table displays possible errors for holdings where year of birth for occupier 1 or 2 is not valid (ie before 1923 or after 2008)
+```{r, June - C-Validations-err51, results = 'markup'}
+ifelse(nrow(err51) ==0,  "No errors found", "Errors found")
+kable(err51, caption = "Year of birth for occupier 1 or 2 is not valid (ie before 1923 or after 2008)" )
 
-<!-- ``` -->
+```
 
 ## Error 55
 The following table displays possible errors for holdings where occupier 2 details given but not occupier 1
@@ -484,13 +502,13 @@ kable(err33, caption = "Not all labour items are given as whole numbers" )
 
 <!-- ``` -->
 
-## Error 36
-The following table displays possible errors for holdings in a non-crofting parish with a rented croft (item2251)
-```{r, June - C-Validations-err36, results = 'markup'} 
-ifelse(nrow(err36) ==0,  "No errors found", "Errors found")
-kable(err36, caption = "Holdings in a non-crofting parish with a rented croft (item2251)" )
+<!-- ## Error 36 -->
+<!-- The following table displays possible errors for holdings in a non-crofting parish with a rented croft (item2251) -->
+<!-- ```{r, June - C-Validations-err36, results = 'markup'}  -->
+<!-- ifelse(nrow(err36) ==0,  "No errors found", "Errors found") -->
+<!-- kable(err36, caption = "Holdings in a non-crofting parish with a rented croft (item2251)" ) -->
 
-```
+<!-- ``` -->
 
 # Migrant error checks
 ## Error 39
@@ -530,22 +548,22 @@ kable(err42, caption = "Holdings where soft fruit labour is too high" )
 ```
 
 # Validation Error Summary Table 
-The following tables display the count of validation errors. The total cases with errors is given on the final row.
+The following table display the count of validation errors. The total cases with errors is given on the final row.
 ```{r, June - C-Validations-err-summary, results = 'markup'} 
 
 kable(JAC_validation_error_summary, caption = "Count of validation errors")
-kable(JAC_validation_error_summary_NA, caption = "Count of validation errors including NA cases")
+#kable(JAC_validation_error_summary_NA, caption = "Count of validation errors including NA cases")
 
 ```
 
 
-The following table displays the count of validation errors compared with SAS. 
-```{r, results = 'markup'} 
+<!-- The following table displays the count of validation errors compared with SAS.  -->
+<!-- ```{r, results = 'markup'}  -->
 
-kable(SAS_R_comparison, caption = "Count of validation errors vs SAS")
-kable(SAS_R_NAcomparison, caption = "Count of validation errors (including NA) vs SAS")
+<!-- kable(SAS_R_comparison, caption = "Count of validation errors vs SAS") -->
+<!-- kable(SAS_R_NAcomparison, caption = "Count of validation errors (including NA) vs SAS") -->
 
-```
+<!-- ``` -->
 
 
 The following table displays the count of possible migrant labour errors for soft fruit holdings. 
@@ -556,9 +574,9 @@ kable(check_labour_error_summary, caption = "Count of labour errors for soft fru
 ```
 
 
-The following table displays the count of new validation errors. 
-```{r, results = 'markup'} 
+<!-- The following table displays the count of new validation errors.  -->
+<!-- ```{r, results = 'markup'}  -->
 
-kable(JAC_new_validation_error_summary, caption = "Count of new validation errors")
+<!-- kable(JAC_new_validation_error_summary, caption = "Count of new validation errors") -->
 
-```
+<!-- ``` -->
