@@ -39,6 +39,8 @@ all_ags <- read_table_from_db(server=server,
                               database=database, 
                               schema=schema, 
                               table_name="Ags_A_2023")
+all_ags <- all_ags %>% 
+  select(-Ags_A_2023ID)
 
 # Load from datashare
 # load(paste0(output_path, "nonSAF_ags_", yr, ".rda"))
@@ -50,6 +52,8 @@ all_saf <- read_table_from_db(server=server,
                                database=database, 
                                schema=schema, 
                                table_name="allsaf_final_2023")
+all_saf <- all_saf %>% 
+  select(-allsaf_final_2023ID)
 
 
 # Load fromdatashare
@@ -96,6 +100,12 @@ SAF_JAC_inner <-
     all = TRUE,
     suffix = c(".SAF", ".ags")
   )
+
+
+check<-SAF_JAC_inner %>% 
+  select(parish, holding, item2321.SAF, item2321.ags, item2322.SAF, item2322.ags)
+
+
 
 SAF_JAC_SAF_anti <-
   anti_join(
@@ -419,12 +429,10 @@ full_JAC_SAF <-
 rm(
   anti_JAC,
   both_SAF_JAC_inner_full,
-  both_SAF_JAC_inner_partial,
   full_JAC_SAF_SAF_SEAS_anti,
   full_JAC_SAF_SAF_SEAS_inner,
   inner_SAF_JAC,
   JAC_anti_full,
-  JAC_anti_partial,
   SAF_anti,
   SAF_JAC_inner,
   SAF_JAC_JAC_anti,
@@ -435,9 +443,7 @@ rm(
 
 
 #order columns according to SAS_combined
-
-
-FJS <- full_JAC_SAF %>% select(-c(i, item185, item186))
+FJS<-full_JAC_SAF
 
 FJS$survtype <- as.factor(FJS$survtype)
 FJS$saf_data <- as.factor(FJS$saf_data)
@@ -485,9 +491,7 @@ FJS <- FJS %>%
          
 
 
-
-~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~
-  ~  ~  ~ #additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ #additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #duplicates
 #full_JAC_SAF %>% distinct() %>% nrow() # check and edit this - currently does nothing
 
@@ -529,6 +533,7 @@ FJS <- FJS %>%
 
 # Merge in total area and total rented area from 1st June address file (RP&S). 
 
+
 addressfileorig<-read_sas(paste0(sas_agscens_path, "address_occid_01jun", yr, ".sas7bdat"))
 
 addressfile<-clean_names(addressfileorig)
@@ -550,10 +555,12 @@ FJScheck<-FJSaddress %>%
 
 # Save to datashare
 
-save(FJSaddress, file = paste0(output_path, "/combined_data_2023.rda"))
+
+combined_data_2023<-FJSaddress
+
+save(combined_data_2023, file = paste0(output_path, "/combined_data_2023.rda"))
 
 # Save to ADM server
-
 
 write_dataframe_to_db(server=server,
                       database=database,
@@ -563,3 +570,7 @@ write_dataframe_to_db(server=server,
                       append_to_existing = FALSE,
                       versioned_table=FALSE,
                       batch_size = 10000)
+
+# Save address file for quick loading
+
+

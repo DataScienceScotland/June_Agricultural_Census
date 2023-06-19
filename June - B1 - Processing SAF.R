@@ -1,10 +1,9 @@
-# This code applies corrections to the SAF datasets (permanent and seasonal). These corrections will include manual corrections which can be added each year, perhaps to the function script.
-# Then, for the permanent data, it corrects invalid codes (this will need updating every year) and  splits up lines with both SFP code and Other Code. For the seasonal data, it splits up and removes those with only an Other code.
+# This script processes the SAF data to prepare it for combining with the census data in B2. 
 # Code corrections may need updating yearly depending on SAF data.
 # This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
-# Data used currently is from September 2021, as in the most recent version of the SAS project.
+# Data used currently is from June 2023. This is the first SAF data drop.
 # Created by Lucy Nevard 27.01.23
-# Modified by Lucy Nevard 30.05.23
+# Modified by Lucy Nevard 09.06.23
 
 
 # Before import -----------------------------------------------------------
@@ -59,10 +58,10 @@ saf_seas <- read_table_from_db(server=server,
 # Reading in from ADM creates a new variable with id. Remove.
 
 saf_perm<-saf_perm %>% 
-  select(-saf_perm_a_2023id)
+  select(-saf_perm_A_2023ID)
 
 saf_seas<-saf_seas%>% 
-  select(-saf_seas_a_2023id)
+  select(-saf_seas_A_2023ID)
 
 list_perm_seas<-list(saf_perm,saf_seas)
 
@@ -80,7 +79,12 @@ newcodetrans <-
 
 
 
-# B6 of SAS code - Corrections ----------------------------------------------------------
+# B4/B6 of SAS code - Corrections ----------------------------------------------------------
+
+# This code applies corrections to the SAF datasets (permanent and seasonal). These corrections will include manual corrections which can be added each year, perhaps to the function script.
+# Then, for the permanent data, it corrects invalid codes (this will need updating every year) and  splits up lines with both SFP code and Other Code. For the seasonal data, it splits up and removes those with only an Other code.
+# Code corrections may need updating yearly depending on SAF data.
+# This script is based on the code in B4 and B6 of the June Project
 
 #  Apply corrections to both datasets.  -----------------------------------
 # Correcting area variables and slc when blank. Code corrections for sfp_code and other_code.
@@ -261,8 +265,15 @@ saf_seas<-seas_variables(saf_seas)
 # B7 of SAS code - checks and flagging potential errors----------------------------------------------------------
 
 # Flag numbers: 
-# 1. Field ID (FID) recorded as belonging to multiple holdings (Single Location Code: SLC) on permanent sheets where one reported it as seasonally let out (LLO). A permanent tenancy may incorrectly 
+# 1. Field ID (FID) recorded as belonging to multiple holdings (Single Location Code: SLC) on permanent sheets where one reported it as seasonally let out (LLO). A permanent tenancy may incorrectly be recorded as a seasonal let out]'/
+# 2. Duplicate lines, and in the total recorded land use area to be'/substantially greater than the recorded field area'/[May be a data entry error]'/
+# 3. Land reported as LLO, and total recorded land use area to be'/substantially greater than the recorded field area'/[May be a seasonal tenancy incorrectly entered on permanent sheet]'/
+# 4. On seasonal sheet, MLC and SLC are identical'/[May be a permanent tenancy incorrectly entered on seasonal sheet]'/
+# 5.  The total recorded land use area is greater than the recorded'/field area by a factor of 10 or 100'/[May be a decimal place error]'/
+# 6. SLC = 000/0000 on permanent land or MLC = 000/000 on seasonal land'/		- ie. parish/holding is unknown'/
 # 7. FID recorded as belonging to multiple holdings (SLC) without any reported as seasonally let out (LLO).
+# 8. Other land where total recorded land use area is substantially'/   greater than the recorded field area'/
+# 9. EXCL land where total recorded land use area is substantially'/ greater than the recorded field area'/
 
 # Limits for checking against
 
@@ -299,7 +310,7 @@ fidfreqsfinal<-merge(fidfreqs, fids, by="fid")
 fids_with_multiple_slcs<-fidfreqsfinal %>% # There are no fids with multiple slcs in the 2023 dataset. Cross-check using the SAS code. 
   filter(holdings_using_fid>1)
 
-# Filter out LMC claimtype. Note: check what LMC stands for. 
+# Filter out LMC (Land Management Contract) claimtype. 
  
 saf_perm_notlmc<-saf_perm %>% 
   filter(claimtype!="LMC")
@@ -323,7 +334,6 @@ saf_perm_notlmc<-saf_perm %>%
 
 fids_with_multiple_slcs <- fids_with_multiple_slcs[c('fid', 'slc')] # using indexing because filter doesn't work on an empty df
 
-# do the following two statements in a list
 
 saf_perm<-plyr::join_all(list(saf_perm_notlmc, fids_with_multiple_slcs,fids_with_llo), by=c("slc","fid"), type='left')
 
@@ -352,7 +362,7 @@ flag7<-flag7 %>%
 
 
 
-# merge flag7 here with saf_perm if it has rows in it. Currently it is empty so we don't. 
+# merge flag 1 and flag7 here with saf_perm if it has rows in it. Currently it is empty so we don't. 
 # Check in SAS code whether we merge flag1 with safperm too. It's empty anyway.
 
 
@@ -364,7 +374,7 @@ saf_perm<-saf_perm %>%
 
 
 
-# Dataframes for different error flags
+# Dataframes for other error flags
 # Select variables, group by fid and summarise
 
 checkareasummary <- saf_perm %>%
@@ -372,12 +382,13 @@ checkareasummary <- saf_perm %>%
   group_by(fid) %>% 
   summarycheckarea()
 
-# Dataframe for when field area is inconsistent
+# Dataframe for when field area is inconsistent. Currently 0 records. 
 
 inconsistentfieldareas <- checkareasummary %>%
   filter(var_field > 0)
 
 # Check for differences between total land use and field area (over the overreportlimit or overpercent which is coded at the top of the script)
+# Currently 107 records. 
 
 checkareamismatches <- checkareasummary %>%
   mutateareamismatches() %>% 
@@ -385,11 +396,12 @@ checkareamismatches <- checkareasummary %>%
   select(fid, sum_area, max_field, diff, ratio)
 
 # Fid level dataset for fids with a mismatch between land use area total and recorded field area
+# Currently 189 records. 
 
 checkareamismatches_fids <- merge(checkareamismatches, saf_perm, by = "fid")
 
 
-# check for decimal point (dp) errors
+# check for decimal point (dp) errors. Currently 2 records. 
 
 dperror <- merge(checkareasummary, saf_perm, by = "fid")
 
@@ -401,16 +413,21 @@ dperror <- dperror %>%
 
 # Flag duplicates where total land use is substantially greater than field area - keeps SFPS over OTHER
 
+# Currently 99 records.
+
 areaoverreported <- checkareamismatches_fids %>%
   filter(ratio > 1.1 | diff < (-5)) %>% 
   mutate(
     across(claimtype, as_factor)
   )
 
+# 78 records
 
 remove_duplicates <- areaoverreported %>%
   group_by(fid, area, code) %>%
   filter(!(claimtype == "OTHER" & n() > 1))
+
+# 21 records
 
 duplicates <- areaoverreported %>%
   group_by(fid, area, code) %>%
@@ -421,6 +438,8 @@ duplicates <- areaoverreported %>%
 
 # flag EXCL land where total crop area is too large
 
+
+
 areastilloverreported <- group_by(remove_duplicates, fid) %>%
   summarize(
     max_field = max(field_area),
@@ -428,7 +447,10 @@ areastilloverreported <- group_by(remove_duplicates, fid) %>%
   )
 
 
+
 areastilloverreported <- merge(areastilloverreported, saf_perm, by = "fid")
+
+# Currently 70 records.
 
 areastilloverreported <- areastilloverreported %>%
   mutate(
@@ -436,14 +458,17 @@ areastilloverreported <- areastilloverreported %>%
     ratio = signif(sum_area / max_field, 3)) %>% 
   filter(ratio > over_report_percent | diff < (-over_report_limit))
 
-
+# 17 records.
 
 overreportedexclerror <- areastilloverreported %>%
   filter(code == "EXCL")
 
+# 53 records.
 
 areastilloverreported2 <- areastilloverreported %>%
   filter(code != "EXCL")
+
+# 36 records.
 
 areastilloverreported2 <- group_by(areastilloverreported2, fid) %>%
   summarize(
@@ -455,8 +480,10 @@ areastilloverreported2 <- group_by(areastilloverreported2, fid) %>%
 
 # Flag llo land where total land area is still greater than the field area by over_report amount (after accounting for duplicates). Land reported as seasonally let out as these are likely errors.
 
+
 areastilloverreported2 <- merge(areastilloverreported2, saf_perm, by = "fid")
 
+# 46 records
 
 areastilloverreported2 <- areastilloverreported2 %>%
   mutate(
@@ -465,15 +492,14 @@ areastilloverreported2 <- areastilloverreported2 %>%
   filter(ratio > over_report_percent | diff < (-over_report_limit))
 
 
-
-# 
-
 overreportedlloerror <- areastilloverreported %>%
   filter(llo == "Y")
 
 
 areastilloverreported3 <- areastilloverreported2 %>%
   filter(llo != "Y")
+
+# 26 records. 
 
 areastilloverreported3 <- group_by(areastilloverreported3, fid) %>%
   summarize(
@@ -485,9 +511,7 @@ areastilloverreported3 <- group_by(areastilloverreported3, fid) %>%
 
 # Flag records that may be errors
 
-
-# the following df has 1 more entry in SAS - 3 because of llo, what about 4th - see above comments.
-
+# 46 records
 
 areastilloverreported3 <- merge(areastilloverreported3, saf_perm, by = "fid") %>% 
   filter(llo != "Y") %>%
@@ -507,15 +531,19 @@ overreportedllofids <- overreportedlloerror %>%
   select(fid, mlc) %>%
   rename(llomlc = mlc)
 
+
 overreportedothererror <- merge(overreportedllofids, areastilloverreported3, by = "fid", all = TRUE)
 
+# 28 records
 
 overreportedothererror <- overreportedothererror %>%
   filter(claimtype == "OTHER")
 
 
 
-# Note: check all dfs are same type
+
+
+# Create flag 6 (parish or holding unknown) in saf_perm (see above for flag descriptions)
 
 saf_perm <- saf_perm %>%
   mutate(
@@ -524,32 +552,40 @@ saf_perm <- saf_perm %>%
       ifelse(parish <= 0 | holding <= 0, 1, 0)
   )
 
-# Other flagged datasets
+
+# Create flag 2 (duplicates)
 
 duplicates <- duplicates %>%
   select(brn, fid, line, claimtype, code, area) %>% 
   mutate(flag2=1)
 
+# Create flag 3 (overreported llo error). Currently df is empty.
 
-# overreportedlloerror$flag3<-1 this doesn't work on an empty dataframe.
+#overreportedlloerror$flag3<-1 #this doesn't work on an empty dataframe.
 
 overreportedlloerror <- overreportedlloerror %>%
   select(brn, fid, line, claimtype, code, area) # include flag3 when df isn't empty
+
+# Create flag 5 (decimal point error)
 
 dperror <- dperror %>%
   select(brn, fid, line, claimtype, code, area, dp_ratio, sum_area) %>% 
   mutate(flag5=1)
 
+# Create flag 8 (overreported other land error)
 
 overreportedothererror <- overreportedothererror %>%
   select(brn, fid, line, claimtype, code, area) %>% 
   mutate(flag8=1)
 
+# Create flag 9 (overreported EXCL land error)
 
 overreportedexclerror <- overreportedexclerror %>%
   select(brn, fid, line, claimtype, code, area) %>% 
   mutate(flag9=1)
 
+
+# Note: check all these flagged dfs are same type
 
 
 # Create list of all dfs, including errors with their flags.
@@ -593,9 +629,12 @@ checkarea_seas <- group_by(checkarea_seas, fid) %>%
     var_field = var(field_area)
   )
 
+# 0 records. 
+
 inconsistentfieldareas_seas <- checkarea_seas %>%
   filter(var_field > 0)
 
+# 438 records.
 
 checkareamismatches_seas <- checkarea_seas %>%
   filter(max_field > 0 & sum_area > 0) %>%
@@ -610,6 +649,8 @@ checkareamismatches_seas <- checkarea_seas %>%
 
 # Create fid level dataset where land use area and field area don't match
 
+# 535 records. 
+
 checkareamismatches_fids_seas <- merge(checkareamismatches_seas, saf_seas, by = "fid")
 
 
@@ -620,16 +661,16 @@ checkarea_seas <- checkarea_seas %>%
 # Flag decimal point (dp) errors
 
 dperror_seas <- merge(checkarea_seas, saf_seas, by = "fid")
-# Note: the SAS code outputs only 4 observations here (August 2021 dataset)
+
+# 1 record.
 
 dperror_seas <- dperror_seas %>%
   mutate(dp_ratio = signif(area / (field_area - sum_area + area), 3)) %>% 
   filter(dp_ratio == 0.01 | dp_ratio == 0.1 | dp_ratio == 10 | dp_ratio == 100)
 
-
-
 # remove duplicates where total land use greater than field area by over report amount
 
+# 125 records
 
 areaoverreported_seas <- checkareamismatches_fids_seas %>%
   filter(ratio > over_report_percent | diff < (-over_report_limit))
@@ -638,11 +679,13 @@ areaoverreported_seas <- checkareamismatches_fids_seas %>%
 
 areaoverreported_seas <- areaoverreported_seas[order(areaoverreported_seas$business_name), ]
 
+# 84 records
+ 
 remove_duplicates_seas <- areaoverreported_seas[!duplicated(areaoverreported_seas[c("fid", "area", "code")]), ]
 
+# 41 records
+
 duplicates_seas <- areaoverreported_seas[duplicated(areaoverreported_seas[c("fid", "area", "code")]), ]
-
-
 
 
 # Check fids where the claimed area is much larger than field area
@@ -656,14 +699,15 @@ areastilloverreported_seas <- group_by(remove_duplicates_seas, fid) %>%
 
 areastilloverreported_seas <- merge(areastilloverreported_seas, saf_seas, by = "fid")
 
+# 65 records
+
 areastilloverreported_seas <- areastilloverreported_seas %>%
   mutate(
     diff = max_field - sum_area,
     ratio = signif(sum_area / max_field, 3)) %>% 
   filter(ratio > over_report_percent | diff < (-over_report_limit))
 
-
-# Flag duplicates
+# Create flag 6
 
 saf_seas <- saf_seas %>%
   mutate(
@@ -673,10 +717,14 @@ saf_seas <- saf_seas %>%
   )
 
 
+
+# Create flag 2
+
 duplicates_seas <- duplicates_seas %>%
   select(brn, fid, line, claimtype, area, code) %>%
   mutate(flag2 = 1)
 
+# Create flag 5
 
 dperror_seas <- dperror_seas %>%
   select(brn, fid, line, claimtype, area, code, dp_ratio, sum_area) %>%
@@ -692,13 +740,6 @@ finalsaf_seas <- df_list_seas %>% reduce(full_join, by = c("brn", "fid", "line",
 
 
 
-# Save to datashare. Not necessary as they are saved at the end of the script.
-# 
-# 
-# save(finalsaf_perm, file = paste0(Code_directory, "/allsaf_perm_B7.rda"))
-# save(finalsaf_seas, file = paste0(Code_directory, "/allsaf_seas_B7.rda"))
-
-
 
 # B8 section of SAS code -------------------------------------------------
 
@@ -707,8 +748,7 @@ finalsaf_seas <- df_list_seas %>% reduce(full_join, by = c("brn", "fid", "line",
 saf_permcurr<-finalsaf_perm
 saf_seascurr<-finalsaf_seas
 
-
-# Last year's data must be read in from a csv - R struggles with the xlsx
+# Read in last year's data
 
 saf_prev <- read_table_from_db(server=server, 
                                database=database, 
@@ -930,7 +970,7 @@ write_dataframe_to_db(server=server,
 
 # B9 Section of SAS code --------------------------------------------------
 
-
+saf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8_2023.rda"))
 
 # Rename SAF df
 
@@ -1132,7 +1172,6 @@ order <-
     "item55",
     "item81",
     "item2707",
-    "item22",
     "item2863",
     "item2864",
     "item2865"

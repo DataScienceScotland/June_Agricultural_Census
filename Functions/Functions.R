@@ -293,6 +293,7 @@ fid_index   <-  function(x) {
   setDT(x)[, line := seq(1, .N), by = fid]
 }
 
+# create sum variables in df to check areas 
 
 summarycheckarea<-function(x) {
   dplyr::summarize(x,
@@ -484,20 +485,28 @@ newitemssaf<-function(x) {
   mutate(x,
     item1 = llo_area,
     item2 = item2879 + item2827 + item2828,
-    item68 = item52 + item53 + item55 + item56 + item2323 + item59 + item60 + item61 +
+    item27730 = item52 + item53 + item55 + item56 + item2323 + item59 + item60 + item61 +
       item63 + item64 + item65 + item66,
     item76 = item70 + item71 + item72 + item2832 + item75,
-    item84 = item2324 + item1709 + item80 + item81 + item1710 + item82 + item83,
-    item35 = item68,
+    item27740 = item2324 + item1709 + item80 + item81 + item1710 + item82 + item83,
+    item68 = item27730,
     item37 = item76,
-    item38 = item41 + item84 + item2858 + item2863 +
+    item38 = item41 + item27740 + item2858 + item2863 +
       item2859 + item2864 +
       item2860 + item2865 +
       item2861,
-    item40 = item14 + item15 + item16 + item18 + item17 + item20 + item3156 + item22 +
+    item40 = item14 + item15 + item16 + item18 + item17 + item20 + item3156 +
       item19 + item23 + item21 + item24 + item2320 + item27 + item28 +
-      item2034 + item29 + item30 + item31 + item2059 + item32 + item34 + item36 + item2469 + item2470 + item35 + item37 + item38,
+      item2034 + item29 + item30 + item31 + item2059 + item32 + item34 + item36 + item2469 + item2470 + item27730 + item37 + item38,
     item46 = item2321 + item2322 + item40,
+    item27710=item16+item18,
+    item27715=item17+item20,
+    item27720=item19+item23,
+    item27725=item29+item30+item31+item2059+item32+item34,
+    item27735=item36+item70+item71+item72+item2832+item75,
+    item2556=item2858+item2863,
+    item2557 = item2859+item2864,
+    item2836 = item2860+item2865,
     saf_land =
       ifelse((item47 + item49 + item46 + item9999) > 0, 1, "")
   )
