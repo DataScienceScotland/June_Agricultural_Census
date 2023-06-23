@@ -118,10 +118,10 @@ kable(err59, caption = "Total area owned greater/less than RP&S value by 20ha or
 
 # Section 2 Seasonal Rents
 ## Error 2
-The following table displays possible errors for holdings where total seasonal rent (item2) doesn't match with area rented( item7, section 1). The column "Errx_diff" gives the difference (x = error number).
+The following table displays possible errors for holdings where total seasonal rent (item2) matches with area rented on full tenancy (item20026, section 1). The column "Errx_diff" gives the difference (x = error number).
 ```{r, June - C-Validations-err2, results = 'markup'} 
-  ifelse(nrow(err2) ==0, "No errors found", "Errors found - item2 != item7")
-kable(err2, caption = "Total seasonal rents doesn't match area rented (item2 != item7)")
+  ifelse(nrow(err2) ==0, "No errors found", "Errors found - item2 = item20026")
+kable(err2, caption = "Total seasonal rents equal to  area rented on full tenancy (item2 = item20026)")
 
 ```
 
@@ -378,11 +378,18 @@ kable(err27, caption = " Not all goats (item27780) are given as whole numbers" )
 ```
 
 # Section 8 Legal Responsibility
+##Error60
+The following table displays possible errors for holdings where the legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given
+```{r, June - C-Validations-err60, results = 'markup'}
+ifelse(nrow(err60) ==0,  "No errors found", "Errors found")
+kable(err60, caption = "legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given" )
+```
+
 ##Error29
-The following table displays possible errors for holdings where the legal responsbility box is ticked (item2980) but no details for occupier1/2 are given
+The following table displays possible errors for holdings where the legal responsbility box is ticked (item2727) and details for occupier1/2 are given
 ```{r, June - C-Validations-err29, results = 'markup'}
 ifelse(nrow(err29) ==0,  "No errors found", "Errors found")
-kable(err29, caption = "Legal responsbility box is ticked (item2980) but no details for occupier1/2 are given" )
+kable(err29, caption = "Legal responsbility box is ticked  and  details for occupier1/2 are given" )
 ```
 
 ## Error 52
