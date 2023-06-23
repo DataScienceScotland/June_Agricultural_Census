@@ -17,12 +17,16 @@ yr3 <-  yr-3
 yr_list <- c(yr, yr2, yr3)
 
 
+#Function
+#function to remove columns where error = 0
+remove_zero <- function(x){select(x, where(~any(.!= 0)))}
+
 
 
 # Before import -----------------------------------------------------------
 
 
-
+load(paste(output_path, "2023/Ags_A_2023.rda", sep = ""))
 
 # Datashare file path for import and export
 output_path <- "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/"
@@ -541,6 +545,7 @@ err6_desc <- "err6_Sum of itemised veg for human consumption not equal to all ve
 err7_desc <- "err7_All veg from SAF not equal to all veg (census form)"
 err8_desc <- "err8_Sum of itemised soft fruit not equal to all soft fruit (SAF)"
 err9_desc <- "err9_All soft fruit from SAF not equal to all soft fruit (census form)"
+err60_desc <- "err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given"
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -571,7 +576,8 @@ croft <- croft %>% group_by(parish, holding)
 # Combine croft and combined dataset------------------------------------------------------------------
 
 #filter for only form returns
-all_JAC_form <- combined_JAC %>% filter(survtype == "Non-SAF"| survtype == "SAF") 
+all_JAC_form <- combined_JAC %>% group_by(parish, holding) %>%
+  filter(survtype == "Non-SAF") 
 #croft <- croft %>% mutate(croft = 1)
 
 #form returns and croft dataset
@@ -934,6 +940,13 @@ all_JAC_form$err28 <- ifelse(round(all_JAC_form[goats_kids], digits = 1) != all_
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 #Section 8 Legal Responsbility
 
+#legal and financial responsibility not answered
+all_JAC_form$err60 <- ifelse(all_JAC_form[legal_fin_resp] ==0 & all_JAC_form[other_legal_return] == 0 |
+                               (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
+                               all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+                               all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]) <0,  1, 0)
+
+
 #'Other legal return box is ticked (labour details provided on another form) and Occupier 1 or occupier 2 work hours provided
 
 
@@ -965,7 +978,7 @@ all_JAC_form$err54 <- ifelse(all_JAC_form[occupier2_legal_fin]> 0& (all_JAC_form
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 #Section 9 Occupiers
 
-#More than one working time option provided for occuppier 1
+#More than one working time option provided for occupier 1
 #err30
 all_JAC_form$err30 <- ifelse(all_JAC_form[occupier1_ft] >=1 & all_JAC_form[occupier1_pt_gthalf] >=1|
                              all_JAC_form[occupier1_ft] >=1 & all_JAC_form[occupier1_pt_lthalf] >=1|
@@ -989,10 +1002,10 @@ all_JAC_form$err48 <- ifelse((all_JAC_form[occupier1_male] >0 & all_JAC_form[occ
 
 #gender selected but no working hours given
 #occupier1
-all_JAC_form$err49 <- ifelse((all_JAC_form[occupier1_male]>0 || all_JAC_form[occupier1_female] >0)  & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
+all_JAC_form$err49 <- ifelse((all_JAC_form[occupier1_male]>0 | all_JAC_form[occupier1_female] >0)  & (all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
                                             all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work])<=0, 1, 0)
 #occupier2
-all_JAC_form$err50 <- ifelse((all_JAC_form[occupier2_male]>0 || all_JAC_form[occupier2_female] >0)  & (all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
+all_JAC_form$err50 <- ifelse((all_JAC_form[occupier2_male]>0 | all_JAC_form[occupier2_female] >0)  & (all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
                                                                                                          all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work])<=0, 1, 0)
 
 #2023 check if valid Year of birth for occupier 1 and 2
@@ -1113,7 +1126,7 @@ brn_fruit <- fruit_holdings %>% ungroup() %>% select(brn, sumfruit, slr_fruit, l
 brn_fruit<- brn_fruit %>% summarise(freq =n(), sumfruit_sum = sum(sumfruit), slr_fruit_sum = sum(slr_fruit), lab_returned_sum = sum(lab_returned))
 
 #holdings with more than 2ha of fruit
-large_fruit <-fruit_holdings %>% filter(sumfruit>2 & survtype != "SAF only") %>% arrange(brn, by_group = FALSE)
+large_fruit <-fruit_holdings %>% filter(sumfruit>2 & survtype != "SAF_only") %>% arrange(brn, by_group = FALSE)
 
 check_labour <- left_join(large_fruit, brn_fruit, by = "brn" ) 
 
@@ -1130,7 +1143,7 @@ check_labour$err42 <- ifelse(ifelse(check_labour$brn<0 | is.na(check_labour$brn)
 
 #Validation Outputs---------------------------------------------------------------------------------------
 
-new_validations <- c("err37", "err38", "err43", "err44", "err45", "err46", "err47", "err48", "err49", "err50","err55", "err56", "err57", "err58", "err59" )
+new_validations <- c("err37", "err38", "err43", "err44", "err45", "err46", "err47", "err48", "err49", "err50","err55", "err56", "err57", "err58", "err59", "err60" )
 migrant_labour_validations <- c("err39", "err40", "err41", "err42")
 all_validations <- c("err1", "err2", "err3", "err4", "err5", "err7", "err9", "err10", "err11", "err12", "err13", "err14", "err15", "err16", "err17", "err18", "err19",
                      "err20", "err21", "err22", "err23", "err24", "err25", "err26", "err30", "err31", "err32", "err33", "err36", new_validations, migrant_labour_validations)
@@ -1164,60 +1177,60 @@ JAC_validation_error_summary <- JAC_validation_error_summary %>% filter(count !=
 ##----err 1----------------------------------------------------------------------------------------------
 ##@knitr err1
 
-err1 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(area_own, area_rent, total_area)), err1, err1_diff)     
+err1 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(area_own, area_rent, total_area)), err1, err1_diff)     
 err1 <-err1 %>%  mutate(error=ifelse(err1== 1 | is.na(err1), "Error", "No Error")) %>% filter(error == "Error")
 
 ##----err 37----------------------------------------------------------------------------------------------
 ##@knitr err37
-err37 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(area_own, area_rent, total_area)), err37)     
+err37 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(area_own, area_rent, total_area)), err37)     
 err37 <-err37 %>%  mutate(error=ifelse(err37== 1 | is.na(err37), "Error", "No Error")) %>% filter(error == "Error")
 
 
 ##----err 38----------------------------------------------------------------------------------------------
 ##@knitr err38
 
-err38 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(area_own, area_rent, total_area)), err38)     
+err38 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(area_own, area_rent, total_area)), err38)     
 err38 <-err38 %>%  mutate(error=ifelse(err38== 1 | is.na(err38), "Error", "No Error")) %>% filter(error == "Error")
 
 ##----err 56----------------------------------------------------------------------------------------------
 ##@knitr err56
 
-#err56<- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(rps_rent, area_rent)), err56)     
+#err56<- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(rps_rent, area_rent)), err56)     
 #err56 <-err56 %>%  mutate(error=ifelse(err56== 1 | is.na(err56), "Error", "No Error")) %>% filter(error == "Error")
 
 ##----err 57----------------------------------------------------------------------------------------------
 ##@knitr err57
 
-err57<- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(rps_rent, area_rent)), err57, err57_diff)     
+err57<- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(rps_rent, area_rent)), err57, err57_diff)     
 err57 <-err57 %>%  mutate(error=ifelse(err57== 1 | is.na(err57), "Error", "No Error")) %>% filter(error == "Error")
 
 ##----err 58----------------------------------------------------------------------------------------------
 ##@knitr err58
 
-#err58<- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(rps_own, area_own)), err58)     
+#err58<- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(rps_own, area_own)), err58)     
 #err58 <-err58 %>%  mutate(error=ifelse(err58== 1 | is.na(err58), "Error", "No Error")) %>% filter(error == "Error")
 
 ##----err 59----------------------------------------------------------------------------------------------
 ##@knitr err59
 
-err59<- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(rps_own, area_own)), err59, err59_diff)     
+err59<- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(rps_own, area_own)), err59, err59_diff)     
 err59 <-err59 %>%  mutate(error=ifelse(err59== 1 | is.na(err59), "Error", "No Error")) %>% filter(error == "Error")
 ##----err 2----------------------------------------------------------------------------------------------
 ##@knitr err2
 #change area_rent to area_rent for 2023
-err2 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(seas_total_area_in, area_rent)), err2)     
+err2 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(seas_total_area_in, area_rent)), err2)     
 err2 <-err2 %>%  mutate(error=ifelse(err2== 1 | is.na(err2), "Error", "No Error")) %>% filter(error == "Error")
 
 ##----err 3----------------------------------------------------------------------------------------------
 ##@knitr err3
 
-err3 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(seas_total_area_in, seas_rent_diff_in, seas_rent_same_in)), err3, err3_diff)     
+err3 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(seas_total_area_in, seas_rent_diff_in, seas_rent_same_in)), err3, err3_diff)     
 err3 <- err3 %>%  mutate(error=ifelse(err3== 1 | is.na(err3), "Error", "No Error")) %>% filter(error == "Error")
 
 ##----err 43----------------------------------------------------------------------------------------------
 ##@knitr err43
 
-err43 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(seas_area_rent_out, total_area)), err43, err43_diff)     
+err43 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(seas_area_rent_out, total_area)), err43, err43_diff)     
 err43 <-err43 %>%  mutate(error=ifelse(err43== 1 | is.na(err43), "Error", "No Error"))%>% filter(error == "Error")
 
 
@@ -1225,258 +1238,265 @@ err43 <-err43 %>%  mutate(error=ifelse(err43== 1 | is.na(err43), "Error", "No Er
 ##----err 4----------------------------------------------------------------------------------------------
 ##@knitr err4
 
-err4 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(other_crops, other_crops_text)), err4)     
+err4 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(other_crops, other_crops_text)), err4)     
 err4 <-err4 %>%  mutate(error=ifelse(err4== 1 | is.na(err4), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 44----------------------------------------------------------------------------------------------
 ##@knitr err44
 
-err44 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(other_crops, other_crops_text)), err44)     
+err44 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(other_crops, other_crops_text)), err44)     
 err44 <-err44 %>%  mutate(error=ifelse(err44== 1 | is.na(err44), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 5----------------------------------------------------------------------------------------------
 ##@knitr err5
 
-err5 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total_crops_grass, rough_graze, woodland, other_land, total_area)), total7, err5, err5_diff)     
+err5 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total_crops_grass, rough_graze, woodland, other_land, total_land)), total7, err5, err5_diff)     
 err5 <-err5 %>%  mutate(error=ifelse(err5== 1 | is.na(err5), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 6----------------------------------------------------------------------------------------------
 ##@knitr err6
-#err6 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total2)), total2, err6)     
+#err6 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total2)), total2, err6)     
 #err6 <-err6 %>%  mutate(error=ifelse(err6== 1 | is.na(err6), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 7----------------------------------------------------------------------------------------------
 ##@knitr err7
 
-err7 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(all_veg_saf, all_veg_open)), err7, err7_diff)     
+err7 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(all_veg_saf, all_veg_open)), err7, err7_diff)     
 err7 <-err7 %>%  mutate(error=ifelse(err7== 1 | is.na(err7), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 8----------------------------------------------------------------------------------------------
 ##@knitr err8
 
-#err8 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(all_fruit_saf, total3)), total3, err8)     
+#err8 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(all_fruit_saf, total3)), total3, err8)     
 #err8 <-err8 %>%  mutate(error=ifelse(err8== 1 | is.na(err8), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 9----------------------------------------------------------------------------------------------
 ##@knitr err9
-err9 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(soft_fruits, all_fruit_saf)), err9, err9_diff)     
+err9 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(soft_fruits, all_fruit_saf)), err9, err9_diff)     
 err9 <-err9 %>%  mutate(error=ifelse(err9== 1 |is.na(err9), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 10----------------------------------------------------------------------------------------------
 ##@knitr err10
 #change all_flow_bulb_21 to all_flow_bulb for 2023
-err10 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(all_flow_bulb, total4)), err10, err10_diff)     
+err10 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(all_flow_bulb, total4)), err10, err10_diff)     
 err10 <-err10 %>%  mutate(error=ifelse(err10== 1 |is.na(err10), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 11----------------------------------------------------------------------------------------------
 ##@knitr err11
-err11 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total5b, tot_open_plastic, total6b, tot_solid_glass)), err11, err11open_diff, err11solid_diff)
+err11 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total5b, tot_open_plastic, total6b, tot_solid_glass)), err11, err11open_diff, err11solid_diff)
 err11 <-err11 %>%  mutate(error=ifelse(err11== 1 | is.na(err11), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 12----------------------------------------------------------------------------------------------
 ##@knitr err12
-err12 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total5b, tot_open_plastic, total6b, tot_solid_glass)), err12, err12_diff)     
+err12 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total5b, tot_open_plastic, total6b, tot_solid_glass)), err12, err12_diff)     
 err12 <-err12 %>%  mutate(error=ifelse(err12== 1 | is.na(err12), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 45----------------------------------------------------------------------------------------------
 ##@knitr err45
-err45 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(total_land), total13, err45, err45_diff)     
+err45 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(total_land), total13, err45, err45_diff)     
 err45 <-err45 %>%  mutate(error=ifelse(err45== 1 | is.na(err45), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 46----------------------------------------------------------------------------------------------
 ##@knitr err46
-err46 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total_land, total_area)), err46, err46_diff)     
+err46 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total_land, total_area)), err46, err46_diff)     
 err46 <-err46 %>%  mutate(error=ifelse(err46== 1 | is.na(err46), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 13----------------------------------------------------------------------------------------------
 ##@knitr err13
 #change total10_21 to total10 for 2023
-err13 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total10, total_pig)), err13, err13_diff)     
+err13 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total10, total_pig)), err13, err13_diff)     
 err13 <-err13 %>%  mutate(error=ifelse(err13== 1 | is.na(err13), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 14----------------------------------------------------------------------------------------------
 ##@knitr err14
 #change total10_21 to total10 for 2023
-err14 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total10)), err14)     
+err14 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total10)), err14)     
 err14 <-err14 %>%  mutate(error=ifelse(err14== 1 | is.na(err14), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 15----------------------------------------------------------------------------------------------
 ##@knitr err15
-err15 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total9, total_sheep)), total9, err15, err15_diff)     
+err15 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total9, total_sheep)), total9, err15, err15_diff)     
 err15 <-err15 %>%  mutate(error=ifelse(err15== 1 | is.na(err15), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 16----------------------------------------------------------------------------------------------
 ##@knitr err16
-err16 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total9, total_sheep)), total9, err16)     
+err16 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total9, total_sheep)), total9, err16)     
 err16 <-err16 %>%  mutate(error=ifelse(err16== 1 | is.na(err16), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 17----------------------------------------------------------------------------------------------
 ##@knitr err17
-err17 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total11, total_poultry)), total11, err17, err17_diff)     
+err17 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total11, total_poultry)), total11, err17, err17_diff)     
 err17 <-err17 %>%  mutate(error=ifelse(err17== 1 | is.na(err17), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 18----------------------------------------------------------------------------------------------
 ##@knitr err18
-err18 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total11, total_poultry)), err18)     
+err18 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total11, total_poultry)), err18)     
 err18 <-err18 %>%  mutate(error=ifelse(err18== 1 | is.na(err18), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 19----------------------------------------------------------------------------------------------
 ##@knitr err19
-err19 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(first_hens, moulted_hens, pullets, layer_chicks, table_chicks, cocks, broilers)), err19)     
+err19 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(first_hens, moulted_hens, pullets, layer_chicks, table_chicks, cocks, broilers)), err19)     
 err19 <-err19 %>%  mutate(error=ifelse(err19== 1 | is.na(err19), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 20----------------------------------------------------------------------------------------------
 ##@knitr err20
-err20 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(deer), err20)     
+err20 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(deer), err20)     
 err20 <-err20 %>%  mutate(error=ifelse(err20== 1 | is.na(err20), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 21----------------------------------------------------------------------------------------------
 ##@knitr err21
-err21 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(alpacas, llamas, other_camelids)), err21)     
+err21 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(alpacas, llamas, other_camelids)), err21)     
 err21 <-err21 %>%  mutate(error=ifelse(err21== 1 | is.na(err21), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 22----------------------------------------------------------------------------------------------
 ##@knitr err22
-err22 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(hives)), err22)     
+err22 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(hives)), err22)     
 err22 <-err22 %>%  mutate(error=ifelse(err22== 1 | is.na(err22), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 23----------------------------------------------------------------------------------------------
 ##@knitr err23
-err23 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(other_livestock)), err23)  
+err23 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(other_livestock)), err23)  
 err23 <-err23 %>%  mutate(error=ifelse(err23== 1 | is.na(err23), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 24----------------------------------------------------------------------------------------------
 ##@knitr err24
-err24 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(other_livestock, other_livestock_txt)), err24)  
+err24 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(other_livestock, other_livestock_txt)), err24)  
 err24 <-err24 %>%  mutate(error=ifelse(err24== 1 | is.na(err24), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 47----------------------------------------------------------------------------------------------
 ##@knitr err47
-err47 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(other_livestock, other_livestock_txt)), err47)  
+err47 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(other_livestock, other_livestock_txt)), err47)  
 err47 <-err47 %>%  mutate(error=ifelse(err47== 1 | is.na(err47), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 26----------------------------------------------------------------------------------------------
 ##@knitr err26
-# err26 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(female_goat_kids, other_female_goat, other_goats_kids)), err26)  
+# err26 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(female_goat_kids, other_female_goat, other_goats_kids)), err26)  
 # err26 <-err26 %>%  mutate(error=ifelse(err26== 1 | is.na(err26), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 27----------------------------------------------------------------------------------------------
 ##@knitr err27
-err27 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(horse_pony, donkeys)), err27)
+err27 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(horse_pony, donkeys)), err27)
 err27 <-err27 %>%  mutate(error=ifelse(err27== 1 | is.na(err27), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 28----------------------------------------------------------------------------------------------
 # ##@knitr err28
-err28 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(goats_kids)), err28)
+err28 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(goats_kids)), err28)
 err28 <-err28 %>%  mutate(error=ifelse(err28== 1 | is.na(err28), "Error", "No Error"))%>% filter(error == "Error")
+
+##----err 60----------------------------------------------------------------------------------------------
+# ##@knitr err60
+err60 <- all_JAC_form %>% select(parish, holding, survtype, #submisType,
+                                 land_data, saf_data, all_of(c(legal_fin_resp, other_legal_return)), err60)
+err60 <-err60 %>%  mutate(error=ifelse(err60== 1 | is.na(err60), "Error", "No Error"))%>% filter(error == "Error")
+
 
 ##----err 29----------------------------------------------------------------------------------------------
 ##@knitr err29
-err29 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(other_legal_return, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work,
+err29 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(other_legal_return, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work,
                                                                      occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err29)
 err29 <-err29 %>%  mutate(error=ifelse(err29== 1 | is.na(err29), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 52----------------------------------------------------------------------------------------------
 ##@knitr err52
-err52 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(other_legal_return, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work,
+err52 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(other_legal_return, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work,
                                                                      occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err52)
 err52 <-err52 %>%  mutate(error=ifelse(err52== 1 | is.na(err52), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 53----------------------------------------------------------------------------------------------
 ##@knitr err53
-err53 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier2_legal_fin, occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err53)
+err53 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier2_legal_fin, occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err53)
 err53 <-err53 %>%  mutate(error=ifelse(err53== 1 | is.na(err53), "Error", "No Error"))%>% filter(error == "Error")
 
 
 ##----err 54----------------------------------------------------------------------------------------------
 ##@knitr err54
-err54 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier2_legal_fin, occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err54)
+err54 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier2_legal_fin, occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err54)
 err54 <-err54 %>%  mutate(error=ifelse(err54== 1 | is.na(err54), "Error", "No Error"))%>% filter(error == "Error")
 
 
 ##----err 30----------------------------------------------------------------------------------------------
 ##@knitr err30
-err30 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err30)  
+err30 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err30)  
 err30 <-err30 %>%  mutate(error=ifelse(err30== 1 | is.na(err30), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 31----------------------------------------------------------------------------------------------
 ##@knitr err31
-err31 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err31)  
+err31 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work)), err31)  
 err31 <-err31 %>%  mutate(error=ifelse(err31== 1 | is.na(err31), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 48----------------------------------------------------------------------------------------------
 ##@knitr err48
-err48 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier1_female, occupier1_male, occupier2_female, occupier2_male)), err48)  
+err48 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier1_female, occupier1_male, occupier2_female, occupier2_male)), err48)  
 err48 <-err48 %>%  mutate(error=ifelse(err48== 1 | is.na(err48), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 49----------------------------------------------------------------------------------------------
 ##@knitr err49
-err49 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier1_female, occupier1_male, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err49)  
+err49 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier1_female, occupier1_male, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err49)  
 err49 <-err49 %>%  mutate(error=ifelse(err49== 1 | is.na(err49), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 50----------------------------------------------------------------------------------------------
 ##@knitr err50
-err50 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier1_female, occupier1_male, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err50)  
+err50 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier1_female, occupier1_male, occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work)), err50)  
 err50 <-err50 %>%  mutate(error=ifelse(err50== 1 | is.na(err50), "Error", "No Error"))%>% filter(error == "Error")
 
 
 ##----err 51----------------------------------------------------------------------------------------------
 ##@knitr err51
-err51 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier1_year, occupier2_year)), err51)  
+err51 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier1_year, occupier2_year)), err51)  
 err51 <-err51 %>%  mutate(error=ifelse(err51== 1 | is.na(err51), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 55----------------------------------------------------------------------------------------------
 ##@knitr err55
-err55 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work, occupier1_male, occupier1_female,
+err55 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(occupier1_ft, occupier1_pt_gthalf, occupier1_pt_lthalf, occupier1_no_work, occupier1_male, occupier1_female,
                                                                      occupier2_ft, occupier2_pt_gthalf, occupier2_pt_lthalf, occupier2_no_work, occupier2_female, occupier2_male)), err55)
 err55 <-err55 %>%  mutate(error=ifelse(err55== 1 | is.na(err55), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 32----------------------------------------------------------------------------------------------
 ##@knitr err32
-err32 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total12, total_labour)), total12, err32)  
+err32 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total12, total_labour)), total12, err32)  
 err32 <-err32 %>%  mutate(error=ifelse(err32== 1 | is.na(err32), "Error", "No Error"))%>% filter(error == "Error")
 
 
 ##----err 33----------------------------------------------------------------------------------------------
 ##@knitr err33
-err33 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(total12, total_labour)), err33)  
+err33 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(total12, total_labour)), err33)  
 err33 <-err33 %>%  mutate(error=ifelse(err33== 1 | is.na(err33), "Error", "No Error"))%>% filter(error == "Error")
 
 
 # ##----err 34----------------------------------------------------------------------------------------------
 # ##@knitr err34
-# err34 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of(c(owned_croft, area_own)), err34)  
+# err34 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(owned_croft, area_own)), err34)  
 # err34 <-err34 %>%  mutate(error=ifelse(err34== 1 | is.na(err34), "Error", "No Error"))%>% filter(error == "Error")
 # 
 # ##----err 35----------------------------------------------------------------------------------------------
 # ##@knitr err35
-# err35 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of((owned_croft)), err35)  
+# err35 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of((owned_croft)), err35)  
 # err35 <-err35 %>%  mutate(error=ifelse(err35== 1 | is.na(err35), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 36----------------------------------------------------------------------------------------------
 ##@knitr err36
-#err36 <- all_JAC_form %>% select(parish, holding, survtype, land_data, saf_data, all_of((rented_croft)), err36)  
+#err36 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of((rented_croft)), err36)  
 #err36 <-err36 %>%  mutate(error=ifelse(err36== 1 | is.na(err36), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 39----------------------------------------------------------------------------------------------
 ##@knitr err39
-err39 <- check_labour %>% select(parish, holding, survtype, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, err39)
+err39 <- check_labour %>% select(parish, holding, survtype, submisType, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, all_of(c(labour_cas_f, labour_cas_m)), err39)
 err39 <-err39 %>%  mutate(error=ifelse(err39== 1 | is.na(err39), "Error", "No Error"))%>% filter(error == "Error")
 
 
 ##----err 40----------------------------------------------------------------------------------------------
 ##@knitr err40
-err40 <- check_labour %>% select(parish, holding, survtype, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, err40)
+err40 <- check_labour %>% select(parish, holding, survtype, submisType, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, all_of(c(labour_cas_f, labour_cas_m)), err40)
 err40 <-err40 %>%  mutate(error=ifelse(err40== 1 | is.na(err40), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 41----------------------------------------------------------------------------------------------
 ##@knitr err41
-err41 <- check_labour %>% select(parish, holding, survtype, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, err41)
+err41 <- check_labour %>% select(parish, holding, survtype, submisType, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, all_of(c(labour_cas_f, labour_cas_m)), err41)
 err41 <-err41 %>%  mutate(error=ifelse(err41== 1 | is.na(err41), "Error", "No Error"))%>% filter(error == "Error")
 
 ##----err 42----------------------------------------------------------------------------------------------
 ##@knitr err42
-err42 <- check_labour %>% select(parish, holding, survtype, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, err42)
+err42 <- check_labour %>% select(parish, holding, survtype, submisType, land_data, saf_data,brn, land_data, saf_data, sumfruit, sumfruit_sum, slr_fruit, slr_fruit_sum, lab_returned, lab_returned_sum, all_of(c(labour_cas_f, labour_cas_m)), err42)
 err42 <-err42 %>%  mutate(error=ifelse(err42== 1 | is.na(err42), "Error", "No Error"))%>% filter(error == "Error")
 
 
@@ -1519,47 +1539,69 @@ save(clean_JAC, file = paste0(output_path, "clean_JAC.rda"))
 
 
 
-#Ops outputs
+#Ops outputs------------------------------------------------------------------------
+
 #select error columns from dataset and filter for cases with errors
-total_error_cases <- all_JAC_form %>% select(any_of(all_validations)) %>%  filter(if_any(starts_with("err"), ~ . !=0))
-migrant_errors <- check_labour %>%  select(any_of(all_validations)) %>%  filter(if_any(starts_with("err"), ~ . !=0))
+
+
+total_error_cases <- all_JAC_form %>% select(parish, holding, any_of(all_validations), err46_diff, err45_diff, err59_diff, err57_diff) 
+#list of relevant errors to filter
+relevant_errors <- names(total_error_cases[names(total_error_cases) %in% all_validations])
+total_error_cases <- total_error_cases %>% filter(if_any(relevant_errors)!=0)
+
+
+migrant_errors <- check_labour %>%  select(parish, holding, any_of(all_validations))
+relevant_merrors <- names(migrant_errors[names(migrant_errors) %in% all_validations])
+migrant_errors <- migrant_errors %>% filter(if_any(relevant_merrors)!=0)
+
+
 
 #hierarchy for following up work items
-priority <- c("err46", "err45", "err4", "err44", "err24", "err47", "err49", "err50", "err30", "err31", "err54", "err53", "err48",
-              "err51", "err32", "err55", "err11", "err13", "err15", "err1", "err37", "err38",  "err58", "err56", "err52")
+#include err46_diff, err_45_diff, err57_diff and err59_diff to arrange by largest discrepancies 
+priority <- c("err46_diff", "err46", "err45", "err45_diff", "err4", "err44", "err24", "err47", "err49", "err50", "err30", "err31",  "err60", "err54", "err53", "err48",
+              "err51", "err32", "err55", "err11", "err13", "err15", "err1", "err37", "err38",  "err59", "err59_diff", "err57",  "err57_diff", "err52")
 
 #arrange columns according to work item priority order
-total_error_cases_2 <- total_error_cases %>% select(any_of(priority)) 
-total_error_cases_3 <- total_error_cases %>% select(-any_of(priority)) 
+total_error_cases_2 <- total_error_cases %>% select(parish, holding, any_of(priority)) 
+total_error_cases_3 <- total_error_cases %>% select(parish, holding, -any_of(priority)) 
 total_error_cases_j <- full_join(total_error_cases_2, total_error_cases_3, by = c("parish", "holding"))
 
 
 
 #manual sorting rows by order of priority - todo: loop through priority list 
 
-total_error_cases <- total_error_cases_j %>% arrange(desc(err46), desc(err45), desc(err4), desc(err44), 
+total_error_cases <- total_error_cases_j %>% arrange(desc(err46), desc(err46_diff), desc(err45), desc(err45_diff), desc(err4), desc(err44), 
                                                    desc(err24), desc(err47), desc(err49), desc(err50), 
-                                                   desc(err30), desc(err31),  
+                                                   desc(err30), desc(err31),  desc(err60),
                                                    desc(err48), #desc(err51),
                                                    desc(err32), desc(err55), 
                                                    desc(err11), desc(err13), desc(err15), desc(err1), 
-                                                   desc(err37), desc(err38),  desc(err57), desc(err59))
+                                                   desc(err37), desc(err38),  desc(err57), desc(err57_diff), desc(err59), desc(err59_diff))
                                                    #desc(err52))
 
 
-#check if original and sorted are same after sorting (ie rowss are preserved)
+
+#check if original and sorted are same after sorting (ie rows are preserved)
 setdiff(total_error_cases, total_error_cases_j)
 
 #set as dataframe- err columns were lists?
-total_error_cases <- as.data.frame(unnest(total_error_cases, cols= err46:ncol(total_error_cases)))
+#total_error_cases <- as.data.frame(unnest(total_error_cases, cols= err46:ncol(total_error_cases)))
 
-
-#count number of errors for each holding
-total_error_cases$total_errors_per_case <- rowSums(total_error_cases[ ,-1:-2])
-
-migrant_errors$total_errors_per_case <- rowSums(migrant_errors[ ,-1:-2])
+#count number of errors for each holding (exclude parish and holding, first two columns)
                                                          
+total_error_cases$total_errors_per_case <- rowSums(total_error_cases[names(total_error_cases) %in% relevant_errors])
+migrant_errors$total_errors_per_case <- migrant_errors[names(migrant_errors) %in% relevant_merrors]
 
+#filter where total error per case !=0 
+total_error_cases <- total_error_cases %>% filter(total_errors_per_case !=0)
+migrant_errors<- migrant_errors %>% filter(total_errors_per_case !=0)
+                                                         
+#non-priority errors (i.e. holdings with errors not on priority list)
+non_priority <-  all_JAC_form %>% select(parish, holding, any_of(all_validations)) %>%  filter(if_any(starts_with("err"), ~ . !=0))
+non_priority <-   anti_join( non_priority,total_error_cases, 
+                            by = c("parish", "holding"))
+non_priority <- remove_zero(non_priority)
+non_priority$total_errors_per_case <- rowSums(non_priority[names(non_priority) != c("parish", "holding")])
 
 #create list of validations vector character
 all_validations_desc <- paste(all_validations, "desc", sep="_")
@@ -1580,15 +1622,15 @@ all_validations_desc <- bind_rows(all_validations_desc)
 holding_list <- split(total_error_cases, seq(nrow(total_error_cases)))
 labour_holding_list <- split(migrant_errors, seq(nrow(migrant_errors)))
 
-#function to remove columns where error = 0
-remove_zero <- function(x){select(x, where(~ any(. != 0)))}
 
 #remove zero columns from each dataframe in holding_list
-holding_list <- lapply(holding_list, remove_zero)
+#holding_list <- lapply(holding_list, remove_zero)
+
 labour_holding_list <- lapply(labour_holding_list, remove_zero)
 
 #single dataframe of holdings with validation errors
 holding_list <- bind_rows(holding_list) 
+holding_list <- remove_zero(holding_list)
 holding_list <- holding_list %>% relocate(total_errors_per_case, .after = last_col())
 
 labour_holding_list <- bind_rows(labour_holding_list) 
@@ -1604,3 +1646,6 @@ priority_holdings <-list("main_validations" = holding_list, "migrant_worker_chec
 
 #export prioritised holding list as xlsx for Ops
 write_xlsx(priority_holdings, paste(output_path, Sys.Date(), "work_item_prioritised.xlsx"))
+
+#err50 <- err50 %>% mutate(rowSum = item2878 + item2877+ item177 + item178 + item179 + item2566)
+#err50_1 <-  filter(err50, rowSum == 1)
