@@ -171,6 +171,7 @@ full_JAC_SAF <-
   full_JAC_SAF %>% select(
     parish,
     holding,
+    submisType,
     survtype,
     imptype,
     survdata,
@@ -186,7 +187,7 @@ full_JAC_SAF <-
   )
 
 full_JAC_SAF <-
-  full_JAC_SAF %>% select(!c(submisType, maderight)) %>% arrange(by_group = TRUE)  # original script also took out item3166 and item2726 but these don't exist
+  full_JAC_SAF %>% select(!maderight) %>% arrange(by_group = TRUE)  # original script also took out item3166 and item2726 but these don't exist
 
 
 
@@ -487,8 +488,8 @@ FJS <- FJS %>%
 
 
 
-~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~
-  ~  ~  ~ #additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #duplicates
 #full_JAC_SAF %>% distinct() %>% nrow() # check and edit this - currently does nothing
 
