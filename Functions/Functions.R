@@ -490,6 +490,7 @@ newitemssaf<-function(x) {
     item76 = item70 + item71 + item72 + item2832 + item75,
     item27740 = item2324 + item1709 + item80 + item81 + item1710 + item82 + item83,
     item68 = item27730,
+    item84=item27740,
     item37 = item76,
     item38 = item41 + item27740 + item2858 + item2863 +
       item2859 + item2864 +
