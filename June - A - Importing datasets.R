@@ -58,9 +58,9 @@ schema <- "juneagriculturalsurvey2023alpha"
 # 
 # # Import SAF datasets separately (or do this directly into a list depending on what other files are in the folder). Filename will be different for the data drops in June and September.
 # 
-# df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output1.xlsx"), sep.names = "_") # called script1 in SAS
-# 
-# df_seasonal <- read.xlsx(paste0(SAF_directory, "/season_output1.xlsx"),sep.names = "_") # called script3 in SAS # In previous years, this was called seasonal. In 2023, it is called season
+#  df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output1.xlsx"), sep.names = "_") # called script1 in SAS
+# # 
+#  df_seasonal <- read.xlsx(paste0(SAF_directory, "/season_output1.xlsx"),sep.names = "_") # called script3 in SAS # In previous years, this was called seasonal. In 2023, it is called season
 # 
 # # Scheme data is not included in SAF data at this point but useful to have.
 # 
@@ -69,7 +69,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 # Import Ags data (downloaded from Ags). From 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
 
 
-df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_190623.csv"),
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_260623.csv"),
                      fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # The previous year's data will still be SAF and NonSAF in 2023 (i.e. 2021 data). 2024 onwards, the previous year will be 2023 so only one datafile.
