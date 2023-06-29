@@ -970,7 +970,7 @@ write_dataframe_to_db(server=server,
 
 # B9 Section of SAS code --------------------------------------------------
 
-saf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8_2023.rda"))
+#saf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8_2023.rda"))
 
 # Rename SAF df
 
@@ -1279,3 +1279,4 @@ write_dataframe_to_db(server=server,
                       append_to_existing = FALSE,
                       versioned_table=FALSE,
                       batch_size = 10000)
+
