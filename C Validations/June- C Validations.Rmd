@@ -71,7 +71,7 @@ source("./June-C-Validations_files/June - C-Validations.R",  local = knitr::knit
 # Section 1 Area of Holdings
 
 ## Error 1
-The following table displays errors for holdings where total area is not equal to area rented (item20226 (2023 onwards) item7 (up to 2021))  + area owned (item 11) by more than 3ha. The column "Errx_diff" gives the difference (x = error number).
+The following table displays errors for holdings where total area is not equal to area rented (item20226 (2023 onwards) item7 (up to 2021))  + area owned (item 11) by 3ha or more. The column "Errx_diff" gives the difference (x = error number).
 
 ```{r, June - C-Validations-err1, results = 'markup'}
 
@@ -99,20 +99,20 @@ kable(err38, caption = "Total area of holding is zero or missing AND area owned 
 ```
 
 ## Error 57
-The following table displays potential errors for holdings where area rented is greater/less than RP&S value by 20ha or more. The column "Errx_diff" gives the difference (x = error number).
+The following table displays potential errors for holdings where area rented is greater/less than RP&S value by 30ha or more. The column "Errx_diff" gives the difference (x = error number).
 ```{r, June - C-Validations-err57, results = 'markup'}
 
   ifelse(nrow(err57) ==0, "No errors found", "Errors found ")
-kable(err57, caption = "Total area rented greater/less than RP&S value by 20ha or more")
+kable(err57, caption = "Total area rented greater/less than RP&S value by 30ha or more")
 
 ```
 
 ## Error 59
-The following table displays potential errors for holdings where area owned greater/less than RP&S value by 20ha or more. The column "Errx_diff" gives the difference (x = error number).
+The following table displays potential errors for holdings where area owned greater/less than RP&S value by 30ha or more. The column "Errx_diff" gives the difference (x = error number).
 ```{r, June - C-Validations-err59, results = 'markup'}
 
   ifelse(nrow(err59) ==0, "No errors found", "Errors found ")
-kable(err59, caption = "Total area owned greater/less than RP&S value by 20ha or more")
+kable(err59, caption = "Total area owned greater/less than RP&S value by 30ha or more")
 
 ```
 
@@ -156,8 +156,8 @@ ifelse(nrow(err44) ==0,  "No errors found", "Errors found")
 kable(err44, caption = "Unspecified `other` crops area is zero but name is/ names are given " )
 ```
 
-## Error 5 - Crops
-The following table displays possible errors for holdings where total area of crops and grassland (item46), rough grazing (item47), woodland (item48) and other land (item49) differs from total land (item50) by more than 3ha. The column "Errx_diff" gives the difference (x = error number).
+## Error 5 - Crops (SAF total area of crops and grassland)
+The following table displays possible errors for holdings where total area of crops and grassland (item46), rough grazing (item47), woodland (item48) and other land (item49) differs from total land (item50) by more than 3ha. The column "Errx_diff" gives the difference (x = error number) (SAF).
 ```{r, June - C-Validations-err5, results = 'markup'}
 ifelse(nrow(err5) ==0,  "No errors found", "Errors found - sum(item46:49) != item50")
 kable(err5, caption = "Total area of crops and grassland (item46), rough grazing (item47), woodland (item48) and other land (item49) is not equal to total land (item50) " )
@@ -221,7 +221,7 @@ kable(err12, caption = "Glasshouses are indicated but glasshouse items are not s
 
 ```
 
-## Error 45 - Glasshouses and outdoor areas
+## Error 45 - Glasshouses and outdoor areas (SUMMARY VALUES- AGS error)
 The following table displays possible errors for holdings where difference between total land use area and the sum of the outdoor areas and glasshouses is greater than 3ha. The column "Errx_diff" gives the difference (x = error number).
 ```{r, June - C-Validations-err45, results = 'markup'}
 ifelse(nrow(err45) ==0,  "No errors found", "Errors found")
