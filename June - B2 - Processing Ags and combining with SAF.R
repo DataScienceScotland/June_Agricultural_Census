@@ -319,7 +319,7 @@ full_JAC_SAF <-
       item18,
       item17,
       item20,
-      item22,
+      #item22,
       item19,
       item23,
       item21,
@@ -493,13 +493,10 @@ FJS <- FJS %>%
          
 
 
-<<<<<<< HEAD
 
 
 #additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-=======
- #additional checks~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>>>>> c2d80e528341ad7113e42edcd885f779df90cba6
+
 #duplicates
 #full_JAC_SAF %>% distinct() %>% nrow() # check and edit this - currently does nothing
 
@@ -542,11 +539,13 @@ FJS <- FJS %>%
 # Merge in total area and total rented area from 1st June address file (RP&S). 
 
 
-addressfileorig<-read_sas(paste0(sas_agscens_path, "address_occid_01jun", yr, ".sas7bdat"))
+addressfileorig<-read_table_from_db(server=server, 
+                                    database=database, 
+                                    schema=schema, 
+                                    table_name="address_occid_01jun_2023")
 
-addressfile<-clean_names(addressfileorig)
 
-addressfile<-addressfile %>% 
+addressfile<-addressfileorig %>% 
   select(c(parish, holding, tot_area, tot_own_area, totrented_area)) %>% 
   rename(rps_totarea_june="tot_area",
          rps_totowned_june = "tot_own_area",
@@ -581,4 +580,11 @@ write_dataframe_to_db(server=server,
 
 # Save address file for quick loading
 
-
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="address_occid_01jun_2023",
+#                       dataframe=addressfile,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)

@@ -26,4 +26,10 @@ vignettes/*.pdf
 *.knit.md
 # R Environment Variables
 .Renviron
+<<<<<<< HEAD
 June - B10.R
+=======
+
+# Rdas
+*.rda 
+>>>>>>> b7f9e04c52b2cd97198f207a52eed2b52004098f
