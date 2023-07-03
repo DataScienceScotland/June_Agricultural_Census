@@ -158,9 +158,14 @@ combined_JAC <- read_table_from_db(server=server,
 combined_JAC <- combined_JAC %>% group_by(parish, holding)
 
 #filter for only form returns
-all_JAC_form <- combined_JAC %>% filter(survtype == "Non-SAF"| survtype == "SAF") 
+all_JAC_form <- combined_JAC %>% filter(survtype == "Non-SAF") 
 
 #recode-------------------------------------------------------------------
+#for info
+#0 = Missing answer (NAs converted to 0 in B2 )
+#1= Yes
+#2 = No
+#3 = NA (answered as NA on form)
 
 
 #section counts--------------------------------------------------------------------------------------------------------
@@ -209,10 +214,11 @@ module_section_counts <- data.frame(count_no_section_12, count_yes_section_12, c
 
 #percentage checks-------------------------------------------------------------------------------------------------
 
-JAC_module_23<- all_JAC_form %>% select(all_of(c(section_12, section_13)))
+JAC_module_23<- all_JAC_form %>% select(parish, holding, #submisType, 
+                                        land_data, saf_data, all_of(c(section_12, section_13)))
 
 #check number of 0 responses across module
-no_response <- JAC_module_23 %>% ungroup %>% select(-parish, -holding) %>% mutate(no_response = rowSums(.)) %>% filter(no_response == 0) %>% 
+no_response <- JAC_module_23 %>% ungroup %>% select(-parish, -holding, -land_data, -saf_data, ) %>% mutate(no_response = rowSums(.)) %>% filter(no_response == 0) %>% 
   nrow(.)
 
 #manure/slurry spread percentage
@@ -240,9 +246,41 @@ JAC_module_23 <- JAC_module_23 %>% mutate(merr2 = case_when(manure_slurry_stored
 
 #merr3 - indicated nutrient management but no area of grassland or cropland given
 
-JAC_module_23 <- JAC_module_23 %>% mutate(merr3 = case_when(nutrient_plan_update ==1 & ~ 0,
-                                                            manure_slurry_stored_total == 0 ~ 0,
-                                                            TRUE ~1))
+JAC_module_23 <- JAC_module_23 %>% mutate(merr3 = case_when(nutrient_plan_update ==1 & (area_ph_crop == 0 |
+                                                                                          area_ph_grass ==0) ~ 1,
+                                                            TRUE ~0))
+
+
+
+#module error dataframes------------------------
+#merr1-----------------------------
+##@knitr merr1
+merr1<- JAC_module_23%>% select(parish, holding, #submisType, 
+                                land_data, saf_data, all_of(c(broadcast_spreader_more_four_hours, broadcast_spreader_not_ploughed,
+                                                                                                       band_spreader_hose, band_spreader_shoe,open_slot_shallow_injection, 
+                                                                                                       closed_slot_deep_injection, other_spread)), manure_slurry_spread_total, merr1)
+merr1 <-merr1%>%  mutate(error=ifelse(merr1== 1 | is.na(merr1), "Error", "No Error"))%>% filter(error == "Error")
+
+#merr2-----------------------------
+##@knitr merr2
+merr2<- JAC_module_23%>% select(parish, holding, #submisType, 
+                                land_data, saf_data, all_of(c(storage_heaps, storage_compost,
+                                                              storage_pits_below_animals, storage_deep_litter, storage_without_cover, 
+                                                              storage_permeable_cover, storage_impermeable_cover, storage_other_facilities, 
+                                                              daily_spread, other_systems)), manure_slurry_stored_total, merr2)
+merr2 <-merr2%>%  mutate(error=ifelse(merr2== 1 | is.na(merr2), "Error", "No Error"))%>% filter(error == "Error")
+
+#merr3-----------------------------
+##@knitr merr3
+merr3<- JAC_module_23%>% select(parish, holding, #submisType, 
+                                land_data, saf_data, all_of(c(nutrient_plan_update, area_ph_crop, area_ph_grass)), merr3)
+merr3 <-merr3%>%  mutate(error=ifelse(merr3== 1 | is.na(merr3), "Error", "No Error"))%>% filter(error == "Error")
+
+
+##module error summary----------------------
+merr_list <- c("merr1", "merr2", "merr3")
+module_errors <- JAC_module_23 %>% select(parish, holding, starts_with("merr"))%>% 
+  filter(get(merr_list)!=0)
 
 
                                              
