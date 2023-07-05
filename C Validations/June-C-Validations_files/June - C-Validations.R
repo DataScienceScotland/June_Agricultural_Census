@@ -548,7 +548,7 @@ err7_desc <- "err7_All veg from SAF not equal to all veg (census form)"
 err8_desc <- "err8_Sum of itemised soft fruit not equal to all soft fruit (SAF)"
 err9_desc <- "err9_All soft fruit from SAF not equal to all soft fruit (census form)"
 err60_desc <- "err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given"
-
+err61_desc <- "err61_Sum of total area rented and total area owned not equal to sum of RP&S values (by 30 or more hectares)"
 
 
 # Import ------------------------------------------------------------------
@@ -634,6 +634,19 @@ all_JAC_form$err57_diff <-  ifelse(all_JAC_form$err57 == 1,
 all_JAC_form$err59 <- ifelse(abs(round(all_JAC_form[area_own], digits = 2) - round(all_JAC_form[rps_own], digits = 2))>=30,  1, 0)
 all_JAC_form$err59_diff <-  ifelse(all_JAC_form$err59 ==1, 
                                    rowSums(abs(all_JAC_form[area_own] - all_JAC_form[rps_own])), 0)
+
+#Sum of area owned and rented is not equal to sum of RP&S values by 30 or more hectares
+#err61
+total14 <- c(area_own, area_rent)
+total14rps <- c(rps_own, rps_rent)
+all_JAC_form$total14 <- rowSums(all_JAC_form[total14], na.rm =TRUE)
+all_JAC_form$total14rps <- rowSums(all_JAC_form[total14rps], na.rm =TRUE)
+
+all_JAC_form$err61 <- ifelse(abs(round(all_JAC_form$total14, digits = 2) - round(all_JAC_form$total14rps, digits = 2))>=30,  1, 0)
+
+all_JAC_form$err61_diff <-  ifelse(all_JAC_form$err61 ==1, 
+                                   abs(round(all_JAC_form$total14 - all_JAC_form$total14rps, digits=2)), 0)
+
 
 # Section 2 Seasonal rents--------------------
 
@@ -1143,7 +1156,7 @@ check_labour$err42 <- ifelse(ifelse(check_labour$brn<0 | is.na(check_labour$brn)
 
 #Validation Outputs---------------------------------------------------------------------------------------
 
-new_validations <- c("err37", "err38", "err43", "err44", "err45", "err46", "err47", "err48", "err49", "err50","err55", "err56", "err57", "err58", "err59", "err60" )
+new_validations <- c("err37", "err38", "err43", "err44", "err45", "err46", "err47", "err48", "err49", "err50","err55", "err56", "err57", "err58", "err59", "err60", "err61" )
 migrant_labour_validations <- c("err39", "err40", "err41", "err42")
 all_validations <- c("err1", "err2", "err3", "err4", "err5", "err7", "err9", "err10", "err11", "err12", "err13", "err14", "err15", "err16", "err17", "err18", "err19",
                      "err20", "err21", "err22", "err23", "err24", "err25", "err26", "err30", "err31", "err32", "err33", "err36", new_validations, migrant_labour_validations)
@@ -1215,9 +1228,15 @@ err57 <-err57 %>%  mutate(error=ifelse(err57== 1 | is.na(err57), "Error", "No Er
 
 err59<- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(rps_own, area_own)), err59, err59_diff)     
 err59 <-err59 %>%  mutate(error=ifelse(err59== 1 | is.na(err59), "Error", "No Error")) %>% filter(error == "Error")
+
+##----err 61----------------------------------------------------------------------------------------------
+##@knitr err61
+
+err61<- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, total14, 
+                                total14rps, all_of(c(area_own, area_rent, rps_own, rps_rent)), err61, err61_diff)     
+err61 <-err61 %>%  mutate(error=ifelse(err61== 1 | is.na(err61), "Error", "No Error")) %>% filter(error == "Error")
 ##----err 2----------------------------------------------------------------------------------------------
 ##@knitr err2
-#change area_rent to area_rent for 2023
 err2 <- all_JAC_form %>% select(parish, holding, survtype, submisType, land_data, saf_data, all_of(c(seas_total_area_in, area_rent)), err2)     
 err2 <-err2 %>%  mutate(error=ifelse(err2== 1 | is.na(err2), "Error", "No Error")) %>% filter(error == "Error")
 
@@ -1544,7 +1563,7 @@ save(clean_JAC, file = paste0(output_path, "clean_JAC.rda"))
 #select error columns from dataset and filter for cases with errors
 
 
-total_error_cases <- all_JAC_form %>% select(parish, holding, any_of(all_validations), err46_diff, err45_diff, err59_diff, err57_diff) 
+total_error_cases <- all_JAC_form %>% select(parish, holding, any_of(all_validations), err46_diff, err45_diff, err59_diff, err57_diff, err61_diff) 
 #list of relevant errors to filter
 relevant_errors <- names(total_error_cases[names(total_error_cases) %in% all_validations])
 total_error_cases <- total_error_cases %>% filter(if_any(relevant_errors)!=0)
@@ -1557,9 +1576,9 @@ migrant_errors <- migrant_errors %>% filter(if_any(relevant_merrors)!=0)
 
 
 #Work item hierarchy------------------------------------------------------
-#include err46_diff, err_45_diff, err57_diff and err59_diff to arrange by largest discrepancies 
+#include err46_diff, err_45_diff and err61_diff to arrange by largest discrepancies 
 priority <- c("err46_diff", "err46", "err45", "err45_diff", "err4", "err44", "err24", "err47", "err49", "err50", "err30", "err31",  "err60", "err54", "err53", "err48",
-              "err51", "err32", "err55", "err11", "err13", "err15", "err1", "err37", "err38",  "err59", "err59_diff", "err57",  "err57_diff", "err52")
+              "err51", "err32", "err55", "err11", "err13", "err15", "err1", "err37", "err38","err61", "err61_diff", "err52")
 
 #arrange columns according to work item priority order
 total_error_cases_2 <- total_error_cases %>% select(parish, holding, any_of(priority)) 
@@ -1576,7 +1595,7 @@ total_error_cases <- total_error_cases_j %>% arrange(desc(err46), desc(err46_dif
                                                    desc(err48), #desc(err51),
                                                    desc(err32), desc(err55), 
                                                    desc(err11), desc(err13), desc(err15), desc(err1), 
-                                                   desc(err37), desc(err38),  desc(err57), desc(err57_diff), desc(err59), desc(err59_diff))
+                                                   desc(err37), desc(err38), desc(err61), desc(err61_diff))
                                                    #desc(err52))
 
 
@@ -1590,18 +1609,25 @@ setdiff(total_error_cases, total_error_cases_j)
 #count number of errors for each holding (exclude parish and holding, first two columns)
                                                          
 total_error_cases$total_errors_per_case <- rowSums(total_error_cases[names(total_error_cases) %in% relevant_errors])
-migrant_errors$total_errors_per_case <- migrant_errors[names(migrant_errors) %in% relevant_merrors]
+migrant_errors$total_errors_per_case <- rowSums(migrant_errors[names(migrant_errors) %in% relevant_merrors])
 
 #filter where total error per case !=0 
 total_error_cases <- total_error_cases %>% filter(total_errors_per_case !=0)
 migrant_errors<- migrant_errors %>% filter(total_errors_per_case !=0)
 
-                                                         
+#filter to select cases where err60 is the only error present
+legal_only_error<- total_error_cases %>% filter(err60==1 & total_errors_per_case ==1)                                           
+
+#anti-join to remove cases where err60 is the only error present from total error cases 
+total_error_cases <-anti_join(total_error_cases, legal_only_error, by=c("parish", "holding"))
+
 #non-priority errors (i.e. holdings with errors not on priority list)
+#will already include cases where err60 is only error present
 non_priority <-  all_JAC_form %>% select(parish, holding, any_of(all_validations)) %>%  filter(if_any(starts_with("err"), ~ . !=0))
-non_priority <-   anti_join( non_priority,total_error_cases, 
+non_priority <-   anti_join(non_priority, total_error_cases, 
                             by = c("parish", "holding"))
 non_priority$total_errors_per_case <- rowSums(non_priority[names(non_priority) != c("parish", "holding")])
+
 non_priority <- non_priority%>% filter(total_errors_per_case !=0)
 non_priority <- remove_zero(non_priority)
 
@@ -1649,7 +1675,12 @@ colnames(non_priority)[colnames(non_priority) %in% colnames(all_validations_desc
 #validation summary:change error rownames to error decriptions
 JAC_validation_error_summary$error[JAC_validation_error_summary$error%in%colnames(all_validations_desc)] <- t(all_validations_desc %>% select(any_of(JAC_validation_error_summary$error)))
 
+#adding priority and non-priority error counts
+priority_error_count <- c("total_cases_with_priority_errors", nrow(total_error_cases))
+non_priority_error_count <- c("total_cases_with_non_priority_errors", nrow(non_priority))
+JAC_validation_error_summary <- rbind(JAC_validation_error_summary, priority_error_count, non_priority_error_count )
 
+#list of dataframes to export as a multi-sheet xlsx
 priority_holdings <-list("error_summary" = JAC_validation_error_summary,  "main_validations" = holding_list, "non-priority_errors" = non_priority, "migrant_worker_checks" = labour_holding_list)
 
 
