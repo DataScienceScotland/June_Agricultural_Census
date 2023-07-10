@@ -565,13 +565,13 @@ combined_JAC <- read_table_from_db(server=server,
 combined_JAC <- combined_JAC %>% group_by(parish, holding)
 
 #croft dataset
-#change croftA for 2023
-# #croft <- read_table_from_db(server=server, 
-#                                    database=database, 
-#                                    schema=schema, 
-#                                    table_name="crofts_A")
 
-#croft <- croft %>% group_by(parish, holding)
+croft <- read_table_from_db(server=server,
+                                   database=database,
+                                   schema=schema,
+                                   table_name="crofts_A_2023")
+
+croft <- croft %>% group_by(parish, holding)
 
 
 # Combine croft and combined dataset------------------------------------------------------------------
@@ -579,12 +579,12 @@ combined_JAC <- combined_JAC %>% group_by(parish, holding)
 #filter for only form returns
 all_JAC_form <- combined_JAC %>% group_by(parish, holding) %>%
   filter(survtype == "Non-SAF") 
-#croft <- croft %>% mutate(croft = 1)
+croft <- croft %>% mutate(croft = 1)
 
 #form returns and croft dataset
-#all_JAC_form<- left_join(JAC_form, croft, by = c("parish", "holding")) %>% 
- # mutate(croft = case_when(croft ==1 ~ as.numeric(croft),
-                           #TRUE ~ 0))
+all_JAC_form<- left_join(all_JAC_form, croft, by = c("parish", "holding")) %>% 
+ mutate(croft = case_when(croft ==1 ~ as.numeric(croft),
+                           TRUE ~ 0))
 
 #Validations---------------------------------------------------------------------------------------
 
@@ -1061,20 +1061,20 @@ all_JAC_form$err33 <- ifelse(round(all_JAC_form[labour_ft_m_bp], digits = 1) != 
                                round(all_JAC_form[labour_cas_f], digits = 1) != all_JAC_form[labour_cas_f]|
                                round(all_JAC_form[total_labour], digits = 1) != all_JAC_form[total_labour], 1, 0)
 
-#croft---delete------------------------------------------------------------------------------------------------------------------------------------------------------
+#croft---------------------------------------------------------------------------------------------------------------------------------------------------------
 #err34 = err44 in SAS
 #Owned croft area is larger than area owned
 #item2249 isn't in all_JAC_form?
-#all_JAC_form$err34 <- ifelse(all_JAC_form[owned_croft]> all_JAC_form[area_own], 1, 0)
+all_JAC_form$err34 <- ifelse(all_JAC_form[owned_croft]> all_JAC_form[area_own], 1, 0)
 
 #err35 = err3 in SAS
 #item2249 doesn't exist
 #Owned croft area >0 and  is in non-crofting parish
-#all_JAC_form$err35 <- ifelse (all_JAC_form[owned_croft] > 0 & all_JAC_form$parish %in% non_crofting_parishes, 1, 0)
+all_JAC_form$err35 <- ifelse (all_JAC_form[owned_croft] > 0 & all_JAC_form$parish %in% non_crofting_parishes, 1, 0)
 
 #err36 = err4 in SAS 
 #Rented croft area >0 and  is in non-crofting parish
-#all_JAC_form$err36 <- ifelse (all_JAC_form[rented_croft] > 0 & all_JAC_form$parish %in% non_crofting_parishes, 1, 0)
+all_JAC_form$err36 <- ifelse (all_JAC_form[rented_croft] > 0 & all_JAC_form$parish %in% non_crofting_parishes, 1, 0)
 
 
 #migrant worker suppresssion - need to write function
