@@ -44,6 +44,7 @@ library(stringr)
 library(data.table)
 library(haven)
 library(RtoSQLServer)
+library(writexl)
 
 # Load functions and item lists--------------------------------------------------------
 #Functions
