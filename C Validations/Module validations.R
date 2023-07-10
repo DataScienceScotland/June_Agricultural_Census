@@ -4,6 +4,7 @@
 library(tidyverse)
 library(RtoSQLServer)
 library(writexl)
+library(skimr)
 
 # Clear environment prior
 rm(list = ls())
@@ -189,6 +190,15 @@ all_JAC_form <- combined_JAC %>% filter(survtype == "Non-SAF")
 #1= Yes
 #2 = No
 #3 = NA (answered as NA on form)
+
+#data explorer---------------------
+str(JAC_module_23)
+#data classes
+sapply(JAC_module_23, function(x)class(x))
+#range of values 
+sapply(JAC_module_23, function(x)range(x))
+#summary
+JAC_module_23 %>% skim()
 
 
 #section counts--------------------------------------------------------------------------------------------------------
