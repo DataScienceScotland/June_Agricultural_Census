@@ -1,5 +1,5 @@
 ---
-title: "JAC Punch Error Check (C1)"
+title: "JAC Context Error Check (C1)"
 date: "`r Sys.Date()`"
 sgtemplates:
   datatables:
@@ -34,10 +34,10 @@ output:
 library(tidyverse)
 library(knitr)
 #yr = this year 20xx
-yr <- 2021
-yr1 <- yr-1 
-yr2 <-  yr-2
-yr3 <-  yr-3
+yr <- 2023
+yr1 <- yr-2 
+yr2 <-  yr-3
+yr3 <-  yr-4
 yr_list <- c(yr, yr1, yr2)
 
 knitr::opts_chunk$set(echo = FALSE)
@@ -66,20 +66,23 @@ source("./punch-error-checks_files/punch error tables.R",  local = knitr::knit_g
 
 ```
 
-# JAC Survey form Punch Error Checks
-## Punch error 1
+# JAC Survey form Context Error Checks
+## Context error 1
 The following table displays errors for holdings where:  total area has gone up or down by 10% and there has been an increase of grass greater than 5 years in the last year that does not account for the total of last year's rough grazings, fallow, other land and the difference in total land use area change.
 ```{r, punch error tables-perr1, results = 'markup'}
 
 perr1 <- perr1 %>% filter(error == "Error") %>%   
-  rename(yr = tillage, yr1 = otillage, yr2 = votillage)
+  rename(yr = tillage, yr1 = otillage, yr2 = votillage,
+         total_area_yr = item12, total_area_yr1 = oitem12, total_area_yr2= voitem12,
+         young_grass_yr = grass, young_grass_yr1 = ograss, young_grass_yr2 = vograss,
+         old_grass_yr = othgrass, old_grass_yr1 = oothgrass, old_grass_yr2 = voothgrass)
   ifelse(nrow(perr1) ==0, "No errors found", "Errors found")
 kable(perr1, caption = "Potential errors for tillage (tillage - item40 + item2321)" )
 
 
 ```
 
-## Punch error 2
+## Context error 2
 The following table displays possible errors for holdings where there is a large change in pigs
 ```{r, punch error tables-perr2, results = 'markup'} 
 perr2 <- perr2 %>% filter(error == "Error") %>% 
@@ -89,7 +92,7 @@ kable(perr2, caption = "Potential errors for pigs (item157)" )
 
 ```
 
-## Punch error 3
+## Context error 3
 The following table displays possible errors for holdings where there are suspicious changes in total poultry numbers
 ```{r, punch error tables-perr3, results = 'markup'} 
 perr3 <- perr3 %>% filter(error == "Error") %>% 
@@ -99,7 +102,7 @@ kable(perr3, caption = "Potential errors for total poultry (item170)" )
 
 ```
 
-<!-- ## Punch error 4 -->
+<!-- ## Context error 4 -->
 <!-- The following table displays possible errors for holdings where there are suspicious changes in total cattle numbers -->
 <!-- ```{r, punch error tables-perr4, results = 'markup'}  -->
 <!-- perr4 <- perr4 %>% filter(error == "Error") %>%  -->
@@ -108,7 +111,7 @@ kable(perr3, caption = "Potential errors for total poultry (item170)" )
 <!-- kable(perr4, caption = "Potential errors for total cattle (cts312)" ) -->
 <!-- ``` -->
 
-<!-- ## Punch error 5 -->
+<!-- ## Context error 5 -->
 <!-- The following table displays possible errors for holdings where dairy has been introduced to a beef holding -->
 <!-- ```{r, punch error tables-perr5, results = 'markup'}  -->
 <!-- perr5 <- perr5 %>% filter(error == "Error") %>%  -->
@@ -118,7 +121,7 @@ kable(perr3, caption = "Potential errors for total poultry (item170)" )
 
 <!-- ``` -->
 
-<!-- ## Punch error 6 -->
+<!-- ## Context error 6 -->
 <!-- The following table displays possible errors for holdings where beef has been introduced to a dairy holding -->
 <!-- ```{r, punch error tables-perr6, results = 'markup'}  -->
 <!-- perr6 <- perr6 %>% filter(error == "Error") %>%  -->
@@ -128,7 +131,7 @@ kable(perr3, caption = "Potential errors for total poultry (item170)" )
 
 <!-- ``` -->
 
-## Punch error 7
+## Context error 7
 The following table displays possible errors for holdings where there is a large change in total sheep numbers
 ```{r, punch error tables-perr7, results = 'markup'} 
 perr7 <- perr7 %>% filter(error == "Error") %>% 
@@ -139,7 +142,7 @@ kable(perr7, caption = "Potential errors for total sheep (item145)" )
 
 ```
 
-## Punch error 9
+## Context error 9
 The following table displays possible errors for holdings where there is a large change in soft fruit area
 ```{r, punch error tables-perr9, results = 'markup'} 
 perr9 <- perr9 %>% filter(error == "Error") %>% 
@@ -150,7 +153,7 @@ kable(perr9, caption = "Potential errors in soft fruit area (item37)" )
 
 ```
 
-## Punch error 10
+## Context error 10
 The following table displays possible errors for holdings where there is a large change in glasshouse area 
 ```{r, punch error tables-perr 10, results = 'markup'} 
 perr10 <- perr10 %>% filter(error == "Error") %>% 
@@ -160,7 +163,7 @@ kable(perr10, caption = "Potential errors in glasshouse area" )
 
 ```
 
-<!-- ##Punch error 11 -->
+<!-- ##Context error 11 -->
 <!-- The following table displays possible errors for holdings where there has been an introduction of male cattle to holding with only female cattle (excluding bulls for service) -->
 <!-- ```{r, punch error tables-perr11, results = 'markup'}  -->
 <!-- perr11 <- perr11 %>% filter(error == "Error") %>%  -->
@@ -169,7 +172,7 @@ kable(perr10, caption = "Potential errors in glasshouse area" )
 <!-- kable(perr11, caption = "Potential introduction of male cattle to holding with only female cattle (excluding bulls for service)" ) -->
 
 <!-- ``` -->
-<!-- ##Punch error 12 -->
+<!-- ##Context error 12 -->
 <!-- The following table displays possible errors for holdings where there has been an introduction of female cattle (not for breeding) to holding with only male cattle' -->
 <!-- ```{r, punch error tables-perr12, results = 'markup'}  -->
 <!-- perr12 <- perr12 %>% filter(error == "Error") %>%  -->
@@ -179,7 +182,7 @@ kable(perr10, caption = "Potential errors in glasshouse area" )
 
 <!-- ``` -->
 
-## Punch error 13
+## Context error 13
 The following table displays possible errors for holdings where there has been a switch from ware to seed potatoes
 ```{r, punch error tables-perr13, results = 'markup'} 
 perr13 <- perr13 %>% filter(error == "Error") %>% 
@@ -190,17 +193,18 @@ kable(perr13, caption = "Potential errors for switch from ware to seed potatoes"
 
 ```
 
-## Punch error 14
+## Context error 14
 The following table displays possible errors for holdings where there is a large shift in deer numbers or movement from zero or to zero
 ```{r, punch error tables-perr14, results = 'markup'} 
-perr14 <- perr14 %>% filter(error == "Error") 
+perr14 <- perr14 %>% filter(error == "Error") %>% 
+  rename(yr = deer, yr1 = odeer, yr2 =vodeer)
 ifelse(nrow(perr14) ==0,  "No errors found", "Errors found")
 kable(perr14, caption = "Potential errors for large shift in deer numbers or movement from zero or to zero (item94)" )
 
 ```
 
-## Punch error 15
-The following table displays possible errors for holdings where there is a large change in total land are
+## Context error 15
+The following table displays possible errors for holdings where there is a large change in total land area
 ```{r, punch error tables-perr15, results = 'markup'} 
 perr15 <- perr15 %>% filter(error == "Error") %>% 
   rename(yr = item50, yr1 = oitem50, yr2 =voitem50)
@@ -209,7 +213,7 @@ kable(perr15, caption = "Potential errors for large change in total land area (i
 
 ```
 
-## Punch error 16
+## Context error 16
 The following table displays possible errors for holdings where there is a large change in rough grazing area
 ```{r, punch error tables-perr16, results = 'markup'} 
 perr16 <- perr16 %>% filter(error == "Error") %>% 
@@ -218,7 +222,8 @@ ifelse(nrow(perr16) ==0,  "No errors found", "Errors found")
 kable(perr16, caption = "Potential errors for large change in rough grazing area (item47)" )
 
 ```
-<!-- ##Punch error 17 -->
+
+<!-- ##Context error 17 -->
 <!-- The following table displays possible errors for holdings where there is a large change in migrant labour -->
 <!-- ```{r, punch error tables-perr17, results = 'markup'}  -->
 <!-- perr17 <- perr17 %>% filter(error == "Error") %>%  -->
@@ -228,11 +233,11 @@ kable(perr16, caption = "Potential errors for large change in rough grazing area
 
 <!-- ``` -->
 
-# Punch error summary table 
+# Context error summary table 
 The following table displays the count of punch errors grouped by "survtype". The count of observations per survtype is given.
 ```{r, punch error tables-perr-summary, results = 'markup'} 
 
-kable(punch_error_summary, caption = "Count of punch errors by survtype (observations of survtype given in Count column)")
+kable(context_error_summary, caption = "Count of punch errors by survtype (observations of survtype given in Count column)")
 
 ```
 
