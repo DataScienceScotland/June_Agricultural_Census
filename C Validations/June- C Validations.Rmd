@@ -33,6 +33,7 @@ output:
 ```{r setup, include = FALSE } 
 library(tidyverse)
 library(knitr)
+library(writexl)
 #yr = this year 20xx
 yr <- 2023
 yr1 <- yr-1 

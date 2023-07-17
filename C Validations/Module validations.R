@@ -21,7 +21,9 @@ yr_list <- c(yr, yr2, yr3)
 
 # Before import -----------------------------------------------------------
 
-
+#Functions-------------------------------------------------------------------
+#function to remove columns where error = 0
+remove_zero <- function(x){select(x, where(~any(.!= 0)))}
 
 
 # Datashare file path for import and export
@@ -201,49 +203,49 @@ sapply(JAC_module_23, function(x)range(x))
 JAC_module_23 %>% skim()
 
 
-#section counts--------------------------------------------------------------------------------------------------------
-#write code for NAs from paper....
-no_section_12 <- all_JAC_form %>% select (all_of(section_12)) %>%  filter(get(rough_grazing_woodland_only)== 1)
-yes_section_12 <- all_JAC_form %>% select (all_of(section_12)) %>%  filter(get(rough_grazing_woodland_only)== 0)
-
-
-
-no_section_13 <- all_JAC_form %>% select (all_of(section_13)) %>%  filter(get(ghouse_fallow_woodland_oland_only)== 1) 
-yes_section_13 <- all_JAC_form %>% select (all_of(section_13)) %>%  filter(get(ghouse_fallow_woodland_oland_only)== 0)
-
-
-no_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
-  filter(get(rough_grazing_woodland_only) ==1 & get(ghouse_fallow_woodland_oland_only) ==1)
-yes_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
-  filter(get(rough_grazing_woodland_only) ==0 & get(ghouse_fallow_woodland_oland_only) ==0)
-
-yes_no_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
-  filter(get(rough_grazing_woodland_only) ==0 & get(ghouse_fallow_woodland_oland_only) ==1 |
-           get(rough_grazing_woodland_only) ==1 & get(ghouse_fallow_woodland_oland_only) ==0)
-           
-
-
-count_no_section_12 <- nrow(no_section_12)
-count_yes_section_12 <- nrow(yes_section_12)
-count_section_12 <- sum(count_no_section_12, count_yes_section_12)
-
-count_no_section_13 <- nrow(no_section_13)
-count_yes_section_13 <- nrow(yes_section_13)
-count_section_13 <- sum(count_no_section_13, count_yes_section_13)
-
-
-count_no_section_12_13 <- nrow(no_section_12_13)
-count_yes_section_12_13 <- nrow(yes_section_12_13)
-count_yes_no_section_12_13 <- nrow(yes_no_section_12_13)
-count_section_12_13 <- sum(count_no_section_12_13, count_yes_section_12_13, count_yes_no_section_12_13)
-#count_section_12_13_na <- all_JAC_form %>% filter(is.na(get(rough_grazing_woodland_only)) | is.na(get(ghouse_fallow_woodland_oland_only)))
-
-
-module_section_counts <- data.frame(count_no_section_12, count_yes_section_12, count_no_section_13, count_yes_section_13, count_no_section_12_13, 
-                                    count_yes_section_12_13, count_yes_no_section_12_13, count_section_12, count_section_13, count_section_12_13) %>%
-  pivot_longer(cols= everything(), names_to = "category", values_to = "count") %>%
-  mutate(., percentage = (count/count_section_12_13)*100)
-
+# #section counts--------------------------------------------------------------------------------------------------------
+# #write code for NAs from paper....
+# no_section_12 <- all_JAC_form %>% select (all_of(section_12)) %>%  filter(get(rough_grazing_woodland_only)== 1)
+# yes_section_12 <- all_JAC_form %>% select (all_of(section_12)) %>%  filter(get(rough_grazing_woodland_only)== 0)
+# 
+# 
+# 
+# no_section_13 <- all_JAC_form %>% select (all_of(section_13)) %>%  filter(get(ghouse_fallow_woodland_oland_only)== 1) 
+# yes_section_13 <- all_JAC_form %>% select (all_of(section_13)) %>%  filter(get(ghouse_fallow_woodland_oland_only)== 0)
+# 
+# 
+# no_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
+#   filter(get(rough_grazing_woodland_only) ==1 & get(ghouse_fallow_woodland_oland_only) ==1)
+# yes_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
+#   filter(get(rough_grazing_woodland_only) ==0 & get(ghouse_fallow_woodland_oland_only) ==0)
+# 
+# yes_no_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
+#   filter(get(rough_grazing_woodland_only) ==0 & get(ghouse_fallow_woodland_oland_only) ==1 |
+#            get(rough_grazing_woodland_only) ==1 & get(ghouse_fallow_woodland_oland_only) ==0)
+#            
+# 
+# 
+# count_no_section_12 <- nrow(no_section_12)
+# count_yes_section_12 <- nrow(yes_section_12)
+# count_section_12 <- sum(count_no_section_12, count_yes_section_12)
+# 
+# count_no_section_13 <- nrow(no_section_13)
+# count_yes_section_13 <- nrow(yes_section_13)
+# count_section_13 <- sum(count_no_section_13, count_yes_section_13)
+# 
+# 
+# count_no_section_12_13 <- nrow(no_section_12_13)
+# count_yes_section_12_13 <- nrow(yes_section_12_13)
+# count_yes_no_section_12_13 <- nrow(yes_no_section_12_13)
+# count_section_12_13 <- sum(count_no_section_12_13, count_yes_section_12_13, count_yes_no_section_12_13)
+# #count_section_12_13_na <- all_JAC_form %>% filter(is.na(get(rough_grazing_woodland_only)) | is.na(get(ghouse_fallow_woodland_oland_only)))
+# 
+# 
+# module_section_counts <- data.frame(count_no_section_12, count_yes_section_12, count_no_section_13, count_yes_section_13, count_no_section_12_13, 
+#                                     count_yes_section_12_13, count_yes_no_section_12_13, count_section_12, count_section_13, count_section_12_13) %>%
+#   pivot_longer(cols= everything(), names_to = "category", values_to = "count") %>%
+#   mutate(., percentage = (count/count_section_12_13)*100)
+# 
 
 #percentage checks-------------------------------------------------------------------------------------------------
 
@@ -391,19 +393,70 @@ merr7<- JAC_module_23%>% select(parish, holding, submisType,
 merr7 <-merr7%>%  mutate(error=ifelse(merr7== 1 | is.na(merr7), "Error", "No Error"))%>% filter(error == "Error")
 
 
-
-
-
-
-
-
-
-
 ##module error summary----------------------
-merr_list <- c("merr1", "merr2", "merr3")
+merr_list <- c("merr1", "merr2", "merr3", "merr4", "merr5", "merr6", "merr7")
 module_errors <- JAC_module_23 %>% select(parish, holding, starts_with("merr"))%>% 
   filter(get(merr_list)!=0)
 
-JAC_module_23 %>% select(arable_mix_with_legume)
-  
+#dataframe of observations (holdings) that have failed the new validations - 
+module_validation_errors <- JAC_module_23 %>% select(parish, holding, any_of(merr_list), submisType) %>% 
+  filter(if_any(starts_with("merr"), ~ . !=0))
+module_validation_error_summary <- module_validation_errors%>% ungroup() %>%  select(submisType, starts_with("merr")) %>%
+  group_by(submisType) %>%  summarize(across(everything(), sum, na.rm = TRUE)) %>% ungroup()
+module_validation_error_summary <- cbind(module_validation_error_summary,
+                                         total_cases_with_errors =  rowSums(module_validation_error_summary[names(module_validation_error_summary) %in% merr_list]))
+
+#rownames(module_validation_error_summary) <- "errors"
+#module_validation_error_summary <- module_validation_error_summary %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
+#module_validation_error_summary <- module_validation_error_summary %>% filter(count !=0)
+
+
+#JAC_module_23 %>% select(arable_mix_with_legume)
+
+#add total errors per case column to sum number of errors for each holding
+module_errors$total_errors_per_case <- rowSums(module_errors[names(module_errors) %in% merr_list])
+
+#filter where total error per case !=0 
+module_errors <- module_errors %>% filter(total_errors_per_case !=0)
+
+
+#create list of validations vector character
+all_module_validations_desc <- paste(merr_list, "desc", sep="_")
+
+#create list
+all_module_validations_desc <-as.list(all_module_validations_desc)  
+
+#change name of each list to error names
+names(all_module_validations_desc) <- merr_list
+
+all_module_validations_desc <-  lapply(all_module_validations_desc, function(x)get(x))
+#single dataframe of errors and error descriptions
+all_module_validations_desc <- bind_rows(all_module_validations_desc)
+
+#change value of list element to description of error
+
+#create list of dataframe of errors for each holdinh
+holding_list <- split(module_errors, seq(nrow(module_errors)))
+
+
+#single dataframe of holdings with validation errors
+holding_list <- bind_rows(holding_list) 
+holding_list <- remove_zero(holding_list)
+holding_list <- holding_list %>% relocate(total_errors_per_case, .after = last_col())
+
+
+#change error column headings to error + description
+colnames(holding_list)[colnames(holding_list) %in% colnames(all_module_validations_desc)] <-  all_module_validations_desc %>% select(any_of(names(holding_list)))
+
+#validation summary:change error rownames to error decriptions
+#module_validation_error_summary$error[module_validation_error_summary$error%in%colnames(all_module_validations_desc)] <- t(all_module_validations_desc %>% select(any_of(module_validation_error_summary$error)))
+colnames(module_validation_error_summary)[colnames(module_validation_error_summary) %in% colnames(all_module_validations_desc)] <-  all_module_validations_desc %>% select(any_of(names(module_validation_error_summary)))
+
+#list of dataframes to export as a multi-sheet xlsx
+priority_holdings <-list("module_error_summary" = module_validation_error_summary,  "module_validations" = holding_list)
+
+
+#export prioritised holding list as xlsx for Ops
+write_xlsx(priority_holdings, paste(output_path, Sys.Date(), "module_errors.xlsx"))
+
                                              
