@@ -3,11 +3,11 @@
 all_holding_areas <- c("item7", "item11", "item12", "item125", "item126", "item127", "item2249")
 all_seasonal <- c("item1", "item2827", "item2828")
 all_seasonal_saf <- c("item1", "item2879")
-<<<<<<< HEAD
+
 all_glasshouse_ags <- c("item2713", "item2707", "item2866", "item2714", "item2708", "item2715", "item2709", "item2716", "item2710", "item2717", "item2711", "item2862", "item2867","item27750", "item27755")
-=======
+
 all_glasshouse_ags <- c("item2713", "item2707", "item2866", "item2714", "item2708", "item2715", "item2709", "item2716", "item2710", "item2717", "item2711", "item2862", "item2867", "item27750", "item27755")
->>>>>>> 8d75c1f27be6b3d64b6355b30cdc2dd8b6dc34ce
+
 all_glasshouse_saf <- c("item2858", "item2859", "item2860", "item2861", "item2863", "item2864", "item2865")
 all_glasshouse <- c(all_glasshouse_ags, all_glasshouse_saf, "item85", "item86")
 all_cattle <- c("cts301", "cts302", "cts303", "cts304", "cts305", "cts306", "cts307", "cts308", "cts309", "cts310", "cts311", "cts312")
