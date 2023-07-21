@@ -1,7 +1,34 @@
 ---
-title: "June - C6-9"
-output: html_document
-date: "2023-03-16"
+title: "June - C1 - SAF validations report"
+date: "`r Sys.Date()`"
+sgtemplates:
+  datatables:
+    features:
+      info: true
+      ordering: true
+      paging: true
+      searching: false
+  header:
+    phase_banner:
+      tag: "WIP"
+      text: "This is a work in progress."
+    site_branding: "Scottish Government"
+  metadata:
+    label: "Report"
+  navigation:
+    toc:
+      sticky: false
+output:
+  html_document:
+    code_download: false
+    df_print: paged
+    fig_caption: true
+    number_sections: false
+    self_contained: false
+    template: "_template.html"
+    toc: true
+    toc_depth: 2
+    toc_float: false
 ---
 ```{r setup , include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, 
@@ -12,10 +39,7 @@ knitr::opts_chunk$set(echo = FALSE,
                       cache = TRUE,
                       warning = FALSE, 
                       message = FALSE)
-```
 
-
-```{r library}
 # Load packages
 
 library(tidyverse)
@@ -26,24 +50,18 @@ library(haven)
 library(dplyr)
 library(DT)
 library(knitr)
-```
 
 
-```{r functions}
+loadRData <- function(fileName) {
+  # loads an RData file, and returns it
+  load(fileName)
+  get(ls()[ls() != "fileName"])
+}
 
-
-# Load functions
-
-source("Functions/Functions.R")
-
-```
-
-
-```{r read}
 # Datashare file path for import and export
 
 Code_directory <-
-  ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023")
+  ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023")
 
 # ADM schema for export
 
@@ -52,25 +70,21 @@ database <- "RuralAndEnvironmentalScienceFarmingStatistics"
 schema <- "juneagriculturalsurvey2023alpha"
 
 
-allsaf_flagsorig <- loadRData(paste0(Code_directory, "/allsaf_B8flags.rda"))
+allsaf_flagsorig <- loadRData(paste0(Code_directory, "/allsaf_B8flags_2023.rda"))
 
-censuspop<-read_sas("//s0177a/sasdata1/ags/census/agscens/address_occid_01JUN21.sas7bdat")
+censuspop<-read_sas("//s0177a/sasdata1/ags/census/agscens/address_occid_01JUN23.sas7bdat")
 
-combined_data <- read.csv(paste0(Code_directory, "/COMBINED_DATA.csv"))
+combined_data <- loadRData(paste0(Code_directory, "/combined_data_2023.rda"))
 
-agscensprev<-read_sas("//s0177a/sasdata1/ags/census/agscens/june2020.sas7bdat")
-
-
-allsaf_corrections <- loadRData(paste0(Code_directory, "/allsaf_B8corrections.rda"))
-allsaf_permseas <- loadRData(paste0(Code_directory, "/allsaf_B8permseas.rda"))
+agscensprev<-read_sas("//s0177a/sasdata1/ags/census/agscens/june2021.sas7bdat")
 
 
-allsaf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8.rda"))
+allsaf_corrections <- loadRData(paste0(Code_directory, "/allsaf_B8corrections_2023.rda"))
+allsaf_permseas <- loadRData(paste0(Code_directory, "/allsaf_B8permseas_2023.rda"))
 
 
-check_combined_dataSAS<-read.csv(paste0(Code_directory, "/CHECK_COMBINED_DATA.csv"))
+allsaf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8_2023.rda"))
 
-compareSAS<-read.csv(paste0(Code_directory, "/COMPARE.csv"))
 
 ```
 
@@ -166,13 +180,13 @@ allsaf_flagged<-left_join(allsaf_flagged, fid_size, by="fid")
 ```
 
 
-```{r results}
-
-knitr::kable(allsaf_flagged)
+```{r, results = 'asis'}
+ifelse(nrow(allsaf_flagged$flag1) ==0, "No errors found", "Errors found)")
+kable(allsaf_flagged$flag1, caption = "Flag1")
 ```
 
 
-
+```{r, results = 'markup'}
 ```{r 3}
 # Miscellaneous checks ----------------------------------------------------
 
@@ -321,89 +335,5 @@ for (i in LLOfids) {
   print(datatable(LLO_sub, options=list(), caption=i))
   
 }
-```
-
-```{r}
-
-keyvars<-c("brn", "item7", "item11", "item12", "item46", "item47", "item48", "item49", "item50")
-
-june20<-agscensprev %>% 
-  select(parish, holding, all_of(keyvars)) %>% 
-  mutate(diff20=
-           item50-item12) %>% 
-  rename_with(.fn = ~ paste0(.x, "_20"), .cols=keyvars)
-
-censuspopuse2<-select(censuspop,-"holding_classification_id")
-
-compare<-left_join(combined_data,june20, by=c("parish","holding"))
-compare<-left_join(compare,censuspopuse2, by=c("parish","holding"))
-
-
-compare<-compare %>% 
-  mutate(
-    item12=tot_area,
-    item11 = tot_own_area,
-    item7 = tot_area-tot_own_area,
-    cropgrazing_change = (item46+item47-item46_20-item47_20), 
-    woodland_change = item48_20-item48,
-    othland_change = item49_20-item49,
-    totland_change = item50_20-item50,
-    mp2_change = item12_20-item12,
-    diff = item12-item50
-  )
-
-compare$diff<-as.numeric(compare$diff)
-
-check_combined_data<-compare %>% 
-  mutate(
-    item48_adj=item48,
-    item49_adj=item49,
-    item50_adj=item50,
-    prop48=
-      ifelse((item49_20+item49_20)>0,item48_20/(item49_20+item49_20) ,""),
-    prop49=
-      ifelse((item49_20+item49_20)>0,item49_20/(item49_20+item49_20) ,""),
-    woodland_adj=
-      ifelse(saf_data=="complete", pmin(woodland_change, diff),""),
-    woodland_adj=
-      ifelse(woodland_adj<0,0,woodland_adj),
-    woodland_adj=as.numeric(woodland_adj),
-    diff=
-      ifelse(saf_data=="complete", (diff-woodland_adj),diff),
-    othland_adj=
-      ifelse(saf_data=="complete", pmin(othland_change, diff),""),
-    othland_adj=
-      ifelse(othland_adj<0,0,othland_adj),
-    item48_adj=
-      ifelse(saf_data=="complete", (item48+woodland_adj),item48),
-    item49_adj=
-      ifelse(saf_data=="complete", (item49+woodland_adj),item49),
-    item50_adj=
-      ifelse(saf_data=="complete", (item50+woodland_adj),item50),
-    item48=item48_adj,
-    item49=item49_adj,
-    item50=item50_adj)
-```
-
-
-```{r, results='asis'}
-
-diff_check<-compare %>% 
-  filter(abs(diff)>100 & saf_data=="complete")
-
-kable(diff_check)
-```
-
-
-```{r}
-# Compare with SAS output
-
-diff_checkSAS<-compareSAS %>% 
-  filter(abs(diff)>100 & saf_data=="complete")
-
-
-diff_checkSAS<-diff_checkSAS %>% 
-  select(brn, item12, item50, diff)
-
 ```
 

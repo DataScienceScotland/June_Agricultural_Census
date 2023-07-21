@@ -68,9 +68,9 @@ schema <- "juneagriculturalsurvey2023alpha"
 # 
 # # Import Ags data (downloaded from Ags). From 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
 
-# 
-# df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_070723.csv"),
-#                      fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
+
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_170723.csv"),
+                     fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # The previous year's data will still be SAF and NonSAF in 2023 (i.e. 2021 data). 2024 onwards, the previous year will be 2023 so only one datafile.
 
@@ -80,7 +80,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 # # Import crofts data. Note: using read.csv here creates a df with HoldingID as the index, which we don't want! 
 # # Crofts data isn't added to the census dataset until the very end of the process (see E2 in SAS project).
 # 
- df_crofts <- read_csv(paste0(Croft_directory, "/ROC_Holdings_10-7-2023.csv"))
+ # df_crofts <- read_csv(paste0(Croft_directory, "/ROC_Holdings_10-7-2023.csv"))
 # 
 # # Permanent and seasonal ----------------------------------------------------------------
 # 
@@ -243,62 +243,62 @@ df_nonSAF <- df_nonSAF %>%
 #
 # # Clean names, remove Parish variable and create parish and holding. Note: need to deal with mainlocationcode when they have county in
 #
-df_crofts<-clean_names(df_crofts)
-
-df_crofts <- subset(df_crofts, select = -(parish))
-
-df_crofts <- df_crofts %>%
-  mutate(parish=
-           str_remove(substr(main_location_code, 1, 3), "123"),
-          holding=str_remove(substr(main_location_code, 5, 8), "123")
-  )
-
-
-
-df_crofts<-df_crofts %>%
-  mutate(parish=as.numeric(parish),
-         holding=as.numeric(holding))
-
-# Remove crofts with zero area
-
-df_crofts <- df_crofts[df_crofts$total_area > 0, ]
-
-# Remove crofts with invalid holding number. This removes more records than in SAS - blanks are removed by R but not in the SAS code. I assume holdings with blanks should be removed.
-
-
-df_crofts <- df_crofts[df_crofts$holding != 0, ]
-
-# Create variables for rented area and owned area
-
-df_crofts <- df_crofts %>%
-  mutate(rented_area = ifelse(status_a == "Tenanted", total_area, 0),
-          owned_area = ifelse(status_b == "Owned", total_area, 0)
-         )
-
-
-# Create new dataframe
-
-
-df_crofts <- subset(df_crofts, select = c(parish, holding, total_area, rented_area, owned_area))
-
-
-# Group by parish and holding. Note for future: make this into a function,
-
-df_crofts<- df_crofts %>%
-  group_by(parish, holding) %>%
-  dplyr::summarise(
-    cc_tot_area = sum(total_area),
-    cc_rented_area = sum(rented_area),
-    cc_owned_area = sum(owned_area),
-    num_crofts = sum(total_area != 0),
-    num_rented_crofts = sum(rented_area != 0),
-    num_owned_crofts = sum(owned_area != 0),
-    .groups = "rowwise"
-  )
-# Remove row with NAs. 
-
-df_crofts<-df_crofts[complete.cases(df_crofts), ]
-
+# df_crofts<-clean_names(df_crofts)
+# 
+# df_crofts <- subset(df_crofts, select = -(parish))
+# 
+# df_crofts <- df_crofts %>%
+#   mutate(parish=
+#            str_remove(substr(main_location_code, 1, 3), "123"),
+#           holding=str_remove(substr(main_location_code, 5, 8), "123")
+#   )
+# 
+# 
+# 
+# df_crofts<-df_crofts %>%
+#   mutate(parish=as.numeric(parish),
+#          holding=as.numeric(holding))
+# 
+# # Remove crofts with zero area
+# 
+# df_crofts <- df_crofts[df_crofts$total_area > 0, ]
+# 
+# # Remove crofts with invalid holding number. This removes more records than in SAS - blanks are removed by R but not in the SAS code. I assume holdings with blanks should be removed.
+# 
+# 
+# df_crofts <- df_crofts[df_crofts$holding != 0, ]
+# 
+# # Create variables for rented area and owned area
+# 
+# df_crofts <- df_crofts %>%
+#   mutate(rented_area = ifelse(status_a == "Tenanted", total_area, 0),
+#           owned_area = ifelse(status_b == "Owned", total_area, 0)
+#          )
+# 
+# 
+# # Create new dataframe
+# 
+# 
+# df_crofts <- subset(df_crofts, select = c(parish, holding, total_area, rented_area, owned_area))
+# 
+# 
+# # Group by parish and holding. Note for future: make this into a function,
+# 
+# df_crofts<- df_crofts %>%
+#   group_by(parish, holding) %>%
+#   dplyr::summarise(
+#     cc_tot_area = sum(total_area),
+#     cc_rented_area = sum(rented_area),
+#     cc_owned_area = sum(owned_area),
+#     num_crofts = sum(total_area != 0),
+#     num_rented_crofts = sum(rented_area != 0),
+#     num_owned_crofts = sum(owned_area != 0),
+#     .groups = "rowwise"
+#   )
+# # Remove row with NAs. 
+# 
+# df_crofts<-df_crofts[complete.cases(df_crofts), ]
+# 
 
 
 
@@ -325,7 +325,7 @@ save(df_nonSAF, file = paste0(Code_directory, "/Ags_A_2023.rda"))
 # 
 # 
 # 
- save(df_crofts, file = paste0(Code_directory, "/crofts_A_2023.rda"))
+ # save(df_crofts, file = paste0(Code_directory, "/crofts_A_2023.rda"))
 
 
 
@@ -395,14 +395,14 @@ write_dataframe_to_db(server=server,
 #                       batch_size = 10000)
 # 
 # 
-write_dataframe_to_db(server=server,
-                      database=database,
-                      schema=schema,
-                      table_name="crofts_A_2023",
-                      dataframe=df_crofts,
-                      append_to_existing = FALSE,
-                      versioned_table=FALSE,
-                      batch_size = 10000)
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="crofts_A_2023",
+#                       dataframe=df_crofts,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
 # 
 # 
 # 
