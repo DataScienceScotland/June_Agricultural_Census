@@ -69,7 +69,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 # # Import Ags data (downloaded from Ags). From 2023 onwards, there will be just one datafile from Ags (no SAF or NonSAF).
 
 
-df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_170723.csv"),
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_270723.csv"),
                      fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # The previous year's data will still be SAF and NonSAF in 2023 (i.e. 2021 data). 2024 onwards, the previous year will be 2023 so only one datafile.

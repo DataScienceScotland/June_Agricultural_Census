@@ -43,297 +43,124 @@ knitr::opts_chunk$set(echo = FALSE,
 # Load packages
 
 library(tidyverse)
-library(stringr)
-library(data.table)
-library(janitor)
-library(haven)
-library(dplyr)
-library(DT)
 library(knitr)
+library(writexl)
+library(RtoSQLServer)
 
-
-loadRData <- function(fileName) {
-  # loads an RData file, and returns it
-  load(fileName)
-  get(ls()[ls() != "fileName"])
-}
-
-# Datashare file path for import and export
-
-Code_directory <-
-  ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023")
-
-# ADM schema for export
-
-server <- "s0196a\\ADM"
-database <- "RuralAndEnvironmentalScienceFarmingStatistics"
-schema <- "juneagriculturalsurvey2023alpha"
-
-
-allsaf_flagsorig <- loadRData(paste0(Code_directory, "/allsaf_B8flags_2023.rda"))
-
-censuspop<-read_sas("//s0177a/sasdata1/ags/census/agscens/address_occid_01JUN23.sas7bdat")
-
-combined_data <- loadRData(paste0(Code_directory, "/combined_data_2023.rda"))
-
-agscensprev<-read_sas("//s0177a/sasdata1/ags/census/agscens/june2021.sas7bdat")
-
-
-allsaf_corrections <- loadRData(paste0(Code_directory, "/allsaf_B8corrections_2023.rda"))
-allsaf_permseas <- loadRData(paste0(Code_directory, "/allsaf_B8permseas_2023.rda"))
-
-
-allsaf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8_2023.rda"))
-
+#Script containing datasets and validations
+source("June - C1 - SAF validations.R",  local = knitr::knit_global())
 
 ```
 
+# SAF Validations
 
+# Section 1 Flagged holdings
 
-## This markdown doc outputs flagged records from the SAF dataset, flagged up in B8. It is based on C6-C9 of the SAS project.
-
-```{r formatting, echo=FALSE}
-
-censuspop<-as.data.frame(censuspop)
-
-# Clean variable names
-
-allsaf_flags<-clean_names(allsaf_flagsorig)
-allsaf_flags$parish<-as.numeric(allsaf_flags$parish)
-allsaf_flags$holding<-as.numeric(allsaf_flags$holding)
-censuspop<-clean_names(censuspop)
-censuspop$parish<-as.numeric(censuspop$parish)
-censuspop$holding<-as.numeric(censuspop$holding)
-
-allsaf_flags$flag<-" "
-
-allsaf_flags<-allsaf_flags %>% 
-  select (slc, fid, brn, mlc, field_area, landtype, claimtype, llo, code, area, parish, holding, flag1:flag4, flag) %>% 
-  mutate(flag=
-           ifelse( 
-             flag1>0, paste(flag,"1"), flag),
-         flag=
-           ifelse( 
-             flag2>0, paste(flag,"2"), flag),
-         flag=
-           ifelse( 
-             flag4>0, paste(flag,"4"), flag),
-         flag=
-           ifelse( 
-             flag5>0, paste(flag,"5"), flag),
-         flag=
-           ifelse( 
-             flag6>0, paste(flag,"6"), flag),
-         flag=
-           ifelse( 
-             flag7>0, paste(flag,"7"), flag),
-         flag=
-           ifelse( 
-             flag8>0, paste(flag,"8"), flag),
-         flag=
-           ifelse( 
-             flag9>0, paste(flag,"9"), flag))
-
-# This created NAs so we have to remove them from flag here
-         
-allsaf_flags$flag<-gsub('\\D',' ',allsaf_flags$flag)
-
-allsaf_flags$flag<-as.numeric(allsaf_flags$flag)
-
-censuspop<-censuspop %>% 
-  select(parish, holding, holding_classification_id, tot_area, tot_own_area)
-
-
-flagged_holdings<-merge(allsaf_flags,censuspop, by=c("parish", "holding"))
-
-flagged_holdings<-flagged_holdings %>% 
-  mutate(
-    population=
-      ifelse(holding_classification_id==1|holding_classification_id==2|holding_classification_id==4|holding_classification_id==5|holding_classification_id==6|holding_classification_id==7|holding_classification_id==13,1,"")
-  )
-
-
-flagged_holdings<-flagged_holdings %>% 
-  filter(population==1|flag6==1)
-
-flagged_holdings<-flagged_holdings %>% 
-  mutate(across(contains("flag"), ~ replace(., is.na(.), 0)))
-
-
-flagged_fids<-flagged_holdings %>% 
-  filter(rowSums(across(flag1:flag4))>0) %>% 
-  select(fid)
-
-
-
-fid_size<-allsaf_flags%>%  group_by(fid) %>% 
-  select(fid, field_area) %>%
-  summarise(max_field_area=max(field_area))
-
-# Need to check these flagged records - SAS returns more
-
-
-allsaf_flagged<-inner_join(allsaf_flags, flagged_fids, by="fid")
-
-
-allsaf_flagged<-left_join(allsaf_flagged, fid_size, by="fid")
-```
-
-
-```{r, results = 'asis'}
-ifelse(nrow(allsaf_flagged$flag1) ==0, "No errors found", "Errors found)")
-kable(allsaf_flagged$flag1, caption = "Flag1")
-```
+## Flag 1
+The following table displays errors for flag1: Field ID (FID) recorded as belonging to multiple holdings (Single Location Code: SLC) on permanent sheets where one reported it as seasonally let out (LLO). A permanent tenancy may incorrectly be recorded as a seasonal let out]'/
 
 
 ```{r, results = 'markup'}
-```{r 3}
-# Miscellaneous checks ----------------------------------------------------
 
-# check that saf land areas are within +/- 100 ha of the total mp2 area
+ifelse(nrow(flaggedholdings_flag1) ==0, "No errors found", "Errors found)")
 
-margin<-100
+kable(flaggedholdings_flag1 , caption = "Flag 1")
 
-
-
-censuspopuse<-censuspop %>% 
-  filter(holding_classification_id==1|holding_classification_id==2|holding_classification_id==4|holding_classification_id==5|holding_classification_id==6|holding_classification_id==7|holding_classification_id==13)
-
-checksafareas<-left_join(combined_data,censuspopuse, by=c("parish","holding"))
-
-checksafareas$parish <- str_pad(checksafareas$parish, width = 3, pad = "0")
-checksafareas$holding <- str_pad(checksafareas$holding, width = 4, pad = "0")
-
-checksafareas<-checksafareas %>% 
-  select(parish, holding, item50, tot_area, land_data) %>% 
-  filter(land_data=="saf"&item50>0&tot_area>0&(item50>tot_area+margin|item50<tot_area-margin)) %>% 
-         mutate(slc=
-                  paste0(parish, "/", holding, sep=""))
-
-# Check areas previous year
-
-# There's no variable called tot_area in the agscens dataset, so using item12 whichis total area of holding
-# 
-
-
-checksafareasprev<-agscensprev %>%
-  select(parish, holding, item50,  item12, land_data) %>%
-  filter(land_data=="saf"&item50>0&item12>0&(item50>item12+margin|item50<item12-margin)) %>%
-  mutate(slc=
-           paste0(parish, "/", holding, sep=""))
-```
-
-
-```{r flag7, echo=FALSE}
-# Flag 7. This should be checked to make sure it only returns the first fid for each (distinct/unique)
-
-flag7_fids<-flagged_holdings %>% 
-  filter(flag7>0 & fid != 0) %>% 
-  select (fid)
-
-pfds_flag7<-inner_join(allsaf_flagged, flag7_fids, by="fid")
-```
-
-
-```{r flag7table, results='asis'}
-kable(pfds_flag7)
 
 ```
+##  Flag 2 
+Duplicate lines, and in the total recorded land use area to be'/substantially greater than the recorded field area'/[May be a data entry error]'/
 
-```{r}
+```{r, results = 'markup'}
 
+ifelse(nrow(flaggedholdings_flag2) ==0, "No errors found", "Errors found)")
 
-corrections_fid <- allsaf_corrections %>% group_by(fid) %>% 
-  select(fid, field_area) %>%
-  summarise(max_field_area=max(field_area))
-
-
-allsaf_corrections<-inner_join(allsaf_corrections,corrections_fid,by="fid")
+kable(flaggedholdings_flag2 , caption = "Flag 2")
 
 
-allsaf_after<-inner_join(allsaf_flagsorig,corrections_fid,by="fid")
+```
+## Flag 3
+Land reported as LLO, and total recorded land use area to be'/substantially greater than the recorded field area'/[May be a seasonal tenancy incorrectly entered on permanent sheet]'/
 
 
-allsaf_before<-inner_join(allsaf_permseas,corrections_fid,by="fid")
+```{r, results = 'markup'}
 
-allsaf_corrections$amended<-"ERROR"
-allsaf_before$amended<-"BEFORE"
-allsaf_after$amended<-"AFTER"
+ifelse(nrow(flaggedholdings_flag3) ==0, "No errors found", "Errors found)")
+
+kable(flaggedholdings_flag3 , caption = "Flag 3")
 
 
-allsaf_flagged<-rbind(allsaf_corrections,allsaf_before,allsaf_after)
+```
+## Flag 4
+On seasonal sheet, MLC and SLC are identical'/[May be a permanent tenancy incorrectly entered on seasonal sheet]'/
 
-allsaf_flagged$flag<-""
 
-allsaf_flagged<-allsaf_flagged %>% 
-mutate(flag=
-         ifelse( 
-           flag1>0, paste(flag,"1"), flag),
-       flag=
-         ifelse( 
-           flag2>0, paste(flag,"2"), flag),
-       flag=
-         ifelse( 
-           flag4>0, paste(flag,"4"), flag),
-       flag=
-         ifelse( 
-           flag5>0, paste(flag,"5"), flag),
-       flag=
-         ifelse( 
-           flag6>0, paste(flag,"6"), flag),
-       flag=
-         ifelse( 
-           flag7>0, paste(flag,"7"), flag),
-       flag=
-         ifelse( 
-           flag8>0, paste(flag,"8"), flag),
-       flag=
-         ifelse( 
-           flag9>0, paste(flag,"9"), flag))
+```{r, results = 'markup'}
+
+ifelse(nrow(flaggedholdings_flag4) ==0, "No errors found", "Errors found)")
+
+kable(flaggedholdings_flag4 , caption = "Flag 4")
+
+
+```
+## Flag 5
+The total recorded land use area is greater than the recorded'/field area by a factor of 10 or 100'/[May be a decimal place error]'/
+
+```{r, results = 'markup'}
+
+ifelse(nrow(flaggedholdings_flag5) ==0, "No errors found", "Errors found)")
+
+kable(flaggedholdings_flag5 , caption = "Flag 5")
+
+
+```
+## Flag 6
+SLC = 000/0000 on permanent land or MLC = 000/000 on seasonal land'/		- ie. parish/holding is unknown'/
+
+```{r, results = 'markup'}
+
+ifelse(nrow(flaggedholdings_flag6) ==0, "No errors found", "Errors found)")
+
+kable(flaggedholdings_flag6, caption = "Flag 6")
+
+
+```
+## Flag 7
+FID recorded as belonging to multiple holdings (SLC) without any reported as seasonally let out (LLO).
+
+```{r, results = 'markup'}
+
+ifelse(nrow(flaggedholdings_flag7) ==0, "No errors found", "Errors found)")
+
+kable(flaggedholdings_flag7 , caption = "Flag 7")
+
+
+```
+## Flag 8 
+
+Other land where total recorded land use area is substantially'/   greater than the recorded field area'/
+
+```{r, results = 'markup'}
+
+ifelse(nrow(flaggedholdings_flag8) ==0, "No errors found", "Errors found)")
+
+kable(flaggedholdings_flag8, caption = "Flag 8")
+
+
 ```
 
-```{r, results='asis'}
-# Output each fid in its own table
+ ## Flag 9
 
-fids<-unique(allsaf_flagged$fid)
+EXCL land where total recorded land use area is substantially'/ greater than the recorded field area'/
+```{r, results = 'markup'}
 
-allsaf_flaggedtable<-allsaf_flagged %>% 
-  select(line, amended, brn, slc, mlc, field_area, landtype, claimtype, LLO, code, area, flag,fid)
+ifelse(nrow(flaggedholdings_flag9) ==0, "No errors found", "Errors found)")
 
-for (i in fids) {
-  allsaf_flaggedsub<-subset(allsaf_flaggedtable, fid==i)
-  
-  print(kable(allsaf_flaggedsub, options=list(), caption=i))
-  
-}
+kable(flaggedholdings_flag9 , caption = "Flag9")
+
+
 ```
 
-```{r}
-pfds_LLO_fids<-allsaf_curr %>% group_by(fid) %>% 
-  filter(code=="LLO")
+# Section 2 Automatic corrections made
 
-pfds_LLO_fids<-pfds_LLO_fids %>% 
-  select(fid)
-
-pfds_LLO<-left_join(pfds_LLO_fids,allsaf_curr,  by="fid")
-
-pfds_LLO<-left_join(pfds_LLO, fid_size)
-```
-
-
-```{r, results='markup'}
-# Output each LLO fid in its own table
-
-LLOfids<-unique(pfds_LLO$fid)
-
-LLOtable<-pfds_LLO %>% 
-  select(line, brn, slc, mlc, field_area, landtype, claimtype, LLO, code, area,fid)
-
-for (i in LLOfids) {
-  LLO_sub<-subset(LLOtable, fid==i)
-  
-  print(datatable(LLO_sub, options=list(), caption=i))
-  
-}
-```
 

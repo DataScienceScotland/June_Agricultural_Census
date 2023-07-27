@@ -507,10 +507,10 @@ duplicates <- duplicates %>%
 
 # Create flag 3 (overreported llo error). Currently df is empty.
 
-#overreportedlloerror$flag3<-1 #this doesn't work on an empty dataframe.
+#overreportedlloerror$flag3<-1 #this doesn't work on an empty dataframe. Comment in if not empty.
 
 overreportedlloerror <- overreportedlloerror %>%
-  select(brn, fid, line, claimtype, code, area) # include flag3 when df isn't empty
+  select(brn, fid, line, claimtype, code, area) 
 
 # Create flag 5 (decimal point error)
 
@@ -543,7 +543,9 @@ df_list <- list(saf_perm, duplicates, overreportedlloerror, dperror, overreporte
 
 finalsaf_perm <- df_list %>% reduce(full_join, by = c("brn", "fid", "line", "claimtype", "code", "area"))
 
+finalsaf_perm$flag3<- "0"
 
+finalsaf_perm$flag3<-as.numeric(finalsaf_perm$flag3)
 
 # Seasonal dataset flagging ----------------------------------------------
 
@@ -824,8 +826,8 @@ pfdscorrections <- rbind(pfds_corrections1, pfds_corrections2, pfds_corrections3
 
 # Following chunk only works when flag3 is present - see B7 script above.
 
-# pfds_finalcurr<-pfds_finalcurr %>%
-#   filter(!flag3>0)
+pfds_finalcurr<-pfds_finalcurr %>%
+  filter(!flag3>0)
 
 
 pfds_finalcurr <- setdiff(pfds_finalcurr, pfds_corrections2)
