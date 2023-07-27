@@ -42,6 +42,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 #Section 1 - Area of location----------------------------------------------------------------------------------------------------------------------------
 #Total area
 total_area <- "item12"
+rps_total_area <-  "rps_totarea_june"  
 
 #Module item list----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -161,13 +162,13 @@ section_13 <- c(ghouse_fallow_woodland_oland_only, fertiliser_mineral_area, fert
 
 #Module error descriptions ------------------------------------------
 
-merr1_desc <- "merr1_Total percentage of the manure/slurry spread not equal to 100%"
-merr2_desc <- "merr2_Total percentage of the manure/slurry storage not equal to 100%"
+merr1_desc <- "merr1_Total percentage of the manure/slurry spread not equal to 100 percent"
+merr2_desc <- "merr2_Total percentage of the manure/slurry storage not equal to 100 percent"
 merr3_desc <- "merr3_Indicated nutrient management but no area of grassland or cropland given"
-merr4_desc <- "merr4_Sum of general crop rotation land and land not included in general crop rotation differs from total area (item12) by 3 ha or more"
-merr5_desc <- "merr5_Sum of area pH tested (grassland and cropland) is greater than total area (item12)"
-merr6_desc <- "merr6_Sum of area nutrient management plan (grassland and cropland) is greater than total area (item12)"
-merr7_desc <- "merr7_Sum of total farmed area fertilised with mineral and manure fertilisers greater than total area (item12)"
+merr4_desc <- "merr4_Sum of general crop rotation land and land not included in general crop rotation is greater than total area item12"
+merr5_desc <- "merr5_Sum of area pH tested (grassland and cropland) is greater than total area item12"
+merr6_desc <- "merr6_Sum of area nutrient management plan (grassland and cropland) is greater than total area item12"
+merr7_desc <- "merr7_Sum of total farmed area fertilised with mineral and manure fertilisers greater than total area item12"
 
 
 # Import ------------------------------------------------------------------
@@ -184,8 +185,10 @@ combined_JAC <- read_table_from_db(server=server,
 combined_JAC <- combined_JAC %>% group_by(parish, holding)
 
 #filter for only form returns
-all_JAC_form <- combined_JAC %>% filter(survtype == "Non-SAF") 
+all_JAC_form<- combined_JAC %>% filter(survtype == "Non-SAF") 
 
+JAC_module_23<- all_JAC_form %>% select(parish, holding, submisType, 
+                                        land_data, saf_data, all_of(c(section_12, section_13, total_area, rps_total_area)))
 #recode-------------------------------------------------------------------
 #for info
 #0 = Missing answer (NAs converted to 0 in B2 )
@@ -199,8 +202,6 @@ str(JAC_module_23)
 sapply(JAC_module_23, function(x)class(x))
 #range of values 
 sapply(JAC_module_23, function(x)range(x))
-#summary
-JAC_module_23 %>% skim()
 
 
 # #section counts--------------------------------------------------------------------------------------------------------
@@ -250,7 +251,7 @@ JAC_module_23 %>% skim()
 #percentage checks-------------------------------------------------------------------------------------------------
 
 JAC_module_23<- all_JAC_form %>% select(parish, holding, submisType, 
-                                        land_data, saf_data, all_of(c(section_12, section_13, total_area)))
+                                        land_data, saf_data, rps_totarea_june, all_of(c(section_12, section_13, total_area)))
 
 #check number of 0 responses across module
 no_response <- JAC_module_23 %>% ungroup %>% select(-parish, -holding, -land_data, -saf_data, ) %>% mutate(no_response = rowSums(.)) %>% filter(no_response == 0) %>% 
@@ -285,15 +286,15 @@ JAC_module_23 <- JAC_module_23 %>% mutate(merr3 = case_when(nutrient_plan_update
                                                                                           get(nutrient_plan_grass) ==0) ~ 1,
                                                             TRUE ~0))
 
-#merr4 - sum of general crop rotation land and land not included in general crop rotation differs from total area (item12) by 3 ha or more
+#merr4 - sum of general crop rotation land and land not included in general crop rotation greater than  total area (item12) 
 #check in 'module error dataframes' section to see if land has been erroneously portioned between general crop rotation, not in general crop rotation and arable mix with legume
 #should be general crop rotation/not in general crop rotation. 
 
 #create crop_rot_sum (general crop rot + not in general crop rot) 
 JAC_module_23 <- JAC_module_23 %>% mutate(crop_rot_sum = sum(get(crop_rotation), get(not_crop_rotation)))
 
-#merr4 = 1 when difference between crop_rot_sum and total area > 3 
-JAC_module_23 <- JAC_module_23 %>% mutate(merr4 = case_when(crop_rot_sum > 0 & abs(round(crop_rot_sum, digits = 2) - round(get(total_area), digits = 2)) >= 3 ~ 1,
+#merr4 = 1 when crop_rot_sum > total area 
+JAC_module_23 <- JAC_module_23 %>% mutate(merr4 = case_when(crop_rot_sum > 0 & round(crop_rot_sum, digits = 2) > round(get(total_area), digits = 2) ~ 1,
                                                             TRUE~0))
 #add column to give difference between crop_rot_sum and total area 
 JAC_module_23 <- JAC_module_23 %>% mutate(merr4_diff = case_when(merr4 == 1 ~ abs(crop_rot_sum - get(total_area)),
@@ -322,12 +323,12 @@ JAC_module_23 <- JAC_module_23 %>% mutate(merr6 = case_when(round(nutrient_sum, 
 JAC_module_23 <- JAC_module_23 %>% mutate(merr6_diff = case_when(merr6==1~abs(nutrient_sum-get(total_area)),
                                                                  TRUE ~0))
 
-#merr7- sum of total farmed area fertilised with mineral and manure fertilisers greater than total area (item12)
+#merr7- sum of total farmed area fertilised with mineral and manure fertilisers greater than 2x total area (item12)
 
 #create sum for area fertilised with mineral and manure fertilisers 
 JAC_module_23 <- JAC_module_23 %>% mutate(fertiliser_sum = sum(get(fertiliser_mineral_area), get(fertiliser_organic_area)))
 
-JAC_module_23 <- JAC_module_23 %>% mutate(merr7 = case_when(round(fertiliser_sum, digits = 2) > round(get(total_area), digits = 2) ~ 1,
+JAC_module_23 <- JAC_module_23 %>% mutate(merr7 = case_when(round(fertiliser_sum, digits = 2) > 2*round(get(total_area), digits = 2) ~ 1,
                                                             TRUE ~0))
 
 JAC_module_23 <- JAC_module_23 %>% mutate(merr7_diff = case_when(merr7==1~abs(fertiliser_sum-get(total_area)),
@@ -363,23 +364,23 @@ merr3 <-merr3%>%  mutate(error=ifelse(merr3== 1 | is.na(merr3), "Error", "No Err
 #merr4-----------------------------
 ##@knitr merr4
 merr4<- JAC_module_23%>% select(parish, holding, submisType, 
-                                land_data, saf_data, all_of(c(total_area, crop_rotation, not_crop_rotation, arable_mix_with_legume)), crop_rot_sum, merr4, merr4_diff)
+                                land_data, saf_data, all_of(c(total_area, rps_total_area,  crop_rotation, not_crop_rotation, arable_mix_with_legume)), crop_rot_sum, merr4, merr4_diff)
 merr4 <-merr4%>%  mutate(error=ifelse(merr4== 1 | is.na(merr4), "Error", "No Error"))%>% filter(error == "Error")
 
 #check if people have portioned land between general crop rotation, not in general crop rotation and arable mix with legume
-merr4_check <- merr4 %>% filter(merr4, abs(crop_rot_sum - get(total_area)) == get(arable_mix_with_legume))
+merr4_check <- merr4 %>% filter(abs(crop_rot_sum - get(total_area)) == get(arable_mix_with_legume))
 
 #merr5-----------------------------
 ##@knitr merr5
 merr5<- JAC_module_23%>% select(parish, holding, submisType, 
-                                land_data, saf_data, all_of(c(total_area, area_ph_crop, area_ph_grass)), pH_sum, merr5, merr5_diff)
+                                land_data, saf_data, all_of(c(total_area, rps_total_area,  area_ph_crop, area_ph_grass)), pH_sum, merr5, merr5_diff)
 #check filter(merr5, pH_sum>get(total_area))
 merr5 <-merr5%>%  mutate(error=ifelse(merr5== 1 | is.na(merr5), "Error", "No Error"))%>% filter(error == "Error")
 
 #merr6-----------------------------
 ##@knitr merr6
 merr6<- JAC_module_23%>% select(parish, holding, submisType, 
-                                land_data, saf_data, all_of(c(total_area, nutrient_plan_crop, nutrient_plan_grass)), nutrient_sum, merr6, merr6_diff)
+                                land_data, saf_data, all_of(c(total_area, rps_total_area,  nutrient_plan_crop, nutrient_plan_grass)), nutrient_sum, merr6, merr6_diff)
 
 # check filter(merr6, nutrient_sum>get(total_area)) 
 merr6 <-merr6%>%  mutate(error=ifelse(merr6== 1 | is.na(merr6), "Error", "No Error"))%>% filter(error == "Error")
@@ -387,24 +388,27 @@ merr6 <-merr6%>%  mutate(error=ifelse(merr6== 1 | is.na(merr6), "Error", "No Err
 #merr7-----------------------------
 ##@knitr merr7
 merr7<- JAC_module_23%>% select(parish, holding, submisType, 
-                                land_data, saf_data, all_of(c(total_area, fertiliser_mineral_area, fertiliser_organic_area)), fertiliser_sum, merr7, merr7_diff)
+                                land_data, saf_data, all_of(c(total_area, rps_total_area, fertiliser_mineral_area, fertiliser_organic_area)), fertiliser_sum, merr7, merr7_diff)
 
 # check filter(merr7, fertiliser_sum>get(total_area)) 
 merr7 <-merr7%>%  mutate(error=ifelse(merr7== 1 | is.na(merr7), "Error", "No Error"))%>% filter(error == "Error")
 
 
-##module error summary----------------------
+#module error summary----------------------
 merr_list <- c("merr1", "merr2", "merr3", "merr4", "merr5", "merr6", "merr7")
 module_errors <- JAC_module_23 %>% select(parish, holding, starts_with("merr"))%>% 
-  filter(get(merr_list)!=0)
+  filter(if_any(starts_with("merr"), ~ . !=0))
 
 #dataframe of observations (holdings) that have failed the new validations - 
-module_validation_errors <- JAC_module_23 %>% select(parish, holding, any_of(merr_list), submisType) %>% 
+module_validation_error_summary <- JAC_module_23 %>% select(parish, holding, any_of(merr_list), submisType) %>% 
   filter(if_any(starts_with("merr"), ~ . !=0))
-module_validation_error_summary <- module_validation_errors%>% ungroup() %>%  select(submisType, starts_with("merr")) %>%
+module_validation_error_summary <- module_validation_error_summary%>% ungroup() %>%  select(submisType, starts_with("merr")) %>%
   group_by(submisType) %>%  summarize(across(everything(), sum, na.rm = TRUE)) %>% ungroup()
 module_validation_error_summary <- cbind(module_validation_error_summary,
                                          total_cases_with_errors =  rowSums(module_validation_error_summary[names(module_validation_error_summary) %in% merr_list]))
+
+module_validation_error_summary <- module_validation_error_summary %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
+module_validation_error_summary <- module_validation_error_summary %>% filter(count !=0)
 
 #rownames(module_validation_error_summary) <- "errors"
 #module_validation_error_summary <- module_validation_error_summary %>% pivot_longer(cols= everything(), names_to = "error", values_to = "count")
@@ -419,19 +423,20 @@ module_errors$total_errors_per_case <- rowSums(module_errors[names(module_errors
 #filter where total error per case !=0 
 module_errors <- module_errors %>% filter(total_errors_per_case !=0)
 
-
-#create list of validations vector character
-all_module_validations_desc <- paste(merr_list, "desc", sep="_")
-
-#create list
-all_module_validations_desc <-as.list(all_module_validations_desc)  
-
-#change name of each list to error names
-names(all_module_validations_desc) <- merr_list
-
-all_module_validations_desc <-  lapply(all_module_validations_desc, function(x)get(x))
-#single dataframe of errors and error descriptions
-all_module_validations_desc <- bind_rows(all_module_validations_desc)
+# 
+# #create list of validations vector character
+# all_module_validations_desc <- paste(merr_list, "desc", sep="_")
+# 
+# #create list
+# all_module_validations_desc <-as.list(all_module_validations_desc)  
+# 
+# #change name of each list to error names
+# names(all_module_validations_desc) <- merr_list
+# 
+# all_module_validations_desc <-  lapply(all_module_validations_desc, function(x)get(x))
+# 
+# #single dataframe of errors and error descriptions
+# all_module_validations_desc <- bind_rows(all_module_validations_desc)
 
 #change value of list element to description of error
 
@@ -444,19 +449,47 @@ holding_list <- bind_rows(holding_list)
 holding_list <- remove_zero(holding_list)
 holding_list <- holding_list %>% relocate(total_errors_per_case, .after = last_col())
 
-
-#change error column headings to error + description
-colnames(holding_list)[colnames(holding_list) %in% colnames(all_module_validations_desc)] <-  all_module_validations_desc %>% select(any_of(names(holding_list)))
-
-#validation summary:change error rownames to error decriptions
-#module_validation_error_summary$error[module_validation_error_summary$error%in%colnames(all_module_validations_desc)] <- t(all_module_validations_desc %>% select(any_of(module_validation_error_summary$error)))
-colnames(module_validation_error_summary)[colnames(module_validation_error_summary) %in% colnames(all_module_validations_desc)] <-  all_module_validations_desc %>% select(any_of(names(module_validation_error_summary)))
-
-#list of dataframes to export as a multi-sheet xlsx
-priority_holdings <-list("module_error_summary" = module_validation_error_summary,  "module_validations" = holding_list)
+# #change error column headings to error + description
+# colnames(holding_list)[colnames(holding_list) %in% colnames(all_module_validations_desc)] <-  all_module_validations_desc %>% select(any_of(names(holding_list)))
+# 
+# #validation summary:change error rownames to error descriptions
+# #module_validation_error_summary$error[module_validation_error_summary$error%in%colnames(all_module_validations_desc)] <- t(all_module_validations_desc %>% select(any_of(module_validation_error_summary$error)))
+# colnames(module_validation_error_summary)[colnames(module_validation_error_summary) %in% colnames(all_module_validations_desc)] <-  all_module_validations_desc %>% select(any_of(names(module_validation_error_summary)))
 
 
-#export prioritised holding list as xlsx for Ops
-write_xlsx(priority_holdings, paste(output_path, Sys.Date(), "module_errors.xlsx"))
+#Save Outputs----------------------------------------------------------------------------------------------
+
+
+#Save to ADM
+
+#summary
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="JAC23_module_validation_summary",
+                      dataframe=module_validation_error_summary,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+#validation list
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="JAC23_module_validation_list",
+                      dataframe=module_errors,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+
+# #list of dataframes to export as a multi-sheet xlsx
+# module_validation_holdings <-list("module_error_summary" = module_validation_error_summary,  "module_validations" = holding_list)
+# 
+# 
+# #export prioritised holding list as xlsx for Ops
+# write_xlsx(module_validation_holdings, paste(output_path, Sys.Date(), "module_errors.xlsx"))
 
                                              
