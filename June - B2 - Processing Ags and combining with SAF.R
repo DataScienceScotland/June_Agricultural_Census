@@ -8,6 +8,8 @@
 
 rm(list = ls())
 
+# Before Import -----------------------------------------------------------
+
 # Load packages
 library(readxl)
 library(tidyverse)
@@ -32,6 +34,10 @@ sas_agscens_path <- "//s0177a/sasdata1/ags/census/agscens/"
 server <- "s0196a\\ADM"
 database <- "RuralAndEnvironmentalScienceFarmingStatistics"
 schema <- "juneagriculturalsurvey2023alpha"  # schema will change each year and need updating here. The table names can therefore stay the same 2024 onwards (will need editing below).
+
+
+# Import ------------------------------------------------------------------
+
 
 #Load the June Survey return dataset (output saved from A)
 # Load from ADM
@@ -60,6 +66,9 @@ all_saf <- all_saf %>%
 # Load fromdatashare
 # all_saf<-loadRData(paste0(output_path, "allsaf_final.rda"))
 
+# Process Ags -------------------------------------------------------------
+
+
 ####TO DO loop through lists, keep only items for nonSAF and SAF
 
 ##NB SAS code replaces missing numeric values with zeros, as imputation is for missing data only.
@@ -80,6 +89,9 @@ all_ags[glasshouse_cols] <-
   all_ags[glasshouse_cols] %>% mutate(across(where(is.numeric), ~ .x / 10000))
 
 
+# Process SAF: split into seasonal/non-seasonal ---------------------------
+
+
 #split SAF into seasonal data and non-seasonal
 SAF_SEAS_ONLY <- all_saf %>%
   filter(saf_land != 1) %>%
@@ -88,8 +100,7 @@ SAF_SEAS_ONLY <- all_saf %>%
 
 all_saf <- all_saf %>% filter (saf_land == 1)
 
-
-#join all_SAF and all_ags
+# join all_saf and all_ags-------------------------------------------------------------------------
 #staged process as need to add columns depending on if SAF and/ or ags data exists for holdings; various inner and anti joins of both datasets are combined.
 
 
@@ -202,6 +213,9 @@ full_JAC_SAF <-
 
 
 
+# Add SAF seasonal data -------------------------------------------------------
+
+
 #check if only SEASONAL SAF DATA exist and not in COMPLETE SAF + JAC data, add labels
 full_JAC_SAF_SAF_SEAS_anti <-
   anti_join(SAF_SEAS_ONLY,
@@ -246,8 +260,6 @@ FJS_anti <-
             all = TRUE)
 FJS <- bind_rows(FJS_anti, FJS_SEAS) %>% arrange(by_group = TRUE)
 
-#******QA **************DO MANUAL CORRECTIONS HERE??********************* QA****
-
 
 
 full_JAC_SAF_corr <- FJS %>%
@@ -259,7 +271,9 @@ check_glasshouse <-
                                  sum(item85, item86) > 0)
 
 
-#add in new items
+# Add new items to combined dataset ---------------------------------------
+
+
 #dealing with NAs - remove from sum to get value. Remove "na.rm = TRUE" to return NA (otherwise get zeros, imputation for genuinely missing values not zeros)
 full_JAC_SAF <-
   full_JAC_SAF_corr %>% mutate(
@@ -536,6 +550,10 @@ FJS <- FJS %>%
 #   returns_23_summary %>% group_by_all() %>% count()
 
 
+
+# Add RPS address file areas ----------------------------------------------
+
+
 # Merge in total area and total rented area from 1st June address file (RP&S). 
 
 
@@ -559,6 +577,10 @@ FJSaddress<-left_join(FJS, addressfile, by=c("parish", "holding"))
 
 FJScheck<-FJSaddress %>% 
   select(parish, holding, survtype, item20026, item11, item12, rps_totarea_june, rps_totowned_june, rps_totrented_june)
+
+
+# Save outputs ------------------------------------------------------------
+
 
 # Save to datashare
 

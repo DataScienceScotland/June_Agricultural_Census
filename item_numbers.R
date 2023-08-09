@@ -7,13 +7,19 @@
 #Area you own
 area_own <- "item11"
 
+#RP&S area owned
+rps_own<- "rps_totowned_june"
+
 #Area of land you rent in on a full tenancy at this location
 area_rent <- "item20026"
-area_rent_21 <- "item7"
+#area_rent_21 <- "item7"
+rps_rent <- "rps_totrented_june"
 
 #Total area
 total_area <- "item12"
 
+#RP&S total area
+rps_total_area <-  "rps_totarea_june"  
 
 #Crofts
 owned_croft <- "item2249"
@@ -174,13 +180,13 @@ tot_open_plastic <- "item85"
 tot_solid_glass <- "item86"
 
 #Summary items for glasshouse crops (ie open soil item + solid floor item)
-glass_tom_tot <- "item87"
+#glass_tom_tot <- "item87"
 glass_strawb_tot <- "item2556"
 glass_rasp_tot <- "item2557"
-glass_black_tot <- "item6000"
+#glass_black_tot <- "item6000"
 glass_blue_tot <- "item2836"
-glass_other_fruit_tot <- "item2036"
-glass_veg_tot <- "item2037"
+#glass_other_fruit_tot <- "item2036"
+#glass_veg_tot <- "item2037"
 glass_bed_pot_plant_tot <- "item1711"
 glass_hardy_nurse_tot <- "item1943"
 glass_unused_tot <- "item6001"
@@ -242,17 +248,17 @@ piglet <- "item27770"
 #total pigs-  items 146-156
 total_pig <- "item157"
 
-#----------items used up to 2021
-#Other pigs 110kg and over
-other_110_pig <- "item152"
-#Other pigs 80-110kg
-other_80_110_pig <- "item153"
-#Other pigs 50-80kg
-other_50_80_pig <- "item154"
-#Other pigs 20-50kg
-other_20_50_pig <- "item155"
-#Other pigs under 20kg
-other_lt20_pig <- "item156"
+# #----------items used up to 2021
+# #Other pigs 110kg and over
+# other_110_pig <- "item152"
+# #Other pigs 80-110kg
+# other_80_110_pig <- "item153"
+# #Other pigs 50-80kg
+# other_50_80_pig <- "item154"
+# #Other pigs 20-50kg
+# other_20_50_pig <- "item155"
+# #Other pigs under 20kg
+# other_lt20_pig <- "item156"
 
 #Section 5---------------------------------------------------------------------
 #Sheep
@@ -312,17 +318,17 @@ horse_pony <- "item27775"
 #All goats and kids
 goats_kids <- "item27780"
 
-#-----------------items used up to 2021
-#Horses Used in Agriculture
-agri_horses <- "item95"
-#All Other Horses and Ponies
-other_horse_pony <- "item96"
-#All Other Goats and kids
-other_goats_kids <- "item98"
-#Female Goats which have kidded this year or will kid this year
-female_goat_kids <- "item1712"
-#Other Female Goats which have been used for breeding in previous years
-other_female_goat <- "item1713"
+# #-----------------items used up to 2021
+# #Horses Used in Agriculture
+# agri_horses <- "item95"
+# #All Other Horses and Ponies
+# other_horse_pony <- "item96"
+# #All Other Goats and kids
+# other_goats_kids <- "item98"
+# #Female Goats which have kidded this year or will kid this year
+# female_goat_kids <- "item1712"
+# #Other Female Goats which have been used for breeding in previous years
+# other_female_goat <- "item1713"
 
 #Section 8 ---------------------------------------------------------------------
 #Legal Responsibility
@@ -365,7 +371,7 @@ occupier2_no_work <- "item2567"
 
 #-----------------items used up to 2021 (spouse = occupier 2 from 2023, item numbers remain the same)
 #Do not return your details on more than one location form.If you have already returned your details on another 2018 census form, please tick this box and go on to Section 9
-other_legal_return_21 <- "item2726"
+#other_legal_return_21 <- "item2726"
 # spouse_male <-"item3056"
 # spouse_female <- "item3057"
 # #spouse– proportion of time spent working on this location:
@@ -432,19 +438,3 @@ labour_non_EU_migrant <- "item2511"
 
 #parishes NOT included on the Register of Crofts (downloaded 9/5/2023)
 non_crofting_parishes <- c(0:136, 176:227, 231, 242:273, 290:432, 466:585, 635:735, 769:827, 841:868)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
