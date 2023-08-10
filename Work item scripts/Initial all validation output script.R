@@ -234,7 +234,7 @@ all_work_items <- all_work_items %>% mutate(across(where(is.numeric), ~ ifelse(.
 write_dataframe_to_db(server=server,
                       database=database,
                       schema=schema,
-                      table_name="JAC_Ops_work_items" ,
+                      table_name="JAC_Ops_work_item_list" ,
                       dataframe=all_work_items,
                       append_to_existing = FALSE,
                       versioned_table=FALSE,
