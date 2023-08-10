@@ -34,7 +34,7 @@ library(readxl)
 # all_work_items<- read_table_from_db(server=server, 
 #                                     database=database, 
 #                                     schema=schema, 
-#                                     table_name="JAC_Ops_work_items")
+#                                     table_name="JAC_Ops_work_item_list")
 # 
 
 #Import form from previous work items list
@@ -58,7 +58,7 @@ non_checked_holdings <- non_checked_holdings %>% mutate(across(where(is.numeric)
 #create holdings-ignored form to append to work item spreadsheet
 holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignored = "",	Rationale ="", Date = "") 
 
-work_item_list <-list("work_items" = non_checked_holdings, "Checked Holdings not Cleared" = holdings_not_cleared_form)
+work_item_list <-list("work_items" = non_checked_holdings)
 
 #write new xlsx with checked holdings removed
 write_xlsx(work_item_list, paste(output_path, Sys.Date(), "work_item_list_dups_removed.xlsx"))
