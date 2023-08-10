@@ -21,7 +21,7 @@ yr_list <- c(yr, yr2, yr3)
 #Functions -----------------------------------------------------------
 
 
-#function to remove columns where error = 0
+#function to remove columns where total error = 0
 remove_zero <- function(x){select(x, where(~any(.!= 0)))}
 
 
@@ -491,67 +491,67 @@ non_crofting_parishes <- c(0:136, 176:227, 231, 242:273, 290:432, 466:585, 635:7
 
 
 #Description of errors----------------------------------------------------------------------------------------------------------------------------------------------------
-err1_desc <- "err1_Total area does not equal total area owned plus total area rented (by 3 or more hectares)"
-err10_desc <- "err10_Sum of itemised flowers bulbs and nursery stock in the open not equal to summary total"
-err11_desc <- "err11_Total glasshouse open soil area does not equal the sum of the breakdown of areas OR Total glasshouse solid floor area does not equal the sum of the breakdown of areas"
-err12_desc <- "err12_Glasshouse totals non zero but sum of individual items less than or equal to zero"
-err13_desc <- "err13_Total number of pigs does not equal the sum of the breakdown values"
-err14_desc <- "err14_Pigs not given as whole numbers"
-err15_desc <- "err15_Total number of sheep does not equal the sum of the breakdown values"
-err16_desc <- "err16_Sheep not given as whole numbers"
-err17_desc <- "err17_Total number of poultry does not equal the sum of the breakdown values"
-err18_desc <- "err18_Poultry not given as whole numbers"
-err19_desc <- "err19_Egg producing fowl = 0, cocks greater than 9"
-err2_desc <- "err2_Total seasonal rents is equal to area rented"
-err20_desc <- "err20_Not all deer given as whole numbers"
-err21_desc <- "err21_Not all camelids given as whole numbers"
-err22_desc <- "err22_Not all beehives given as whole numbers"
-err23_desc <- "err23_Not all other livestock given as whole numbers"
-err24_desc <- "err24_Number of other livestock entered but type not specified"
-err25_desc <- "err25_Not all horses given as whole numbers"
-err26_desc <- "err26_Not all goats given as whole numbers"
-err27_desc <- "err27_Not all horses given as whole numbers"
-err28_desc <- "err28_Not all goats given as whole numbers"
-err29_desc <- "err29_Other legal return box is ticked (labour details provided on another form) and Occupier 1 or occupier 2 work hours provided"
-err3_desc <- "err3_Seasonal let items are not equal to seasonal lets total"
-err30_desc <- "err30_Occupier 1: more than one full time / part time option selected"
-err31_desc <- "err31_Occupier 2: more than one full time / part time option selected"
-err32_desc <- "err32_Sum of other labour numbers does not equal Total"
-err33_desc <- "err33_Not all labour given as whole numbers"
-err34_desc <- "err34_Owned croft area is larger than area owned"
-err35_desc <- "err35_Owned croft area >0 and  is in non-crofting parish"
-err36_desc <- "err36_Rented croft area >0 and  is in non-crofting parish"
-err37_desc <- "err37_Total area less than margin of error - no area entered but area owned/rented non-zero"
-err38_desc <- "err38_Total area less than margin of error - no total area, no area owned and no area rented entered"
-err39_desc <- "err39_Migrant labour check: Soft fruit labour is too low-check whether missed other labour e.g. migrants "
-err4_desc <- "err4_Area of other crop entered but crop not specified (Area > 100ha) "
-err40_desc <- "err40_Migrant labour check: Soft fruit labour is too high- check for punch errors or misunderstanding of requirement of people/days in labour questions"
-err41_desc <- "err41_Migrant labour check: Soft fruit labour is too low- check whether missed other labour e.g. migrants"
-err42_desc <- "err42_Migrant labour check: Soft fruit labour is too high- check for punch errors or misunderstanding of requirement of people/days in labour questions"
-err43_desc <- "err43_Land seasonally rented out greater than total area"
-err44_desc <- "err44_Other crop specified but area not entered"
-err45_desc <- "err45_Total land use area does not equal the sum of the outdoor areas and glasshouses (3 ha margin)"
-err46_desc <- "err46_Total at end of land use section does not equal total area in section 1 (3 ha margin)"
-err47_desc <- "err47_Other livestock type specified but number not entered"
-err48_desc <- "err48_Occupier gender - both male and female selected"
-err49_desc <- "err49_Occupier 1 gender selected but none of the full time / part time options"
-err5_desc <- "err5_Total area of crops and grassland, rough grazing, woodland, and other land differs from total land by more than 3ha."
-err50_desc <- "err50_Occupier 1 gender selected but none of the full time / part time options"
-err51_desc <- "err51_Year of birth for Occupier 1 (and Occupier 2 if applicable) outside range (i.e. 1923 - 2008)"
-err52_desc <- "err52_Labour details NOT provided on another form this year & no Occupier 1 work hours provided"
-err53_desc <- "err53_Legal and financial responsbility not indicated for Occupier 2 (when any Occupier 2 details have been provided for Occupier 2)"
-err54_desc <- "err54_Legal and financial responsbility indicated for Occupier 2 but no working time answered"
-err55_desc <- "err55_Occupier 2 details selected but not Occupier 1 details"
-err56_desc <- "err56_Total area rented not equal to the current RP&S value (by 3 or more hectares)"
-err57_desc <- "err57_Total area rented not equal to the current RP&S value (by 30 or more hectares)"
-err58_desc <- "err58_Total area owned not equal to the current RP&S value (by 3 or more hectares)"
-err59_desc <- "err59_Total area owned not equal to the current RP&S value (by 30 or more hectares)"
-err6_desc <- "err6_Sum of itemised veg for human consumption not equal to all veg (SAF)"
-err7_desc <- "err7_All veg from SAF not equal to all veg (census form)"
-err8_desc <- "err8_Sum of itemised soft fruit not equal to all soft fruit (SAF)"
-err9_desc <- "err9_All soft fruit from SAF not equal to all soft fruit (census form)"
-err60_desc <- "err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given"
-err61_desc <- "err61_Sum of total area rented and total area owned not equal to sum of RP&S values (by 30 or more hectares)"
+# err1_desc <- "err1_Total area does not equal total area owned plus total area rented (by 3 or more hectares)"
+# err10_desc <- "err10_Sum of itemised flowers bulbs and nursery stock in the open not equal to summary total"
+# err11_desc <- "err11_Total glasshouse open soil area does not equal the sum of the breakdown of areas OR Total glasshouse solid floor area does not equal the sum of the breakdown of areas"
+# err12_desc <- "err12_Glasshouse totals non zero but sum of individual items less than or equal to zero"
+# err13_desc <- "err13_Total number of pigs does not equal the sum of the breakdown values"
+# err14_desc <- "err14_Pigs not given as whole numbers"
+# err15_desc <- "err15_Total number of sheep does not equal the sum of the breakdown values"
+# err16_desc <- "err16_Sheep not given as whole numbers"
+# err17_desc <- "err17_Total number of poultry does not equal the sum of the breakdown values"
+# err18_desc <- "err18_Poultry not given as whole numbers"
+# err19_desc <- "err19_Egg producing fowl = 0, cocks greater than 9"
+# err2_desc <- "err2_Total seasonal rents is equal to area rented"
+# err20_desc <- "err20_Not all deer given as whole numbers"
+# err21_desc <- "err21_Not all camelids given as whole numbers"
+# err22_desc <- "err22_Not all beehives given as whole numbers"
+# err23_desc <- "err23_Not all other livestock given as whole numbers"
+# err24_desc <- "err24_Number of other livestock entered but type not specified"
+# err25_desc <- "err25_Not all horses given as whole numbers"
+# err26_desc <- "err26_Not all goats given as whole numbers"
+# err27_desc <- "err27_Not all horses given as whole numbers"
+# err28_desc <- "err28_Not all goats given as whole numbers"
+# err29_desc <- "err29_Other legal return box is ticked (labour details provided on another form) and Occupier 1 or occupier 2 work hours provided"
+# err3_desc <- "err3_Seasonal let items are not equal to seasonal lets total"
+# err30_desc <- "err30_Occupier 1: more than one full time / part time option selected"
+# err31_desc <- "err31_Occupier 2: more than one full time / part time option selected"
+# err32_desc <- "err32_Sum of other labour numbers does not equal Total"
+# err33_desc <- "err33_Not all labour given as whole numbers"
+# err34_desc <- "err34_Owned croft area is larger than area owned"
+# err35_desc <- "err35_Owned croft area >0 and  is in non-crofting parish"
+# err36_desc <- "err36_Rented croft area >0 and  is in non-crofting parish"
+# err37_desc <- "err37_Total area less than margin of error - no area entered but area owned/rented non-zero"
+# err38_desc <- "err38_Total area less than margin of error - no total area, no area owned and no area rented entered"
+# err39_desc <- "err39_Migrant labour check: Soft fruit labour is too low-check whether missed other labour e.g. migrants "
+# err4_desc <- "err4_Area of other crop entered but crop not specified (Area > 100ha) "
+# err40_desc <- "err40_Migrant labour check: Soft fruit labour is too high- check for punch errors or misunderstanding of requirement of people/days in labour questions"
+# err41_desc <- "err41_Migrant labour check: Soft fruit labour is too low- check whether missed other labour e.g. migrants"
+# err42_desc <- "err42_Migrant labour check: Soft fruit labour is too high- check for punch errors or misunderstanding of requirement of people/days in labour questions"
+# err43_desc <- "err43_Land seasonally rented out greater than total area"
+# err44_desc <- "err44_Other crop specified but area not entered"
+# err45_desc <- "err45_Total land use area does not equal the sum of the outdoor areas and glasshouses (3 ha margin)"
+# err46_desc <- "err46_Total at end of land use section does not equal total area in section 1 (3 ha margin)"
+# err47_desc <- "err47_Other livestock type specified but number not entered"
+# err48_desc <- "err48_Occupier gender - both male and female selected"
+# err49_desc <- "err49_Occupier 1 gender selected but none of the full time / part time options"
+# err5_desc <- "err5_Total area of crops and grassland, rough grazing, woodland, and other land differs from total land by more than 3ha."
+# err50_desc <- "err50_Occupier 1 gender selected but none of the full time / part time options"
+# err51_desc <- "err51_Year of birth for Occupier 1 (and Occupier 2 if applicable) outside range (i.e. 1923 - 2008)"
+# err52_desc <- "err52_Labour details NOT provided on another form this year & no Occupier 1 work hours provided"
+# err53_desc <- "err53_Legal and financial responsbility not indicated for Occupier 2 (when any Occupier 2 details have been provided for Occupier 2)"
+# err54_desc <- "err54_Legal and financial responsbility indicated for Occupier 2 but no working time answered"
+# err55_desc <- "err55_Occupier 2 details selected but not Occupier 1 details"
+# err56_desc <- "err56_Total area rented not equal to the current RP&S value (by 3 or more hectares)"
+# err57_desc <- "err57_Total area rented not equal to the current RP&S value (by 30 or more hectares)"
+# err58_desc <- "err58_Total area owned not equal to the current RP&S value (by 3 or more hectares)"
+# err59_desc <- "err59_Total area owned not equal to the current RP&S value (by 30 or more hectares)"
+# err6_desc <- "err6_Sum of itemised veg for human consumption not equal to all veg (SAF)"
+# err7_desc <- "err7_All veg from SAF not equal to all veg (census form)"
+# err8_desc <- "err8_Sum of itemised soft fruit not equal to all soft fruit (SAF)"
+# err9_desc <- "err9_All soft fruit from SAF not equal to all soft fruit (census form)"
+# err60_desc <- "err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given"
+# err61_desc <- "err61_Sum of total area rented and total area owned not equal to sum of RP&S values (by 30 or more hectares)"
 
 
 # Import ------------------------------------------------------------------
@@ -1670,27 +1670,27 @@ prioritised_main_validation_summary <-rbind(priority_main_validations_summary, n
 #                         versioned_table=FALSE,
 #                         batch_size = 10000)
 # 
-# #main validations
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="JAC23_main_validation_list",
-#                       dataframe=holding_list,
-#                       append_to_existing = FALSE,
-#                       versioned_table=FALSE,
-#                       batch_size = 10000)
+#main validations
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="JAC23_main_validation_list",
+                      dataframe=holding_list,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
 # 
-# 
-# 
-# #non-priority main validations- trimmed
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="JAC23_main_validation_non_priority_list_trim",
-#                       dataframe=non_priority_trim,
-#                       append_to_existing = FALSE,
-#                       versioned_table=FALSE,
-#                       batch_size = 10000)
+#non-priority main validations- trimmed
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="JAC23_main_validation_non_priority_list_trim",
+                      dataframe=non_priority_trim,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
 # 
 # #non-priority main validations-full 
 # write_dataframe_to_db(server=server,

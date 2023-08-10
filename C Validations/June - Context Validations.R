@@ -729,7 +729,7 @@ context_error_summary <- cbind(context_error_summary,
 
 context_error_summary <- as.data.frame(t(context_error_summary)) %>% 
   janitor::row_to_names(1)
-colnames(context_error_summary) <- paste("SubmisType", colnames(JAC_validation_error_summary) )
+colnames(context_error_summary) <- paste("SubmisType", colnames(context_error_summary) )
 
 
 
@@ -770,15 +770,15 @@ holding_list <- remove_NA(error_cases)
 # 
 # 
 # #validation list
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="JAC23_context_validation_list",
-#                       dataframe=holding_list,
-#                       append_to_existing = FALSE,
-#                       versioned_table=FALSE,
-#                       batch_size = 10000)
-# 
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="JAC23_context_validation_list",
+                      dataframe=holding_list,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
 
 
 

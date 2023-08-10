@@ -25,6 +25,15 @@ yr_list <- c(yr, yr2, yr3)
 #function to remove columns where error = 0
 remove_zero <- function(x){select(x, where(~any(.!= 0)))}
 
+#function to determine if entry is non-zero
+recode_response <- function(x){ifelse(x!=0, 1, 0)}
+
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
 
 # Datashare file path for import and export
 output_path <- "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/"
@@ -197,66 +206,65 @@ JAC_module_23<- all_JAC_form %>% select(parish, holding, submisType,
 #3 = NA (answered as NA on form)
 
 #data explorer---------------------
-str(JAC_module_23)
+
 #data classes
 sapply(JAC_module_23, function(x)class(x))
 #range of values 
 sapply(JAC_module_23, function(x)range(x))
 
 
-# #section counts--------------------------------------------------------------------------------------------------------
-# #write code for NAs from paper....
-# no_section_12 <- all_JAC_form %>% select (all_of(section_12)) %>%  filter(get(rough_grazing_woodland_only)== 1)
-# yes_section_12 <- all_JAC_form %>% select (all_of(section_12)) %>%  filter(get(rough_grazing_woodland_only)== 0)
-# 
-# 
-# 
-# no_section_13 <- all_JAC_form %>% select (all_of(section_13)) %>%  filter(get(ghouse_fallow_woodland_oland_only)== 1) 
-# yes_section_13 <- all_JAC_form %>% select (all_of(section_13)) %>%  filter(get(ghouse_fallow_woodland_oland_only)== 0)
-# 
-# 
-# no_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
-#   filter(get(rough_grazing_woodland_only) ==1 & get(ghouse_fallow_woodland_oland_only) ==1)
-# yes_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
-#   filter(get(rough_grazing_woodland_only) ==0 & get(ghouse_fallow_woodland_oland_only) ==0)
-# 
-# yes_no_section_12_13 <- all_JAC_form %>% select (all_of(c(section_12, section_13)))%>% 
-#   filter(get(rough_grazing_woodland_only) ==0 & get(ghouse_fallow_woodland_oland_only) ==1 |
-#            get(rough_grazing_woodland_only) ==1 & get(ghouse_fallow_woodland_oland_only) ==0)
-#            
-# 
-# 
-# count_no_section_12 <- nrow(no_section_12)
-# count_yes_section_12 <- nrow(yes_section_12)
-# count_section_12 <- sum(count_no_section_12, count_yes_section_12)
-# 
-# count_no_section_13 <- nrow(no_section_13)
-# count_yes_section_13 <- nrow(yes_section_13)
-# count_section_13 <- sum(count_no_section_13, count_yes_section_13)
-# 
-# 
-# count_no_section_12_13 <- nrow(no_section_12_13)
-# count_yes_section_12_13 <- nrow(yes_section_12_13)
-# count_yes_no_section_12_13 <- nrow(yes_no_section_12_13)
-# count_section_12_13 <- sum(count_no_section_12_13, count_yes_section_12_13, count_yes_no_section_12_13)
-# #count_section_12_13_na <- all_JAC_form %>% filter(is.na(get(rough_grazing_woodland_only)) | is.na(get(ghouse_fallow_woodland_oland_only)))
-# 
-# 
-# module_section_counts <- data.frame(count_no_section_12, count_yes_section_12, count_no_section_13, count_yes_section_13, count_no_section_12_13, 
-#                                     count_yes_section_12_13, count_yes_no_section_12_13, count_section_12, count_section_13, count_section_12_13) %>%
-#   pivot_longer(cols= everything(), names_to = "category", values_to = "count") %>%
-#   mutate(., percentage = (count/count_section_12_13)*100)
-# 
-
-#percentage checks-------------------------------------------------------------------------------------------------
-
+#create df with just module variables
 JAC_module_23<- all_JAC_form %>% select(parish, holding, submisType, 
                                         land_data, saf_data, rps_totarea_june, all_of(c(section_12, section_13, total_area)))
 
 #check number of 0 responses across module
-no_response <- JAC_module_23 %>% ungroup %>% select(-parish, -holding, -land_data, -saf_data, ) %>% mutate(no_response = rowSums(.)) %>% filter(no_response == 0) %>% 
+no_response <- JAC_module_23 %>% ungroup %>% select(-parish, -holding, -land_data, -saf_data, -submisType, -all_of(c(rps_total_area, total_area))) %>% 
+  mutate(no_response = rowSums(., na.rm=TRUE)) %>% 
+  filter(no_response == 0) %>% 
   nrow(.)
 
+#create dataframe to recode module responses: 1 = response, 0 = no response
+module_recode <- as.data.frame(JAC_module_23 %>% ungroup %>% select(all_of(c(section_12, section_13))) %>% recode_response())
+
+module_recode <- module_recode%>%
+  mutate(
+  number_responses=rowSums(.)
+)
+
+
+#summary grouped by tick boxes
+recode_grouped_summary <- module_recode %>% group_by(get(rough_grazing_woodland_only), get(ghouse_fallow_woodland_oland_only)) %>%  summarise(sum_responses=sum(number_responses), 
+                                                                                                                    total_holdings=n(),
+                                                                                                                    average_response_number_per_holding = mean(number_responses
+                                                                                                                                 ),
+                                                                                                                    mode_response_number_per_holding = getmode(number_responses),
+                                                                                                                    range_response_number_per_holding=range(number_responses),
+                                                                                                                    total_items= ncol(.)-3)
+recode_summary <- module_recode %>% summarise(sum_responses=sum(number_responses), 
+                                              total_holdings=n(),
+                                              average_response_number_per_holding = mean(number_responses
+                                              ),
+                                              mode_response_number_per_holding = getmode(number_responses),
+                                              range_response_number_per_holding=range(number_responses),
+                                              total_items= ncol(.)-1)
+
+
+
+overall_summary_module <- bind_rows("grouped" = recode_grouped_summary, "overall" = recode_summary, .id = "group_type")
+
+#number of responses for each item number
+module_number_responses <- colSums(module_recode)
+module_number_responses <- as.data.frame(module_number_responses)
+module_number_responses$item_number <-row.names(module_number_responses)
+module_number_responses <- module_number_responses %>% select(item_number, module_number_responses)
+
+
+module_summary_list <-list("item_response_count" = module_number_responses, "Summary_stats" = overall_summary_module)
+
+#write new xlsx with checked holdings removed
+write_xlsx(module_summary_list, paste(output_path, Sys.Date(), "JAC23_module_summary.xlsx"))
+
+#Validations ----------------------------------------------------------------------------
 #manure/slurry spread percentage
 JAC_module_23 <- JAC_module_23 %>%  mutate(manure_slurry_spread_total = sum(get(broadcast_spreader_less_four_hours), get(broadcast_spreader_more_four_hours), get(broadcast_spreader_not_ploughed),
                                                                      get(band_spreader_hose), get(band_spreader_shoe), get(open_slot_shallow_injection), 
