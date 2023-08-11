@@ -7,7 +7,7 @@ sgtemplates:
       info: true
       ordering: true
       paging: true
-      searching: false
+      searching: true
   header:
     phase_banner:
       tag: "WIP"
@@ -17,13 +17,13 @@ sgtemplates:
     label: "Report"
   navigation:
     toc:
-      sticky: false
+      sticky: true
 output:
   html_document:
     code_download: false
     df_print: paged
     fig_caption: true
-    number_sections: false
+    number_sections: true
     self_contained: false
     template: "_template.html"
     toc: true
@@ -45,7 +45,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 #Script containing datasets and error checks
-source("Module validations.R",  local = knitr::knit_global())
+source("./June - Module Validations.R",  local = knitr::knit_global())
 
 ```
 
