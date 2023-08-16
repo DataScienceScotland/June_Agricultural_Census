@@ -577,6 +577,17 @@ dupsBetweenGroups <- function (df, idcol) {
 }
 
 
+# Functions for D1 - Pre imputation ---------------------------------------
+
+
+create_zeroes<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    mutate(across(starts_with("item"), ~ifelse(sum(.[yr<=2021], na.rm=TRUE) ==0 & yr == 2023, 0, .)))
+  
+  return(df)
+}
+
 # Disaggregation functions ------------------------------------------------
 
 
