@@ -119,86 +119,86 @@ write_dataframe_to_db(server=server,
 # #
 # # #
 # # Work with permanent and seasonal in a list
-# 
+#
 # list_perm_seas <- list(df_permanent, df_seasonal)
-# 
-# 
-# # Clean names 
-# 
+#
+#
+# # Clean names
+#
 # list_perm_seas <- lapply(list_perm_seas, clean_names)
-# 
+#
 # # Create line variable for list to index by LPID for permanent and seasonal. Number gives instance of each LPID.
-# 
+#
 # list_perm_seas <- lapply(list_perm_seas, LPID_index)
-# 
-# 
-# 
+#
+#
+#
 # # Rename and create new variables for permanent and seasonal. Land_Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
-# 
-# 
+#
+#
 # list_perm_seas <- lapply(list_perm_seas, rename_perm_seas_vars)
-# 
-# 
+#
+#
 # list_perm_seas <- lapply(list_perm_seas, new_perm_seas_vars)
-# 
+#
 # # Create parish and holding from slc (permanent data) and mlc (seasonal data)
-# 
+#
 # list_perm_seas[[1]]<-parishholdingperm(list_perm_seas[[1]])
 # list_perm_seas[[2]]<-parishholdingseas(list_perm_seas[[2]])
-# 
+#
 
 
 # # Clean names and create line variable for scheme data
-# 
+#
 # df_scheme<-clean_names(df_scheme)
-# 
+#
 # df_scheme <- LPID_index(df_scheme)
-# 
-# 
+#
+#
 # # rename and create new variables in scheme.
-# 
+#
 # df_scheme <- rename_scheme_vars(df_scheme)
-# 
+#
 # df_scheme <- new_scheme_vars(df_scheme)
-# 
+#
 # #
 # #
 # #
 # # # Create dfs for missing obs ----------------------------------------------
 # #
 # # # Create dfs for missing records in permanent and seasonal.
-# 
-# 
+#
+#
 # missingperm_seas <- lapply(list_perm_seas, missing_obs)
-# 
-# 
+#
+#
 # # Missing field area in permanent and seasonal.
-# 
+#
 # missfieldareaperm_seas <- lapply(list_perm_seas, missing_field_area)
-# 
-# 
+#
+#
 # # Missing eligible area in permanent and seasonal.
-# 
+#
 # misseligibleareaperm_seas <- lapply(list_perm_seas, missing_eligible_area)
-# 
+#
 
-# 
+#
 # # final list of permanent and seasonal removing blank records.
-# 
+#
 # list_perm_seas <- lapply(list_perm_seas, cleaned_datasets)
-# 
+#
 # # final scheme df removing blank records.
-# 
-# 
+#
+#
 # df_scheme <- cleaned_datasets(df_scheme)
 
 #
 #
 # Save to datashare
-# 
-# 
+#
+#
 # save(list_perm_seas, file = paste0(Code_directory, "/saflist_permseas_A_2023.rda"))
-# 
+#
 # save(df_scheme, file = paste0(Code_directory, "/saf_scheme_A_2023.rda"))
 
 
