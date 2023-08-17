@@ -14,7 +14,7 @@ rm(list = ls())
 # Before import -----------------------------------------------------------
 
 # Datashare file path for import and export
-output_path <- "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/"
+output_path <- "//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Work_items_Ops/"
 #sas_agscens_path <- "//s0177a/sasdata1/ags/census/agscens/"
 
 #load(paste(output_path, "2023/Ags_A_2023.rda", sep = ""))
@@ -182,9 +182,7 @@ v_nplist_trim <- read_table_from_db(server=server,
 cv_list <- read_table_from_db(server=server, 
                               database=database, 
                               schema=schema, 
-                              table_name="JAC23_context_validation_list") %>% select(-survtype, -submisType, -land_data, -saf_data,)
-
-
+                              table_name="JAC23_context_validation_list") 
 #module validation outputs
 # 
 # mv_summary <- read_table_from_db(server=server, 
@@ -257,7 +255,7 @@ colnames(all_work_items)[colnames(all_work_items)%in% names(all_module_validatio
 
 
 #create holdings-ignored form to append to work item spreadsheet
-holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignored = "",	Rationale ="", Date = "") 
+#holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignored = "",	Rationale ="", Date = "") 
 
 
 # #change summaries to dataframes
@@ -269,7 +267,9 @@ holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignore
 # work_item_list <-list("work_items" = all_work_items, "main_error_summary" = v_summary_prioritised,  "main_errors_by_submisType" = v_summary_all, 
 #                       "context_error_summary" = cv_summary, "module_error_summary" = mv_summary)
 
-work_item_list <-list("work_items" = all_work_items, "Checked Holdings not Cleared" = holdings_not_cleared_form)
+work_item_list <-list("work_items" = all_work_items
+                      #"Checked Holdings not Cleared" = holdings_not_cleared_form
+                      )
 
 #export  as xlsx for Ops
 write_xlsx(work_item_list, paste(output_path, Sys.Date(), "work_item_list.xlsx"))
