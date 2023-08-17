@@ -182,7 +182,7 @@ cleaned_datasets <- function(x) {
 # B6 
 
 
-# Correct areas and change codes. Check if this needs updating every year. Removed TREE -> TREES edit for 2023. 
+# Correct areas and change codes. Check if this needs updating every year. 
 
 change_codes<-function(x) {
   mutate(x,

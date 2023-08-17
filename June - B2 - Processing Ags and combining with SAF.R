@@ -551,7 +551,7 @@ FJS <- FJS %>%
 
 
 
-# Add RPS address file areas ----------------------------------------------
+# Add RP&S address file areas ----------------------------------------------
 
 
 # Merge in total area and total rented area from 1st June address file (RP&S). 
@@ -579,6 +579,7 @@ FJScheck<-FJSaddress %>%
   select(parish, holding, survtype, item20026, item11, item12, rps_totarea_june, rps_totowned_june, rps_totrented_june)
 
 
+
 # Save outputs ------------------------------------------------------------
 
 
@@ -600,13 +601,3 @@ write_dataframe_to_db(server=server,
                       versioned_table=FALSE,
                       batch_size = 10000)
 
-# Save address file for quick loading
-
-# write_dataframe_to_db(server=server,
-#                       database=database,
-#                       schema=schema,
-#                       table_name="address_occid_01jun_2023",
-#                       dataframe=addressfile,
-#                       append_to_existing = FALSE,
-#                       versioned_table=FALSE,
-#                       batch_size = 10000)

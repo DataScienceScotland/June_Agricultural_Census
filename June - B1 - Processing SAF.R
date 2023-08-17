@@ -1,9 +1,9 @@
-# This script processes the SAF data to prepare it for combining with the census data in B2. 
+# This script processes the SAF data to prepare it for combining with the census data in B2. It also flags potential errors in the SAF dataset. 
 # Code corrections may need updating yearly depending on SAF data.
-# This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional Scott)
+# This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Data used currently is from end of June 2023. This is the second SAF data drop.
 # Created by Lucy Nevard 27.01.23
-# Modified by Lucy Nevard 29.06.23
+# Modified by Lucy Nevard 17.08.23
 
 
 # Before import -----------------------------------------------------------
@@ -71,7 +71,7 @@ list_perm_seas<-list(saf_perm,saf_seas)
 
 
 # Import new code translation table for SAF (these may need updating every year)
-# Check codes in saf_perm 2021
+
 
 
 newcodetrans <-
@@ -79,14 +79,14 @@ newcodetrans <-
 
 
 
-# B4/B6 of SAS code - Corrections ----------------------------------------------------------
+# Initial corrections ----------------------------------------------------------
 
 # This code applies corrections to the SAF datasets (permanent and seasonal). These corrections will include manual corrections which can be added each year, perhaps to the function script.
 # Then, for the permanent data, it corrects invalid codes (this will need updating every year) and  splits up lines with both SFP code and Other Code. For the seasonal data, it splits up and removes those with only an Other code.
 # Code corrections may need updating yearly depending on SAF data.
-# This script is based on the code in B4 and B6 of the June Project
+# This section is based on the code in B4 and B6 of the June Project
 
-#  Apply corrections to both datasets.  -----------------------------------
+
 # Correcting area variables and slc when blank. Code corrections for sfp_code and other_code.
 
 
@@ -94,16 +94,14 @@ newcodetrans <-
 
 list_perm_seas<-lapply(list_perm_seas, clean_names)
 
-# For SAF codes - this might change year to year so would need to be updated in the FUnctions script. But those below might still be used.
+# For SAF codes - this might change year to year so the change_codes function would need to be updated in the Functions script. But those below might still be used.
 # Manual corrections should also mbe included here and change from year to year. None from the 2021 SAS project.
 
 list_perm_seas <- lapply(list_perm_seas, change_codes)
 
 
-# Unlist permanent and seasonal.  ---------------------------------------
 
-
-# Create separate dfs for permanent and seasonal.
+# Create separate dfs for permanent and seasonal. These are processed separately from this point on.
 
 names(list_perm_seas) <- c("perm", "seas")
 
@@ -116,7 +114,7 @@ saf_perm$landtype <- "PERM"
 saf_seas$landtype <- "SEAS"
 
 
-# Remove rows of all NAs. Couldn't figure out how to do this in a list. This could be moved to Script A.
+# Remove rows of all NAs. This could be moved to Script A.
 # There are no rows of all NAs at this point in the 2023 dataset.
 
 
@@ -125,7 +123,7 @@ saf_perm <- saf_perm[rowSums(is.na(saf_perm)) != ncol(saf_perm), ]
 saf_seas <- saf_seas[rowSums(is.na(saf_seas)) != ncol(saf_seas), ]
 
 
-# Permanent - split up SAF datalines into claimtype other or sfp --------
+# Permanent - split up SAF datalines into claimtype other or sfp
 
 # Reformat df with claimtype as "other" or "sfp" (Single Farm Payment) and "line" variable increasing by 0.01 if OTHER.
 # LLO flags also assigned within newvarsother and newvarssfp functions
@@ -171,7 +169,7 @@ saf_perm<-perm_variables(saf_perm)
 # The SAS code here has tables to see what errors are left in the permanent df - not clear what we're looking for at this point and there aren't any fixes in the code, so I've left this out for now.
 
 
-#  Seasonal - filter out "Other" holdings, keep only SFP  --------------------------------------------------------------
+#  Seasonal - filter out "Other" holdings, keep only SFP
 # According to desk notes, the data for "other" is too messy to be reliable. The seasonal data is therefore an underestimate.
 # LLO flags also assigned within newvarsseas function
 
@@ -197,21 +195,9 @@ saf_seas<-seas_variables(saf_seas)
 
 
 
-# Save separate permanent and seasonal datasets --------------------------
+# Validations and flagging potential errors----------------------------------------------------------
 
-# Commented out currently as the datasets are saved at the end of this whole script.
-
-# Save to datashare
-
-# save(saf_perm_final, file = paste0(Code_directory, "/saf_perm_B6.rda"))
-# 
-# save(saf_seas, file = paste0(Code_directory, "/saf_seas_B6.rda"))
-
-
-
-
-# B7 of SAS code - checks and flagging potential errors----------------------------------------------------------
-
+#B7 of the SAS code
 # Flag numbers: 
 # 1. Field ID (FID) recorded as belonging to multiple holdings (Single Location Code: SLC) on permanent sheets where one reported it as seasonally let out (LLO). A permanent tenancy may incorrectly be recorded as a seasonal let out]'/
 # 2. Duplicate lines, and in the total recorded land use area to be'/substantially greater than the recorded field area'/[May be a data entry error]'/
@@ -231,7 +217,7 @@ under_report_percent <- 0.5
 over_report_percent <- 1.1
 
 
-# Permanent dataset - checks and error flags -----------------------------------
+# Permanent dataset - checks and error flags
 
 # Check frequency of fids (field id), whether multiple holdings are using the same fid.
 
@@ -310,10 +296,10 @@ flag7<-flag7 %>%
 
 
 
-# merge flag 1 and flag7 here with saf_perm if they have rows in them. Currently they're empty so we don't. 
+# merge flag 1 and flag7 here with saf_perm if they have rows in them. Currently they're empty so we can't. 
 
 
-# create flag1 and flag7 in saf_perm
+# Instead, create flag1 and flag7 in saf_perm
 
 saf_perm<-saf_perm %>% 
   mutate(flag1=0,
@@ -531,8 +517,6 @@ overreportedexclerror <- overreportedexclerror %>%
   mutate(flag9=1)
 
 
-# Note: check all these flagged dfs are same type of object
-
 
 # Create list of all dfs, including errors with their flags.
 
@@ -547,11 +531,11 @@ finalsaf_perm$flag3<- "0"
 
 finalsaf_perm$flag3<-as.numeric(finalsaf_perm$flag3)
 
-# Seasonal dataset flagging ----------------------------------------------
 
+
+# Seasonal dataset flagging 
 
 # Flag fids which look like permanent lets (slc=mlc).
-# On seasonal land sheets, the main location code relates to the business that is seasonally letting in land.  Whilst the sub location code relates to the holding that has the land on a permanent basis.  Where the MLC and SLC are the same, something has gone wrong.  It is possible that these are valid rows, with the SLC detail incorrectly filled in on the SAF.  Or it is possible this has been entered on a seasonal sheet instead of a permanent sheet incorrectly.
 
 saf_seas <- saf_seas %>%
   mutate(
@@ -688,7 +672,9 @@ finalsaf_seas <- df_list_seas %>% reduce(full_join, by = c("brn", "fid", "line",
 
 
 
-# B8 section of SAS code -------------------------------------------------
+# Addiitonal checks and automatic corrections -------------------------------------------------
+
+# From B8 section of SAS code
 
 # rename dataframes
 
@@ -714,7 +700,7 @@ saf_seascurr_fid <- saf_seascurr %>%
 
 
 
-# Split seasonal data into different LLIs ---------------------------------
+# Split seasonal data into different LLIs
 
 saf_seasprev_fid <- saf_prev %>%
   filter(substr(code, 1, 4) == "LLI-" & claimtype == "SFPS") %>%
@@ -750,8 +736,6 @@ saf_seascurr_fid <- saf_seascurr_fid %>%
 # 	- LLI-SL = Land seasonally let in at same location as last year
 # - LLI-DL = Land seasonally let in at a different location to last year
 # - LLI-NL = Land seasonally let in but no SAF claimed last year
-
-# The SAS code for this keeps NAs (parish and holding) in as if they are matching - I have already removed parish/holding NAS from seas21_fid
 
 seascurr_matched <- merge(saf_seascurr_fid, saf_seasprev_cph, by = c("parish", "holding"))
 
@@ -793,7 +777,7 @@ pfdscurr_seas <- split %>%
 # Automatic corrections ---------------------------------------------------
 
 
-# Remove flagged entries if required  (SAF validations also in C)
+# Remove flagged entries here if required  (SAF validations also in C)
 
 cols<-as.data.frame(compare_df_cols(saf_permcurr, pfdscurr_seas))
 
@@ -824,7 +808,7 @@ pfds_corrections3 <- pfds_finalcurr %>%
 
 pfdscorrections <- rbind(pfds_corrections1, pfds_corrections2, pfds_corrections3)
 
-# Following chunk only works when flag3 is present - see B7 script above.
+# Following chunk only works when flag3 is present.
 
 pfds_finalcurr<-pfds_finalcurr %>%
   filter(!flag3>0)
@@ -913,7 +897,8 @@ write_dataframe_to_db(server=server,
 
 
 
-# B9 Section of SAS code --------------------------------------------------
+# Creating census-format dataset --------------------------------------------------
+# B9 Section of SAS code 
 
 #saf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8_2023.rda"))
 
@@ -946,8 +931,8 @@ rm(allsaf_fids)
 
 
 
-# Map SAF code to JAC item numbers ----------------------------------------
 
+# Map SAF code to JAC item numbers 
 
 # Translate codes to June items based on translation table (this will probably be updated every year)
 
@@ -1033,11 +1018,9 @@ brns <- allsaf %>%
   group_by(parish, holding, brn) %>%
   brnsummary() %>% 
   distinct(parish, holding, .keep_all=TRUE) 
-  
-  
 
-# Reformat dataset --------------------------------------------------------
 
+# Reformat dataset
 
 # Change dataset from long to wide
 
