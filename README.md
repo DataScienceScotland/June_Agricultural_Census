@@ -1,6 +1,6 @@
 # June - 2023
 
-This is the branch for the 2023 version of the code.
+This is the branch for the 2023 version of the code. It is now the default branch.
 
 Code for June Agricultural Census
 
@@ -10,9 +10,8 @@ Script B1 processes SAF, including flagging potential errors and converting data
 
 B2 combines the census (Ags) data and the SAF data to make the combined dataset, as known as JAC. B2 is B5 and B10 (from SAS project).
 
-C6-C9 - markdown for flagged errors in SAF dataset.
+C1 - markdown for flagged errors in SAF dataset.
 
-Folders: Punch Error Checks contains C1 Ags data punch error checks script and markdown
-Folders: Validations contains C2:C5 Ags data validation script and markdown. 
+C Validations is Ags/June validations.
 
 "item_numbers.R" includes item numbers which are manually pasted into "June - C _ Validations.R" script as objects.
