@@ -74,8 +74,11 @@ list_perm_seas<-list(saf_perm,saf_seas)
 
 
 
-newcodetrans <-
-  read.csv(paste0(Code_directory, "/NEW_CODE_TRANS23.csv"))
+newcodetrans <- read_table_from_db(server=server, 
+                                   database=database, 
+                                   schema=schema, 
+                                   table_name="newcodetrans")
+
 
 
 
