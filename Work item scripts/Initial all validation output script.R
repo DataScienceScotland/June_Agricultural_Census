@@ -146,6 +146,12 @@ error_desc_df <- function(x){
 #remove total errors per case and ID col before joining
 remove_total_id <- function(x) { x <-  x %>% select(-total_errors_per_case, -contains("ID", ignore.case = FALSE))  }
 
+#function to remove columns where error = 0
+remove_zero <- function(x) {
+  dplyr::select(x, where( ~ any(. != 0)))
+}
+
+
 # Import ------------------------------------------------------------------
 
 #main validation outputs
@@ -167,10 +173,10 @@ v_list <- read_table_from_db(server=server,
                               schema=schema, 
                               table_name="JAC23_main_validation_list")
 
-v_nplist_trim <- read_table_from_db(server=server, 
+v_np_list<- read_table_from_db(server=server, 
                                database=database, 
                                schema=schema, 
-                               table_name="JAC23_main_validation_non_priority_list_trim")
+                               table_name="JAC23_main_validation_non_priority_list_full")
 
 #context validation outputs
 # 
@@ -212,9 +218,12 @@ all_module_validations_desc <- error_desc_df(merr_list)
 mv_list <- remove_total_id(mv_list)
 cv_list <- remove_total_id(cv_list)
 v_list <- remove_total_id(v_list)
-v_nplist_trim <- remove_total_id(v_nplist_trim)
+v_np_list <- remove_total_id(v_np_list)
 
-all_work_items <- full_join(v_list, v_nplist_trim, by = c("parish", "holding"))
+#remove columns of just zero before join
+v_np_list <-v_np_list[colSums(v_np_list, na.rm = TRUE) !=0]
+
+all_work_items <- full_join(v_list, v_np_list, by = c("parish", "holding"))
 all_work_items <- full_join(all_work_items, mv_list, by = c("parish", "holding"))
 all_work_items <- full_join(all_work_items, cv_list, by = c("parish", "holding"))
 #all_work_items <- all_work_items %>% select(parish, holding, contains(c("total", "err")))
@@ -252,7 +261,9 @@ colnames(all_work_items)[colnames(all_work_items)%in% names(all_context_desc)] <
 colnames(all_work_items)[colnames(all_work_items)%in% names(main_validations_desc)] <- main_validations_desc %>% select(any_of(names(all_work_items)))
 colnames(all_work_items)[colnames(all_work_items)%in% names(all_module_validations_desc)] <- all_module_validations_desc %>% select(any_of(names(all_work_items)))
 
-
+#rename err60.x and err60.y as legal error
+all_work_items <- all_work_items %>% rename('err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given'= err60.x,
+                                            'only error=err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given' = err60.y)
 
 #create holdings-ignored form to append to work item spreadsheet
 #holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignored = "",	Rationale ="", Date = "") 
