@@ -28,6 +28,7 @@ remove_total_id <- function(x) { x <-  x %>% select(-total_errors_per_case, -con
 
 
 
+
 # Before import -----------------------------------------------------------
 
 source("./C2 - Validations/June - Main Validations.R")
@@ -42,8 +43,6 @@ source("./C2 - Validations/June - Main Validations.R")
 rm(combined_JAC,
    croft,
    legal_only_error,
-   priority_main_validations_summary,
-   prioritised_main_validation_summary,
    brn_fruit,
    check_labour,
    check_labour_error_summary, 
@@ -51,87 +50,8 @@ rm(combined_JAC,
    fruit_holdings,
    large_fruit,
    non_priority_full,
-   non_priority_main_validations_summary,
-   non_priority_trim,
-   non_priority_trim_validations_summary,
    clean_JAC)
 
-# Import ------------------------------------------------------------------
-
-#combined dataset (SAF and JAC data)
-
-# 
-# combined_JAC <- read_table_from_db(
-#   server = server,
-#   database = database,
-#   schema = schema,
-#   table_name = "combined_data_2023"
-# )
-# 
-# combined_JAC <- combined_JAC %>% group_by(parish, holding)
-# 
-# #croft dataset
-# 
-# croft <- read_table_from_db(
-#   server = server,
-#   database = database,
-#   schema = schema,
-#   table_name = "crofts_A_2023"
-# )
-# 
-# croft <- croft %>% group_by(parish, holding)
-# 
-#main validation_lists
-# 
-# #main validations_high priority list
-# mv_priority <- read_table_from_db(
-#   server = server,
-#   database = database,
-#   schema = schema,
-#   table_name = "JAC23_main_validation_list"
-# )
-# 
-# #main validations lower priority list
-# mv_low_priority <- read_table_from_db(
-#   server = server,
-#   database = database,
-#   schema = schema,
-#   table_name = "JAC23_main_validation_non_priority_list_full"
-# )
-# 
-# #main validation summary
-# mv_summary <- read_table_from_db(
-#   server = server,
-#   database = database,
-#   schema = schema,
-#   table_name = "JAC23_main_validation_summary"
-# )
-# 
-# # Combine croft and combined dataset------------------------------------------------------------------
-# 
-# #filter for only form returns
-# all_JAC_form <- combined_JAC %>% group_by(parish, holding)
-# croft <- croft %>% mutate(croft = 1)
-# 
-# #form returns and croft dataset
-# all_JAC_form <-
-#   left_join(all_JAC_form, croft, by = c("parish", "holding")) %>%
-#   mutate(croft = case_when(croft == 1 ~ as.numeric(croft),
-#                            TRUE ~ 0))
-# 
-# 
-# # Combine main validation data frames --------------------------------------
-# 
-# #remove total errors per case and ID column before join 
-# mv_priority <- remove_total_id(mv_priority) 
-# mv_low_priority <- remove_total_id(mv_low_priority)
-# 
-# all_main_validations <- full_join(mv_priority, mv_low_priority, by = c("parish", "holding"))
-# 
-# 
-# # Join validations with main JAC dataset ----------------------------------
-# 
-# all_JAC_form <- full_join(all_JAC_form, all_main_validations, by = c("parish", "holding"))
 
 # Section 1 (area) fixes ---------------------------------------------------------
 
@@ -521,36 +441,6 @@ all_JAC_form$err59_diff <-  as.numeric(ifelse(all_JAC_form$err59 == 1,
 
 # Section 3 fixes ---------------------------------------------------------
 # Err45 correction --------------------------------------------------------
-
-
-#calculate and add column for total of land items
-# all_JAC_form <- all_JAC_form %>% mutate(
-#   total13 = 
-#     get(wheat) + 
-#     get(all_barley) +
-#     get(all_oats) +
-#     get(all_rape) +
-#     get(seed_potatoes) +
-#     get(ware_potatoes) +
-#     get(all_stockfeed) +
-#     get(all_veg_open) +
-#     get(all_fruit) +
-#     get(all_flow_bulb) +
-#     get(tot_open_plastic) +
-#     get(tot_solid_glass) +
-#     get(other_crops) +
-#     get(fland_lte5) +
-#     get(fland_gt5) +
-#     get(grass_lt5) +
-#     get(grass_gte5) +
-#     get(rough_graze) +
-#     get(woodland) +
-#     get(other_land), 
-#   na.rm=TRUE
-#   
-# )
-
-
 
 #if total land (item50) is zero, but total land use items (total13) is greater than 0, replace item50 with total13
 #if total land not equal to total land use items AND holding is ags, replace item50 with total 13. 
@@ -1286,8 +1176,10 @@ main_validations <-
     err45_diff,
     err59_diff,
     err57_diff,
-    err61_diff
-  )%>% 
+    err61_diff,
+    #exclude croft error
+  -err34)%>% 
+  
   #filter to exclude saf_only 
   filter(submisType != "NA")
 
