@@ -237,7 +237,7 @@ combined_JAC <- read_table_from_db(
 combined_JAC <- combined_JAC %>% group_by(parish, holding)
 
 #filter for only form returns
-all_JAC_form <- combined_JAC %>% filter(survtype == "Non-SAF")
+all_JAC_form <- combined_JAC %>% filter(survtype != "SAF_only")
 
 JAC_module_23 <-
   all_JAC_form %>% select(parish, holding, submisType,
@@ -310,15 +310,22 @@ no_response <- module_recode %>%  recode_number_response() %>%
 
 #check number of holdings with more than 1 response per section
 response_section_12 <-
-  module_recode %>% select(-all_of(section_13)) %>%
+  module_recode %>% select(-all_of(c(section_13, rough_grazing_woodland_only))) %>%
   recode_number_response() %>%
-  filter(number_responses > 1) %>%
+  filter(number_responses >= 1) %>%
   nrow(.)
 
 response_section_13 <-
-  module_recode %>% select(-all_of(section_12)) %>%
+  module_recode %>% select(-all_of(c(section_12, ghouse_fallow_woodland_oland_only))) %>%
   recode_number_response() %>%
-  filter(number_responses > 1) %>%
+  filter(number_responses >=1) %>%
+  nrow(.)
+
+#check number of holdings with responses in both sections
+response_all_sections <-  
+  module_recode %>% select(-all_of(c(rough_grazing_woodland_only, ghouse_fallow_woodland_oland_only))) %>%
+  recode_number_response() %>%
+  filter(number_responses >=1) %>%
   nrow(.)
 
 #check number of holdings with more than 2 responses in module
@@ -407,6 +414,9 @@ recode_summary <-
                                    response_module) * 100,
     number_of_holdings_1_more_section_13 = response_section_13,
     percent_1_more_section_13 = (response_section_13 /
+                                   response_module) * 100,
+    number_of_holdings_section_12_13 = response_all_sections,
+    percent_section_12_13 = (response_all_sections/
                                    response_module) * 100,
     number_of_holdings_2_more_module =
       response_more_2,
