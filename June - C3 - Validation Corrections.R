@@ -241,8 +241,7 @@ all_JAC_form$err37 <-
 
 # Err1 correction ---------------------------------------------------------
 # 
-# err1 <- all_JAC_form%>% filter(abs(get(total_area) - (get(area_own) + get(area_rent)))>3) %>% 
-#   select(any_of(c(total_area, area_own, area_rent, rps_own, rps_rent, rps_total_area)))
+
 
 #count number of holdings with original err = 1
 err1_original_count <- nrow(err1)
@@ -442,12 +441,16 @@ all_JAC_form$err59_diff <-  as.numeric(ifelse(all_JAC_form$err59 == 1,
 # Section 3 fixes ---------------------------------------------------------
 # Err45 correction --------------------------------------------------------
 
-#if total land (item50) is zero, but total land use items (total13) is greater than 0, replace item50 with total13
-#if total land not equal to total land use items AND holding is ags, replace item50 with total 13. 
-#if total land not equal to total land use items AND holding is not ags, replace item50 with total 7. 
+#Ags: if total land (item50) is zero,  but total land use items (total13) is greater than 0, replace item50 with total13
+#if total land not equal to total land use items AND holding is ags, replace item50 with total 13.
+
+#SAF or both: if total land (item50) is zero, but total land use items (total7) is greater than 0, replace item50 with total7
+#if total land not equal to total land use items AND holding is not ags, replace item50 with total 7 
+#total 7 = total area of crops and grassland, rough grazing, woodland and other land) . 
 
 all_JAC_form <- all_JAC_form %>% mutate(
-  item50 = case_when(item50 ==0 & total13 !=0 ~ total13,
+  item50 = case_when(item50 ==0 & land_data =="ags" & total13 !=0 ~ total13,
+                     item50 ==0 & land_data !="ags" & total7 !=0 ~ total7,
                      item50 !=total13 & land_data =="ags" ~ total13,
                      item50!=total7 & land_data !="ags" ~ total7,
                      TRUE ~ as.numeric(item50)
@@ -508,11 +511,11 @@ all_JAC_form$err45_diff <-
 
 err_46_original_count <- nrow(err46)
 
-#change item50 to item12 if item50 is zero and item12 = total13 and total7 (sum of all land items) is zero AND if item12 ==rps_tot_area
+#change item50 to item12 if item50 is zero and item12 = total13 or total7 (sum of all land items) 
 all_JAC_form <- all_JAC_form %>% mutate(
   item50 = case_when((abs(item12 - item50)) > 3 &
                        item50 ==0 &
-                       item12 ==total13 &
+                       item12 ==total13 |
                        item12==total7
                        ~ item12,
                      TRUE ~ as.numeric(item50)
@@ -753,13 +756,7 @@ all_JAC_form$err10_diff <-   as.numeric(ifelse(all_JAC_form$err10 == 1,
 
 # Err11 correction --------------------------------------------------------
 
-# #calculate and add columns for glasshouse totals
-# all_JAC_form <- all_JAC_form %>% mutate(
-#   total5b= get(all_glass_open) +
-#     get(glass_unused_open),
-#   total6b= get(all_glass_solid) +
-#     get(glass_unused_solid)
-# )
+
 
 #count number of holdings with original err = 1
 err11_original_count <- nrow(err11)
@@ -850,6 +847,7 @@ err12 <-
     err12,
     err12_diff
   )
+
 
 err12 <-
   err12 %>% filter(err12 == 1) %>% 
