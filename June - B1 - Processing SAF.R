@@ -87,6 +87,14 @@ saf2015 <- read_table_from_db(server=server,
                                schema=schema, 
                                table_name="saf2015")
 
+<<<<<<< HEAD
+=======
+newcodetrans <- read_table_from_db(server=server, 
+                                   database=database, 
+                                   schema=schema, 
+                                   table_name="newcodetrans")
+
+>>>>>>> 604834cb0caceaba452ede634f3aa8eae4804b66
 
 
 
