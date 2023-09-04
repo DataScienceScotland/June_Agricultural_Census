@@ -1025,6 +1025,19 @@ unmatched<-newcode %>%
   select(parish, holding, fid, newcode, newarea, rgr23, rgr15, otherland23, otherland15, woodland23, woodland15) %>% 
   filter(newcode=="EXCL")
 
+# save unmatched to ADM for use in B2
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="unmatched_EXCL_SAF_B1",
+                      dataframe=unmatched,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
 matched<-newcode %>% 
   select(parish, holding, fid, newcode, newarea, rgr23, rgr15, otherland23, otherland15, woodland23, woodland15) %>% 
   filter(newcode!="EXCL")
@@ -1066,16 +1079,7 @@ afterEXCLcorrection<-allsaf %>%
   group_by(code) %>% 
   summarise(area=sum(area))
 
-# Checks 
 
-unmatchsplit<- unmatched %>% 
-filter((woodland15+otherland15) < newarea)
-
-
-woodothadd <-unmatchsplit %>% 
-  group_by(parish, holding) %>% 
-  summarise(woodland15=sum(woodland15),otherland15=sum(otherland15)) %>% 
-  select(parish, holding, woodland15, otherland15)
 
 
 
@@ -1313,10 +1317,6 @@ cens_wide[is.na(cens_wide)] <- 0
 
 
 
-# Rename column created from unmatched codes (NA)
-
-cens_wide <- cens_wide %>%
-  dyplr::rename_at("NA", ~"unmatched")
 
 
 cens_wide<-data.frame(cens_wide) %>% 
