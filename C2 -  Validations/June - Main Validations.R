@@ -3,13 +3,15 @@
 #JAC Validations for Census form data (C2, C3, C4 IN SAS)
 
 
+# Clear environment prior
+rm(list = ls())
+
 library(tidyverse)
 library(RtoSQLServer)
 library(writexl)
 library(janitor)
 
-# Clear environment prior
-rm(list = ls())
+
 
 #yr = this year 20xx
 yr <- 2023
@@ -734,9 +736,8 @@ all_JAC_form$err4 <-
 #Other crop specified but area not given
 #err44
 all_JAC_form$err44 <-
-  ifelse((!is.na(all_JAC_form[other_crops_text]) |
-            all_JAC_form[other_crops_text] == "") &
-           all_JAC_form[other_crops] < 0,  1, 0)
+  ifelse(!is.na(all_JAC_form[other_crops_text])  &
+           all_JAC_form[other_crops] <= 0,  1, 0)
 
 #Section 3 Grassland-------------------------------------------------------------------------------------------------------------------------------------------------
 #total area of crops and grassland, rough grazing, woodland and other land is not equal to total land
@@ -1153,11 +1154,16 @@ all_JAC_form$err24 <-
            (is.na(all_JAC_form[other_livestock_txt]) |
               all_JAC_form[other_livestock_txt] == ""),  1, 0)
 
-#Other livestock specified but number not given
+#Other livestock specified but number not given. This gives some blank item186 as errors - needs to be fixed. 
+
+
+# Create err47 first without NAs (otherwise following bit will)
+
+
 all_JAC_form$err47 <-
-  ifelse((!is.na(all_JAC_form[other_livestock]) |
-            !all_JAC_form[other_livestock] == "") &
-           all_JAC_form[other_livestock] < 0,  1, 0)
+  ifelse(!is.na(all_JAC_form[other_livestock_txt]) &
+           all_JAC_form[other_livestock] <= 0,  1, 0)
+
 
 
 all_JAC_form$err27 <-
@@ -1175,16 +1181,16 @@ all_JAC_form$err28 <-
 
 #Section 8 Legal Responsbility----------------------------------------------------------------------------------------------
 
-#legal and financial responsibility not answered
+#legal and financial responsibility not answered and no other legal return or no occupier details
 all_JAC_form$err60 <-
   ifelse(
     all_JAC_form[legal_fin_resp] == 0 &
-      all_JAC_form[other_legal_return] == 0 |
+      (all_JAC_form[other_legal_return] == 0 |
       (
         all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
           all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]
-      ) < 0,
+      ) <= 0),
     1,
     0
   )
@@ -1218,7 +1224,7 @@ all_JAC_form$err52 <-
         all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
           all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]
-      ) < 0,
+      ) <= 0,
     1,
     0
   )
@@ -1271,7 +1277,7 @@ all_JAC_form$err30 <-
     0
   )
 
-#More than one working time option provided for occuppier 2
+#More than one working time option provided for occupier 2
 #err31 = err41 in SAS = no match (28 vs 23 in SAS)
 all_JAC_form$err31 <-
   ifelse(
@@ -1326,11 +1332,11 @@ all_JAC_form$err50 <-
 #2023 check if valid Year of birth for occupier 1 and 2
 all_JAC_form$err51 <-
   ifelse((all_JAC_form[occupier1_year] != 0 &
-            all_JAC_form[occupier1_year] < 1923 &
-            all_JAC_form[occupier1_year] > 2008) |
+            (all_JAC_form[occupier1_year] < 1923 |
+            all_JAC_form[occupier1_year] > 2008)) |
            (all_JAC_form[occupier2_year] != 0 &
-              all_JAC_form[occupier2_year] < 1923 &
-              all_JAC_form[occupier2_year] > 2008),
+              (all_JAC_form[occupier2_year] < 1923 |
+              all_JAC_form[occupier2_year] > 2008)),
          1,
          0
   )
@@ -1419,7 +1425,7 @@ all_JAC_form$err33 <-
 # all_JAC_form$err36 <- ifelse (all_JAC_form[rented_croft] > 0 & all_JAC_form$parish %in% non_crofting_parishes, 1, 0)
 
 
-#migrant worker suppresssion - need to write function
+#migrant worker suppression - need to write function
 
 #Migrant worker check (C4)---------------------------------------------------------------------------------------
 
@@ -3005,7 +3011,7 @@ non_priority_main_validations_summary <-
 non_priority_main_validations_summary <-
   non_priority_main_validations_summary %>% filter(count != 0)
 
-#non_prirority trim validation summary
+#non_priority trim validation summary
 non_priority_trim_validations_summary <-
   non_priority_trim %>% ungroup %>% select(-c(parish, holding, contains(c("diff", "total")))) %>%  summarize(across(everything(), sum, na.rm = TRUE))
 non_priority_trim_validations_summary <-
