@@ -170,7 +170,7 @@ missing_eligible_area <- function(x) {
 cleaned_datasets <- function(x) {
   filter(
     x,
-         !is.na(brn), !is.na(mlc), !is.na(slc)
+         complete.cases(brn) | complete.cases(mlc) | complete.cases(slc)
   )
 }
 
@@ -365,11 +365,17 @@ othercropscodes<-function(x) {
           code == "ALMS",
           "Almonds",
           ifelse(
+            code == "AMCP",
+            "Aromatic, medicinal and culinary",
+          ifelse(
             code == "BW",
             "Buckwheat",
             ifelse(
               code == "CANS",
               "Canary seed",
+              ifelse(
+                code == "ENG-B",
+                "Energy beet",
               ifelse(
                 code == "EX-SS",
                 "Ex-structural set-aside",
@@ -384,11 +390,16 @@ othercropscodes<-function(x) {
                              code == "MIL",
                              "Millet",
                              ifelse(
+                               code == "MU",
+                               "Mustard",
+                             ifelse(
                                code == "MSC",
                                "Miscanthus",
                                ifelse(
                                  code == "PEM",
                                  "Positive environmental management",
+                                 ifelse(code=="PHA",
+                                        "Phacelia",
                                  ifelse(
                                    code == "RCG",
                                    "Reed canary grass",
@@ -400,11 +411,16 @@ othercropscodes<-function(x) {
                                             ifelse(
                                               code == "SRC",
                                               "Short rotation coppice",
+                                              ifelse(code == "SUN",
+                                                     "Sunflower",
                                               ifelse(
                                                 code == "TURF",
                                                 "Turf production",
                                                 ifelse(code ==
-                                                         "WBS", "Wild bird seed", code)
+                                                         "WBS", "Wild bird seed", 
+                                                       ifelse(code ==
+                                                                "WFM", "Wild flower mix",code)
+                                              )
                                               )
                                             )
                                           )
@@ -418,6 +434,11 @@ othercropscodes<-function(x) {
                 )
               )
             )
+          )
+          )
+          )
+          )
+          )
           )
         ),
         ""

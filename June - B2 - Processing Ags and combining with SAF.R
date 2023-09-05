@@ -20,7 +20,7 @@ library(skimr)
 library(haven)
 library(RtoSQLServer)
 source("Functions/Functions.R")
-source("Scripts/Item categories.R")
+source("item_numbers.R")
 #change year here. 
 yr <- 23
 yr1 <- (yr - 2)  # this should normally be yr-1 but no census in 2022. 
@@ -483,13 +483,14 @@ FJS$saf_data <- as.factor(FJS$saf_data)
 
 
 
+
 FJS <- FJS %>%
-  mutate(across(starts_with('item'), ~ as.numeric(.)))
+  mutate(across(starts_with('item') & !starts_with("item185") &!starts_with("item186"), ~ as.numeric(.))) 
 
 
 FJS <- FJS %>%
   mutate(across(
-    starts_with('item'),
+    starts_with('item')& !starts_with("item185") &!starts_with("item186"),
     ~ ifelse(survtype != "SAF_only" & is.na(.), 0, .)
   ))
 

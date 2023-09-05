@@ -87,14 +87,11 @@ saf2015 <- read_table_from_db(server=server,
                                schema=schema, 
                                table_name="saf2015")
 
-<<<<<<< HEAD
-=======
+
 newcodetrans <- read_table_from_db(server=server, 
                                    database=database, 
                                    schema=schema, 
                                    table_name="newcodetrans")
-
->>>>>>> 604834cb0caceaba452ede634f3aa8eae4804b66
 
 
 
@@ -244,6 +241,10 @@ over_report_percent <- 1.1
 fidfreqsorig<-saf_perm %>% 
   select(slc, fid) 
 
+# fidfreqsorig<-fidfreqsorig %>% 
+#   add_row(slc="test/test", fid="049/0175/X")
+
+
 fidfreqs<-fidfreqsorig %>% 
   group_by(fid) %>% 
   summarise(count=n()) %>% 
@@ -258,10 +259,13 @@ fids<-fids %>%
   filter(line==1) %>% 
   dplyr::rename(holdings_using_fid=line)
 
-fidfreqsfinal<-merge(fidfreqs, fids, by="fid")
+fidfreqsfinal<-merge(fidfreqs, fids, by=c("fid"))
 
-fids_with_multiple_slcs<-fidfreqsfinal %>% # There are no fids with multiple slcs in the 2023 dataset. Cross-check using the SAS code. 
-  filter(holdings_using_fid>1)
+fids_with_multiple_slcs<-fidfreqsfinal %>%
+  filter(holdings_using_fid>1) # There are no fids with multiple slcs in the 2023 dataset. Same when using SAS code.
+
+
+
 
 # Filter out LMC (Land Management Contract) claimtype. 
  
@@ -282,8 +286,6 @@ fids_with_llo<-saf_perm %>%
 
 # Filter out LMC claimtype from this point.
 
-saf_perm_notlmc<-saf_perm %>% 
-  filter(claimtype!="LMC")
 
 fids_with_multiple_slcs <- fids_with_multiple_slcs[c('fid', 'slc')] # using indexing because filter doesn't work on an empty df
 
