@@ -737,7 +737,7 @@ all_JAC_form$err4 <-
 #err44
 all_JAC_form$err44 <-
   ifelse(!is.na(all_JAC_form[other_crops_text])  &
-           all_JAC_form[other_crops] <= 0,  1, 0)
+           all_JAC_form[other_crops] <= 0,  1, 0) # LN edited to <=0
 
 #Section 3 Grassland-------------------------------------------------------------------------------------------------------------------------------------------------
 #total area of crops and grassland, rough grazing, woodland and other land is not equal to total land
@@ -1162,7 +1162,7 @@ all_JAC_form$err24 <-
 
 all_JAC_form$err47 <-
   ifelse(!is.na(all_JAC_form[other_livestock_txt]) &
-           all_JAC_form[other_livestock] <= 0,  1, 0)
+           all_JAC_form[other_livestock] <= 0,  1, 0) # LN edited to <=0
 
 
 
@@ -1190,7 +1190,7 @@ all_JAC_form$err60 <-
         all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
           all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]
-      ) <= 0),
+      ) <= 0), # LN corrected brackets
     1,
     0
   )
@@ -1224,7 +1224,7 @@ all_JAC_form$err52 <-
         all_JAC_form[occupier1_ft] + all_JAC_form[occupier1_pt_gthalf] +
           all_JAC_form[occupier1_pt_lthalf] + all_JAC_form[occupier1_no_work] + all_JAC_form[occupier2_ft] + all_JAC_form[occupier2_pt_gthalf] +
           all_JAC_form[occupier2_pt_lthalf] + all_JAC_form[occupier2_no_work]
-      ) <= 0,
+      ) <= 0, # LN corrected to <=0
     1,
     0
   )
@@ -1332,7 +1332,7 @@ all_JAC_form$err50 <-
 #2023 check if valid Year of birth for occupier 1 and 2
 all_JAC_form$err51 <-
   ifelse((all_JAC_form[occupier1_year] != 0 &
-            (all_JAC_form[occupier1_year] < 1923 |
+            (all_JAC_form[occupier1_year] < 1923 | # LN corrected & to |
             all_JAC_form[occupier1_year] > 2008)) |
            (all_JAC_form[occupier2_year] != 0 &
               (all_JAC_form[occupier2_year] < 1923 |
