@@ -604,8 +604,7 @@ dupsBetweenGroups <- function (df, idcol) {
 create_zeroes<-function(df) {
   df <- df %>% 
     group_by (id) %>% 
-    mutate(across(starts_with("item"), ~ifelse(sum(.[yr<=2021], na.rm=TRUE) ==0 & yr == 2023, 0, .))) %>% 
-  ungroup()
+    dplyr::mutate(across(starts_with("item"), ~ifelse(sum(.[yr<=2021], na.rm=TRUE) ==0 & yr == 2023, 0, .))) %>% 
   return(df)
 }
 
@@ -724,6 +723,13 @@ madeup<-function(df) {
   
   return(df)
 }
+
+create_zeroes_post<-function(df) {
+  df <- df %>% 
+    dplyr::mutate(across(starts_with("item"), ~ ifelse(.x < 0, 0, .x)))
+    return(df)
+}
+
 
 
 # Disaggregation functions ------------------------------------------------
