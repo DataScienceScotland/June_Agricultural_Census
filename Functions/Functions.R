@@ -648,7 +648,7 @@ ags_filter<-function(df) {
 
 naLOCFPlusone <- function(x){
   ix <- cumsum(is.na(x))
-  zoo::na.locf(x) + ix - cummax(ix * !is.na(x))
+  zoo::na.locf(x) + ix - cummax(ix * !is.na(x))  # This function is taken from online.
 }
 
 
