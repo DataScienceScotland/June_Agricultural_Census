@@ -1,10 +1,9 @@
 # This script imports the datasets from SAF, Ags (the census returns) from this year,the Crofting Commission, ScotEID and the address file sourced from RP&S. They are saved as rdas in the datashare and tables on the ADM server.
 # Update the directories at the top to get data drops from the correct years.
 # The data used currently is from June 2023.
-# Running this to import the SAF data cut 2 (28.06.23) and a new Ags data cut 14.08.23
 # This script is based on programs A1, A2, A2.(a) and A3 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Created by Lucy Nevard 24.02.23 (original individual scripts created 22.11.22),
-# Modified by Lucy Nevard 15.08.23
+# Modified by Lucy Nevard 08.09.23
 
 
 
@@ -56,10 +55,58 @@ schema <- "juneagriculturalsurvey2023alpha"
 # Import data -------------------------------------------------------------
 # 
 # 
+# 
+# newcodetrans <-
+#    read.csv(paste0(SAF_directory, "/NEW_CODE_TRANS23.csv"))
+# 
+# newcodetrans<-newcodetrans %>% 
+#    select(-SAF.item)
+# 
+# 
+# 
+# 
+# 
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="newcodetrans",
+#                       dataframe=newcodetrans,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
+# 
+# # Bring in 2015 SAF dataset
+# 
+# saf2015<-read_sas("//s0177a/sasdata1/ags/census/agstemp/allsaf15.sas7bdat")
+# 
+# 
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="saf2015",
+#                       dataframe=saf2015,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
+# 
+# # Bring in June 2015 (original robust_new)
+# 
+# june2015<-read_sas("//s0177a/sasdata1/ags/census/agscens/june15.sas7bdat")
+# 
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="june2015_robust_new",
+#                       dataframe=june2015,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
+
+
 # Import Ags data (downloaded from Ags)
 
 
-df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_140823.csv"),
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_080923.csv"),
                     fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # # # Tidy Ags data ----------------------------------------------------------------
@@ -68,8 +115,9 @@ df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_140823.csv"),
 # Clean names
 
 df_nonSAF <- subset(df_nonSAF, select = -c(item21310, X))
-#
-#
+
+
+
 # # Check variables types are correct
 #
 str(df_nonSAF, list.len = ncol(df_nonSAF))
@@ -102,109 +150,109 @@ write_dataframe_to_db(server=server,
 
 # Import SAF data ---------------------------------------------------------
 
-
-# # Import SAF datasets separately. Filename will be different for the data drops in June and September.
+# 
+# # # Import SAF datasets separately. Filename will be different for the data drops in June and September.
+# # #
+# df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output_aug_23.xlsx"), sep.names = "_")
 # #
-#  df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output2.xlsx"), sep.names = "_")
-# #
-#  df_seasonal <- read.xlsx(paste0(SAF_directory, "/season_output2.xlsx"),sep.names = "_")
+# df_seasonal <- read.xlsx(paste0(SAF_directory, "/seasonal_output_aug_23.xlsx"),sep.names = "_")
 # 
 # # Scheme data is not included in SAF data at this point but useful to have later.
 # 
-# df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_output2.xlsx"),sep.names = "_")
+# df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_claim_output_aug_23.xlsx"),sep.names = "_")
 # 
-
-
-# # # Tidy SAF data ----------------------------------------------------------------
-# #
+# 
+# 
+# # # # Tidy SAF data ----------------------------------------------------------------
 # # #
-# # Work with permanent and seasonal in a list
-#
+# # # #
+# # # Work with permanent and seasonal in a list
+# #
 # list_perm_seas <- list(df_permanent, df_seasonal)
-#
-#
+# 
+# 
 # # Clean names
-#
+# 
 # list_perm_seas <- lapply(list_perm_seas, clean_names)
-#
+# 
 # # Create line variable for list to index by LPID for permanent and seasonal. Number gives instance of each LPID.
-#
+# 
 # list_perm_seas <- lapply(list_perm_seas, LPID_index)
-#
-#
-#
-# # Rename and create new variables for permanent and seasonal. Land_Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
-#
-#
+# 
+# 
+# #
+# # # Rename and create new variables for permanent and seasonal. Land_Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
+# #
+# #
 # list_perm_seas <- lapply(list_perm_seas, rename_perm_seas_vars)
-#
-#
+# 
+# 
 # list_perm_seas <- lapply(list_perm_seas, new_perm_seas_vars)
-#
+# 
 # # Create parish and holding from slc (permanent data) and mlc (seasonal data)
-#
+# 
 # list_perm_seas[[1]]<-parishholdingperm(list_perm_seas[[1]])
 # list_perm_seas[[2]]<-parishholdingseas(list_perm_seas[[2]])
-#
-
-
-# # Clean names and create line variable for scheme data
-#
+# 
+# 
+# 
+# # # Clean names and create line variable for scheme data
+# #
 # df_scheme<-clean_names(df_scheme)
-#
+# 
 # df_scheme <- LPID_index(df_scheme)
-#
-#
+# 
+# 
 # # rename and create new variables in scheme.
-#
+# 
 # df_scheme <- rename_scheme_vars(df_scheme)
-#
+# 
 # df_scheme <- new_scheme_vars(df_scheme)
-#
+# #
+# # #
+# # #
+# # #
+# # # # Create dfs for missing obs ----------------------------------------------
+# # #
+# # # # Create dfs for missing records in permanent and seasonal.
 # #
 # #
-# #
-# # # Create dfs for missing obs ----------------------------------------------
-# #
-# # # Create dfs for missing records in permanent and seasonal.
-#
-#
 # missingperm_seas <- lapply(list_perm_seas, missing_obs)
-#
-#
+# 
+# 
 # # Missing field area in permanent and seasonal.
-#
+# 
 # missfieldareaperm_seas <- lapply(list_perm_seas, missing_field_area)
-#
-#
+# 
+# 
 # # Missing eligible area in permanent and seasonal.
-#
+# 
 # misseligibleareaperm_seas <- lapply(list_perm_seas, missing_eligible_area)
-#
-
-#
-# # final list of permanent and seasonal removing blank records.
-#
+# 
+# 
+# #
+# # # final list of permanent and seasonal removing blank records.
+# #
 # list_perm_seas <- lapply(list_perm_seas, cleaned_datasets)
-#
+# 
 # # final scheme df removing blank records.
-#
-#
+# 
+# 
 # df_scheme <- cleaned_datasets(df_scheme)
-
-#
-#
-# Save to datashare
-#
-#
+# 
+# #
+# #
+# # Save to datashare
+# #
+# #
 # save(list_perm_seas, file = paste0(Code_directory, "/saflist_permseas_A_2023.rda"))
-#
+# 
 # save(df_scheme, file = paste0(Code_directory, "/saf_scheme_A_2023.rda"))
-
-
-# Save to ADM
-
-
+# 
+# 
+# # Save to ADM
+# 
+# 
 # write_dataframe_to_db(server=server,
 #                       database=database,
 #                       schema=schema,
@@ -233,22 +281,22 @@ write_dataframe_to_db(server=server,
 #                       append_to_existing = FALSE,
 #                       versioned_table=FALSE,
 #                       batch_size = 10000)
-
-
-
-
+# 
+# 
+# 
+# 
 
 # Import crofts data ------------------------------------------------------
 
 
-# 
+
 # Import crofts data. Note: using read.csv here instead creates a df with HoldingID as the index, which we don't want!
 
 
-# df_crofts <- read_csv(paste0(Croft_directory, "/ROC_Holdings_10-7-2023.csv"))
+# df_crofts <- read_csv(paste0(Croft_directory, "/ROC_Holdings_14-8-2023.csv"))
 # 
 # 
-# # Clean names, remove Parish variable and create parish and holding. 
+# # Clean names, remove Parish variable and create parish and holding.
 # 
 # df_crofts<-clean_names(df_crofts)
 # 
@@ -260,8 +308,8 @@ write_dataframe_to_db(server=server,
 #           holding=str_remove(substr(main_location_code, 5, 8), "123")
 #   )
 # 
-# 
-# 
+# #
+# #
 # df_crofts<-df_crofts %>%
 #   mutate(parish=as.numeric(parish),
 #          holding=as.numeric(holding))
@@ -279,13 +327,13 @@ write_dataframe_to_db(server=server,
 # 
 # df_crofts <- df_crofts %>%
 #   mutate(rented_area = ifelse(status_a == "Tenanted", total_area, 0),
-#           owned_area = ifelse(status_b == "Owned", total_area, 0)
+#           owned_area = ifelse(status_a == "Owned", total_area, 0)
 #          )
 # 
-# 
-# # Create new dataframe
-# 
-# 
+# #
+# # # Create new dataframe
+# #
+# #
 # df_crofts <- subset(df_crofts, select = c(parish, holding, total_area, rented_area, owned_area))
 # 
 # 
@@ -305,13 +353,13 @@ write_dataframe_to_db(server=server,
 # # Remove row with NAs.
 # 
 # df_crofts<-df_crofts[complete.cases(df_crofts), ]
-# # 
-
-
- # save(df_crofts, file = paste0(Code_directory, "/crofts_A_2023.rda"))
-
-
-
+# # #
+# 
+# 
+# save(df_crofts, file = paste0(Code_directory, "/crofts_A_2023.rda"))
+# 
+# 
+# 
 # 
 # write_dataframe_to_db(server=server,
 #                       database=database,

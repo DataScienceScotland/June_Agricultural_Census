@@ -20,7 +20,7 @@ library(skimr)
 library(haven)
 library(RtoSQLServer)
 source("Functions/Functions.R")
-source("Scripts/Item categories.R")
+source("item_numbers.R")
 #change year here. 
 yr <- 23
 yr1 <- (yr - 2)  # this should normally be yr-1 but no census in 2022. 
@@ -62,6 +62,16 @@ all_saf <- read_table_from_db(server=server,
 all_saf <- all_saf %>% 
   select(-allsaf_final_2023ID)
 
+
+june2015 <- read_table_from_db(server=server, 
+                              database=database, 
+                              schema=schema, 
+                              table_name="june2015_robust_new")
+
+unmatched<-read_table_from_db(server=server, 
+                              database=database, 
+                              schema=schema, 
+                              table_name="unmatched_EXCL_SAF_B1")
 
 # Load fromdatashare
 # all_saf<-loadRData(paste0(output_path, "allsaf_final.rda"))
@@ -473,15 +483,17 @@ FJS$saf_data <- as.factor(FJS$saf_data)
 
 
 
+
 FJS <- FJS %>%
-  mutate(across(starts_with('item'), ~ as.numeric(.)))
+  mutate(across(starts_with('item') & !starts_with("item185") &!starts_with("item186"), ~ as.numeric(.))) 
 
 
 FJS <- FJS %>%
   mutate(across(
-    starts_with('item'),
+    starts_with('item')& !starts_with("item185") &!starts_with("item186"),
     ~ ifelse(survtype != "SAF_only" & is.na(.), 0, .)
   ))
+
 
 
 
@@ -551,6 +563,153 @@ FJS <- FJS %>%
 
 
 
+# EXCL Fix part 2 ---------------------------------------------------------
+
+# Part 1 of EXCL fix is in B1 (between "B8" and "B9")
+
+strata23<-june2015 %>% 
+  mutate(
+    item48_15=item48,
+    item49_15=item49,
+    woodonly=
+      ifelse(item48_15>0 & item49_15<=0, 1,""),
+    othonly=
+      ifelse(item48_15<=0 & item49_15>0, 1,""),
+    noexcl=
+      ifelse((item48_15+item49_15)<=0, 1, ""),
+    wood_prop=
+      ifelse(item48_15>0 | item49_15>0, (item48_15/(item48_15+ item49_15)), ""),
+    strata=
+      ifelse(sumso>=0 & sumso<10000, (robust_new-1)*6+1,
+             ifelse(sumso>=10000 & sumso<20000, (robust_new-1)*6+2,
+                    ifelse(sumso>=20000 & sumso<100000, (robust_new-1)*6+3,
+                           ifelse(sumso>=100000 & sumso<250000, (robust_new-1)*6+4,
+                                  ifelse(sumso>=250000 & sumso<500000, (robust_new-1)*6+5,
+                                         ifelse(sumso>=500000, (robust_new-1)*6+6, 99)))))),
+    strata=
+      ifelse(is.na(strata), 99, strata)
+  ) %>% 
+  select(parish, holding, item48_15, item49_15, woodonly, othonly, noexcl, wood_prop, strata)
+
+strata23_<-strata23 %>% 
+  group_by(strata) %>% 
+  summarise(item48_15=sum(item48_15, na.rm=TRUE), item49_15=sum(item49_15, na.rm=TRUE))
+
+
+strata_prop <- strata23_ %>% 
+  mutate(wood_strata_prop = item48_15/(item48_15+ item49_15)) %>% 
+  select(-item48_15,-item49_15)
+
+
+strata23<-left_join(strata23, strata_prop, by="strata")
+
+strata23$strata23_prop<-1
+
+combined_with_strata<-left_join(FJS, strata23, by= c("parish", "holding"))
+
+
+
+
+unmatchsplit<- unmatched %>% 
+  filter((woodland15+otherland15) < newarea)
+
+
+woodothadd <-unmatchsplit %>% 
+  group_by(parish, holding) %>% 
+  summarise(woodland15=sum(woodland15),otherland15=sum(otherland15)) %>% 
+  select(parish, holding, woodland15, otherland15)
+
+
+combined15strata<-left_join(combined_with_strata, woodothadd, by=c("parish", "holding"))
+
+combined15strata<-combined15strata %>% 
+  mutate(
+    item48=
+      ifelse(woodland15>0, item48+woodland15,item48),
+    item9999=
+      ifelse(woodland15>0, item9999-woodland15, item9999),
+    item49=
+      ifelse(otherland15>0, item49+otherland15, item49),
+    item9999=
+      ifelse(otherland15>0, item9999-otherland15, item9999)
+  )
+
+combined15strata<-as.data.frame(combined15strata)
+
+combined_data_excl<-combined15strata %>% 
+  dplyr::mutate(
+    wood_prop=as.numeric(wood_prop),
+    item48_23=item48,
+    item49_23=item49,
+    wood_prop=
+      ifelse((item48_15+item49_15)<=0, wood_strata_prop, wood_prop),
+    wood_prop=
+      ifelse(strata<=0, 0.746705, wood_prop),
+    wood9999=(item9999*wood_prop)) 
+
+combined_data_excl<-combined_data_excl %>% 
+  mutate(
+    flag=
+      ifelse(item9999>0 & (item48+item49)<=0 & (item48_15+item49_15)<=0, 1,
+             ifelse(item9999>0 & (item48+item49)<=0 & (item48_15+item49_15)>0, 2,
+                    ifelse(item9999>0 & (item48>0 & item49 <=0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15<=0), 3,
+                           ifelse(item9999>0 & (item48>0 & item49 <=0) & (item48_15<=0 & item49_15>0), 4,
+                                  ifelse(item9999>0 & (item48>0 & item49 <=0) & (item48_15+item49_15)<=0, 5,
+                                         ifelse(item9999>0 & (item48<=0 & item49>0) & (item48_15+item49_15)>0 & (item48_15<=0 & item49_15>0), 6,
+                                                ifelse(item9999>0 & (item48<=0 & item49>0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15<=0), 7,
+                                                       ifelse(item9999>0 & (item48<=0 & item49>0) & (item48_15+item49_15)<=0, 8,
+                                                              ifelse(item9999>0 & (item48>0 & item49>0) & (item48_15+item49_15)>0, 9,
+                                                                     ifelse(item9999>0 & (item48>0 & item49>0) & (item48_15+item49_15)<=0, 10, "NA")))))))))),
+    item48=
+      ifelse(item9999>0 & (item48_23+item49_23)<=0 & (item48_15+item49_15)<=0, wood9999, 
+             ifelse(item9999>0 & (item48_23+item49_23)<=0 & (item48_15+item49_15)>0, wood9999,
+                           ifelse(item9999>0 & (item48_23>0 & item49_23 <=0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15<=0), (item48_23+item9999),
+                                  ifelse(item9999>0 & (item48_23>0 & item49_23 <=0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15>0), (item48_23+wood9999),
+                                         ifelse(item9999>0 & (item48_23>0 & item49_23 <=0) & (item48_15+item49_15)<=0, (item48_23+wood9999),
+                                                ifelse(item9999>0 & (item48_23<=0 & item49_23>0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15>0), wood9999,
+                                                       ifelse(item9999>0 & (item48_23<=0 & item49_23>0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15<=0), item9999,
+                                                              ifelse(item9999>0 & (item48_23<=0 & item49_23>0) & (item48_15+item49_15)<=0, wood9999,
+                                                                     ifelse(item9999>0 & (item48_23>0 & item49_23>0) & (item48_15+item49_15)>0, item48_23+wood9999, 
+                                                                            ifelse(item9999>0 & (item48_23>0 & item49_23>0) & (item48_15+item49_15)<=0, item48_23+wood9999, item48)))))))))),
+    item49=
+      ifelse(item9999>0 & (item48_23+item49_23)<=0 & (item48_15+item49_15)<=0, (item9999-wood9999),
+             ifelse(item9999>0 & (item48_23+item49_23)<=0 & (item48_15+item49_15)>0, (item9999-wood9999),
+                    ifelse(item9999>0 & (item48_23>0 & item49_23 <=0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15>0), (item9999-wood9999),
+                           ifelse(item9999>0 & (item48_23>0 & item49_23 <=0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15>0), (item9999-wood9999),
+                                  ifelse(item9999>0 & (item48_23>0 & item49_23 <=0) & (item48_15<=0 & item49_15>0), item9999,
+                                         ifelse(item9999>0 & (item48_23>0 & item49_23 <=0) & (item48_15+item49_15)<=0, (item9999-wood9999),
+                                                ifelse(item9999>0 & (item48_23<=0 & item49_23>0) & (item48_15+item49_15)>0 & (item48_15<=0 & item49_15>0), (item49_23+item9999),
+                                                       ifelse(item9999>0 & (item48_23<=0 & item49_23>0) & (item48_15+item49_15)>0 & (item48_15>0 & item49_15>0), (item49_23+(item9999-wood9999)),
+                                                              ifelse(item9999>0 & (item48_23<=0 & item49_23>0) & (item48_15+item49_15)<=0, (item49_23+(item9999-item48_23)),
+                                                                     ifelse(item9999>0 & (item48_23>0 & item49_23>0) & (item48_15+item49_15)>0, item49+(item9999-wood9999),
+                                                                            ifelse(item9999>0 & (item48_23>0 & item49_23>0) & (item48_15+item49_15)<=0, item49_23+(item9999-wood9999), item49))))))))))),
+    item48=
+      ifelse(item9999>0 & item48<0.1, 0, item48),
+    item49=
+      ifelse(item9999>0 & item48<0.1, item48+item49, item49),
+    item48=
+      ifelse(is.na(item48), 0, item48),
+    item49=
+      ifelse(is.na(item49), 0, item49)
+
+  )
+                                      
+  
+    
+combined_data_2023<-combined_data_excl %>% 
+  rowwise() %>% 
+  mutate(
+  item50=sum(c(item46,item47,item48,item49), na.rm=TRUE))
+
+check<-combined_data_2023 %>% 
+  select(parish, holding, item46, item47, item48, item49, item48_15, item49_15, strata, wood9999, item9999,  wood_prop, item48_23, item49_23, flag, item50, survtype)
+
+checkorig<-combined_with_strata %>% 
+  select(parish, holding, item48, item49, item48_15, item49_15, strata, item9999,  wood_prop, item50, survtype)
+
+
+# Add additional checks here from SAS project. 
+   
 # Add RP&S address file areas ----------------------------------------------
 
 
@@ -562,6 +721,7 @@ addressfileorig<-read_table_from_db(server=server,
                                     schema=schema, 
                                     table_name="address_occid_01jun_2023")
 
+addressfileorig<-clean_names(addressfileorig)
 
 addressfile<-addressfileorig %>% 
   select(c(parish, holding, tot_area, tot_own_area, totrented_area)) %>% 
@@ -572,31 +732,43 @@ addressfile<-addressfileorig %>%
          holding=as.integer(holding))
 
 
-FJSaddress<-left_join(FJS, addressfile, by=c("parish", "holding"))
+combined_data_address<-left_join(combined_data_2023, addressfile, by=c("parish", "holding"))
 
 
-FJScheck<-FJSaddress %>% 
+check<-combined_data_address %>% 
   select(parish, holding, survtype, item20026, item11, item12, rps_totarea_june, rps_totowned_june, rps_totrented_june)
 
+combined_data_address<-data.frame(combined_data_address)
 
+combined_data_address <- combined_data_address %>% 
+  mutate(across(where(is.numeric), round, 2))
+
+
+
+combined_data_address<-data.frame(combined_data_address)
+
+combined_data_address[combined_data_address== ""] <- NA
 
 # Save outputs ------------------------------------------------------------
 
 
+
 # Save to datashare
 
-
-combined_data_2023<-FJSaddress
-
-save(combined_data_2023, file = paste0(output_path, "/combined_data_2023.rda"))
+save(combined_data_address, file = paste0(output_path, "/combined_data_2023_with_excl_variables.rda"))
 
 # Save to ADM server
+
+combined_data_address_red<-combined_data_address %>% 
+  select(!(item48_15:wood9999))
+
+save(combined_data_address_red, file = paste0(output_path, "/combined_data_2023.rda"))
 
 write_dataframe_to_db(server=server,
                       database=database,
                       schema=schema,
                       table_name="combined_data_2023",
-                      dataframe=FJSaddress,
+                      dataframe=combined_data_address_red,
                       append_to_existing = FALSE,
                       versioned_table=FALSE,
                       batch_size = 10000)

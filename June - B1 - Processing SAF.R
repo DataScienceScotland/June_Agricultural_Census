@@ -73,12 +73,25 @@ list_perm_seas<-list(saf_perm,saf_seas)
 # Import new code translation table for SAF (these may need updating every year)
 
 
-
 newcodetrans <- read_table_from_db(server=server, 
                                    database=database, 
                                    schema=schema, 
                                    table_name="newcodetrans")
 
+
+# SAF 2015 dataset for EXCL land
+
+
+saf2015 <- read_table_from_db(server=server, 
+                               database=database, 
+                               schema=schema, 
+                               table_name="saf2015")
+
+
+newcodetrans <- read_table_from_db(server=server, 
+                                   database=database, 
+                                   schema=schema, 
+                                   table_name="newcodetrans")
 
 
 
@@ -228,6 +241,10 @@ over_report_percent <- 1.1
 fidfreqsorig<-saf_perm %>% 
   select(slc, fid) 
 
+# fidfreqsorig<-fidfreqsorig %>% 
+#   add_row(slc="test/test", fid="049/0175/X")
+
+
 fidfreqs<-fidfreqsorig %>% 
   group_by(fid) %>% 
   summarise(count=n()) %>% 
@@ -242,10 +259,13 @@ fids<-fids %>%
   filter(line==1) %>% 
   dplyr::rename(holdings_using_fid=line)
 
-fidfreqsfinal<-merge(fidfreqs, fids, by="fid")
+fidfreqsfinal<-merge(fidfreqs, fids, by=c("fid"))
 
-fids_with_multiple_slcs<-fidfreqsfinal %>% # There are no fids with multiple slcs in the 2023 dataset. Cross-check using the SAS code. 
-  filter(holdings_using_fid>1)
+fids_with_multiple_slcs<-fidfreqsfinal %>%
+  filter(holdings_using_fid>1) # There are no fids with multiple slcs in the 2023 dataset. Same when using SAS code.
+
+
+
 
 # Filter out LMC (Land Management Contract) claimtype. 
  
@@ -266,8 +286,6 @@ fids_with_llo<-saf_perm %>%
 
 # Filter out LMC claimtype from this point.
 
-saf_perm_notlmc<-saf_perm %>% 
-  filter(claimtype!="LMC")
 
 fids_with_multiple_slcs <- fids_with_multiple_slcs[c('fid', 'slc')] # using indexing because filter doesn't work on an empty df
 
@@ -900,14 +918,189 @@ write_dataframe_to_db(server=server,
 
 
 
+# EXCL apportioning -------------------------------------------------------
+
+# From B8b of SAS project
+
+
+saf2015orig<-saf2015
+
+saf2015<-saf2015orig
+
+#levels(as.factor(saf2015$code))
+
+saf2015<-saf2015 %>% 
+  clean_names() %>% 
+  filter(landtype=="PERM") %>% 
+    dplyr::rename(
+    field_area15 = field_area,
+    eligible_area15 = eligible_area,
+    brn15 = brn,
+    mlc15 = mlc,
+    slc15 = slc ) %>% 
+  mutate(rgr15=ifelse((code=="RGR" | code =="IFL"), area, ""),
+         woodland15=ifelse((code=="EX-SS"|code=="NETR-A"|code=="NETR-NA"|code=="TREES"|code=="WDG"), area, ""),
+         otherland15=ifelse((code=="BRA"|code=="BUI"|code=="FSE"|code=="GOR"|code=="MAR"|code=="PRSL"|code=="ROAD"|code=="ROK"|code=="SCB"|code=="SCE"|code=="SCR"|code=="UNSP"|code=="WAT"|code=="OTH-LAND"), area, "")) %>%
+  select(brn15, mlc15, slc15, field_area15,eligible_area15,rgr15,woodland15,otherland15,parish,holding,fid) %>% 
+  mutate_at(c('field_area15', 'eligible_area15', 'rgr15', 'woodland15', 'otherland15'), as.numeric)
+
+saf2015<-saf2015 %>% 
+  group_by(parish, holding, fid) %>% 
+  summarise(brn15=max(brn15), slc15=max(slc15), mlc15=max(mlc15), field_area15=max(field_area15, na.rm=TRUE), eligible_area15=max(eligible_area15, na.rm=TRUE), rgr15=sum(rgr15, na.rm=TRUE), woodland15=sum(woodland15, na.rm=TRUE), otherland15=sum(otherland15, na.rm=TRUE), .groups="keep") %>% 
+  ungroup()
+saf2015<-as.data.frame(saf2015)
+
+saf2015[saf2015 == ""] <- NA 
+
+saf2015<-saf2015 %>% 
+  filter_at(vars(parish, holding, fid),all_vars(!is.na(.)))
+
+# Compare with SAS dataset
+
+# saf2015SAS<-read.csv(paste0(Code_directory, "/SAF2015SAS.csv"))
+# 
+# saf2015SAS<-saf2015SAS %>% 
+#   select(-X_TYPE_,-X_FREQ_)
+# 
+# saf2015SAS<-clean_names(saf2015SAS)
+# 
+# saf2015SAS<-saf2015SAS %>% 
+#   mutate_at(c('parish', 'holding', 'brn15'), as.numeric) %>% 
+#   mutate_if(is.numeric, ~replace_na(.,0))
+# 
+# saf2015SAS[saf2015SAS == ""] <- NA 
+# 
+# checkSAS<-intersect(saf2015,saf2015SAS)
+# 
+# checkSAS<-anti_join(saf2015,saf2015SAS)
+# 
+# checkR<-setdiff(saf2015SAS,saf2015)
+
+
+saf2023<-saf_curr %>% 
+  clean_names() %>% 
+  filter(landtype=="PERM") %>% 
+  dplyr::rename(
+    field_area23 = field_area,
+    eligible_area23 = eligible_area,
+    brn23 = brn,
+    mlc23 = mlc,
+    slc23 = slc ) %>% 
+  mutate(rgr23=ifelse((code=="RGR" | code =="IFL"), area, ""),
+         woodland23=ifelse((code=="EX-SS"|code=="NETR-A"|code=="NETR-NA"|code=="TREE"|code=="WDG"), area, ""),
+         otherland23=ifelse((code=="BRA"|code=="BUI"|code=="FSE"|code=="GOR"|code=="MAR"|code=="PRSL"|code=="ROAD"|code=="ROK"|code=="SCB"|code=="SCE"|code=="SCR"|code=="UNSP"|code=="WAT"|code=="OTH-LAND"), area, "")) %>%
+  select(brn23, mlc23, slc23, field_area23,eligible_area23,rgr23,woodland23,otherland23,parish,holding,fid) %>% 
+  mutate_at(c('field_area23', 'eligible_area23', 'rgr23', 'woodland23', 'otherland23'), as.numeric)
+
+
+saf2023<-saf2023 %>% 
+  group_by(parish, holding, fid) %>% 
+  summarise(brn23=max(brn23), slc23=max(slc23), mlc23=max(mlc23), field_area23=max(field_area23, na.rm=TRUE), eligible_area23=max(eligible_area23, na.rm=TRUE), rgr23=sum(rgr23, na.rm=TRUE), woodland23=sum(woodland23, na.rm=TRUE), otherland23=sum(otherland23, na.rm=TRUE), .groups="keep") %>% 
+  ungroup()
+saf2023<-as.data.frame(saf2023)
+
+
+excl_all<-saf_curr %>% 
+  filter(code=="EXCL" & area >0 & landtype =="PERM")
+
+
+excl<-excl_all %>% 
+  group_by(parish, holding, fid) %>% 
+  summarise(area=sum(area), .groups="keep") %>% 
+  ungroup()
+
+check_excl<-inner_join(saf2015,excl, by=c("parish", "holding", "fid"))
+
+
+check_excl<-left_join(check_excl, saf2023, by=c("parish", "holding", "fid"))
+
+# compare with SAS
+
+# check_exclSAS<-read.csv(paste0(Code_directory, "/CHECK_EXCLSAS.csv"))
+
+
+newcode<-check_excl %>% 
+  mutate(
+    newcode=
+      ifelse(abs(area+otherland23-otherland15) < 0.01, "OTH-LAND",
+             ifelse(abs(area+woodland23-woodland15) < 0.01, "TREE",
+                    ifelse(abs(area+rgr23-rgr15) < 0.01, "RGR",
+                            ifelse((area+otherland23) < otherland15, "OTH-LAND",
+                               ifelse((area+woodland23) < woodland15, "TREE",
+                                 ifelse((area+rgr23) < rgr15, "RGR", "EXCL")))))),
+    newarea=area)
+
+
+unmatched<-newcode %>% 
+  select(parish, holding, fid, newcode, newarea, rgr23, rgr15, otherland23, otherland15, woodland23, woodland15) %>% 
+  filter(newcode=="EXCL")
+
+# save unmatched to ADM for use in B2
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="unmatched_EXCL_SAF_B1",
+                      dataframe=unmatched,
+                      append_to_existing = FALSE,
+                      versioned_table=FALSE,
+                      batch_size = 10000)
+
+
+matched<-newcode %>% 
+  select(parish, holding, fid, newcode, newarea, rgr23, rgr15, otherland23, otherland15, woodland23, woodland15) %>% 
+  filter(newcode!="EXCL")
+
+
+excl_all<-excl_all %>% 
+  select(parish, holding, fid, line, code, area)
+
+allmatched<-left_join(matched, excl_all, by=c("parish", "holding", "fid"))
+
+allmatched<-allmatched %>% 
+  mutate(
+    code=newcode,
+    crops=newcode
+  )
+
+beforeEXCLcorrection<-saf_curr %>% 
+  group_by(code) %>% 
+  summarise(area=sum(area))
+
+
+allmatched<-unique(allmatched)
+
+allmatched<-allmatched %>% 
+  select(parish, holding, fid, line, area, code, crops) %>% 
+  mutate(code=as.factor(code), 
+         crops=as.factor(crops))
+
+allmatched$code<-factor(allmatched$code, levels=union(levels(allmatched$code), levels(saf_curr$code)))
+allmatched$crops<-factor(allmatched$crops, levels=union(levels(allmatched$crops), levels(saf_curr$crops)))
+
+saf_curr$code<-factor(saf_curr$code, levels=union(levels(saf_curr$code), levels(allmatched$code)))
+saf_curr$crops<-factor(saf_curr$crops, levels=union(levels(saf_curr$crops), levels(allmatched$crops)))
+
+allsaf <- rows_update(saf_curr, allmatched, by = c("parish", "holding", "fid", "line"))
+
+
+afterEXCLcorrection<-allsaf %>% 
+  group_by(code) %>% 
+  summarise(area=sum(area))
+
+
+
+
+
 # Creating census-format dataset --------------------------------------------------
+
 # B9 Section of SAS code 
 
 #saf_curr<-loadRData(paste0(Code_directory, "/allsaf_B8_2023.rda"))
 
 # Rename SAF df
 
-allsaf <- saf_curr
 
 # Aggregate data 
 
@@ -947,7 +1140,6 @@ cens_coded <- merge(aggregate1, newcodetrans, by = "code", all.x = TRUE)
 unmatched_codes <-
   cens_coded [!aggregate1$code %in% cens_coded$code, ]
 
-rm(newcodetrans, aggregate1)
 
 allsaf <- as_tibble(allsaf)
 
@@ -1135,10 +1327,6 @@ cens_wide[is.na(cens_wide)] <- 0
 
 
 
-# Rename column created from unmatched codes (NA)
-
-cens_wide <- cens_wide %>%
-  rename_at("NA", ~"unmatched")
 
 
 cens_wide<-data.frame(cens_wide) %>% 

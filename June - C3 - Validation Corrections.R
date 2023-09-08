@@ -66,7 +66,7 @@ all_JAC_form<- all_JAC_form %>% mutate(
                        is.na(item11)  & rps_totowned_june >0 ~rps_totowned_june,
                      TRUE ~as.numeric(item11)),
   item20026 = case_when(item20026 <= 0 & rps_totrented_june>0 |
-                          is.na(item20026) & rps_totrented_june ~rps_totrented_june,
+                          is.na(item20026) & rps_totrented_june >0 ~rps_totrented_june, # LN added >0
                         TRUE~as.numeric(item20026))
 )
 
@@ -185,10 +185,10 @@ err37_original_count <- nrow(err37)
 
 all_JAC_form <- all_JAC_form %>% 
   mutate(item12= case_when(item12==0 & total14 == total14rps
-                            ~rps_totarea_june,
-                            is.na(item12)& total14 == total14rps
-                            ~rps_totarea_june,
-         TRUE ~ as.numeric(item12)
+                           ~rps_totarea_june,
+                           is.na(item12)& total14 == total14rps
+                           ~rps_totarea_june,
+                           TRUE ~ as.numeric(item12)
   )
   )
 
@@ -232,7 +232,7 @@ all_JAC_form$err37 <-
   as.numeric(ifelse((all_JAC_form[total_area] == 0 |
                        is.na(all_JAC_form[total_area])) &
                       sum(all_JAC_form[area_own], all_JAC_form[area_rent], na.rm=TRUE) > 0 &
-                    #new change for re-run only: remove SAF_only data and ags data without any areas  
+                      #new change for re-run only: remove SAF_only data and ags data without any areas  
                       all_JAC_form$land_data =="ags" &
                       all_JAC_form$total14 !=0 &all_JAC_form$total14rps!=0,
                     1,
@@ -293,7 +293,7 @@ err1_fix_count <- err1_original_count-nrow(err1_ops)
 all_JAC_form$err1 <-
   as.numeric(ifelse(abs(
     round(all_JAC_form[total_area], digits = 2) - (round(all_JAC_form[area_own] +
-                                                          all_JAC_form[area_rent], digits = 2))
+                                                           all_JAC_form[area_rent], digits = 2))
   ) >= 3,  1, 0))
 all_JAC_form$err1_diff <-  as.numeric(ifelse(all_JAC_form$err1 == 1,
                                              abs(rowSums((all_JAC_form[area_own] +all_JAC_form[area_rent]) -
@@ -454,7 +454,7 @@ all_JAC_form <- all_JAC_form %>% mutate(
                      item50 !=total13 & land_data =="ags" ~ total13,
                      item50!=total7 & land_data !="ags" ~ total7,
                      TRUE ~ as.numeric(item50)
-                     )
+  )
 )
 
 #check number of holdings this has fixed
@@ -478,7 +478,7 @@ err45 <-
 err45 <-
   err45 %>% filter(err45 == 1) %>% 
   mutate(err_fix = case_when (total13 == item50~ "TRUE",
-                                TRUE~ "FALSE")
+                              TRUE~ "FALSE")
   )
 
 
@@ -522,7 +522,7 @@ all_JAC_form <- all_JAC_form %>% mutate(
                        item50 ==0 &
                        item12 ==total13 |
                        item12==total7
-                       ~ item12,
+                     ~ item12,
                      TRUE ~ as.numeric(item50)
   )
 )
@@ -552,8 +552,8 @@ err46 <-
   err46 %>%  filter(err46 == 1) %>% 
   mutate(err_fix = case_when(item50 == item12 ~ "TRUE",
                              TRUE~ "FALSE"), 
-           item50gtitem12 = case_when(item50>item12 ~"TRUE",
-                                      TRUE ~ "FALSE")
+         item50gtitem12 = case_when(item50>item12 ~"TRUE",
+                                    TRUE ~ "FALSE")
   )
 
 
@@ -577,8 +577,13 @@ all_JAC_form$err46 <-
   as.numeric(
     ifelse(
       abs(all_JAC_form[total_land] - all_JAC_form[total_area]) >= 3 &
+<<<<<<< HEAD
         all_JAC_form[total_land]> all_JAC_form[total_area] &
         all_JAC_form$land_data =="ags",
+=======
+        all_JAC_form[total_land]> all_JAC_form[total_area], 
+      #all_JAC_form$land_data !="ags",
+>>>>>>> 5b8d84e933a14aced4ef7a6f354adf388a0bf9f4
       1,
       0
     ))
@@ -617,7 +622,7 @@ err32_original_count <- nrow(err32)
 
 all_JAC_form <- all_JAC_form %>% mutate(
   item200 = case_when(item200<total12 ~ total12,
-                     TRUE ~ as.numeric(item200)
+                      TRUE ~ as.numeric(item200)
   )
 )
 
@@ -660,7 +665,7 @@ all_JAC_form$err32_diff <- abs(all_JAC_form$err32_diff)
 
 #count number of holdings with original err = 1
 err5_original_count <- nrow(err5)
- 
+
 #change item50 to total7 (sum of all land items)  if item50< total 7 
 
 all_JAC_form <- all_JAC_form %>% mutate(item50 = case_when(land_data != "ags" & total7>item50 ~ total7,
@@ -694,7 +699,7 @@ err5 <-
 
 err5 <-
   err5 %>%  filter(err5 == 1) %>% mutate(err_fix = case_when(item50>=total7 & total7 !=0 ~ "TRUE",
-                                                                   TRUE ~ "FALSE"))
+                                                             TRUE ~ "FALSE"))
 
 #filter for holdings that might need further interventions
 err5_ops<- err5 %>%  filter(err_fix =="FALSE")
@@ -771,10 +776,10 @@ err11_original_count <- nrow(err11)
 all_JAC_form <- all_JAC_form %>% 
   mutate(item85 = case_when(item85<total5b ~ total5b,
                             TRUE~ as.numeric(item85)
-                            ),
-         item86 = case_when(item86<total6b~ total6b,
-                            TRUE~ as.numeric(item86)
-         )
+  ),
+  item86 = case_when(item86<total6b~ total6b,
+                     TRUE~ as.numeric(item86)
+  )
   )
 
 #check number of holdings this has fixed
@@ -797,10 +802,10 @@ err11 <-
 err11 <-
   err11 %>% filter(err11 == 1) %>% 
   mutate(err_fix_85 = case_when(item85==item27750 + item2862 ~"TRUE",
-                      TRUE~ "FALSE"),
+                                TRUE~ "FALSE"),
          err_fix_86 = case_when(item86 == item27755 + item2867 ~ "TRUE",
                                 TRUE~ "FALSE")
-)
+  )
 
 
 
@@ -857,8 +862,8 @@ err12 <-
 err12 <-
   err12 %>% filter(err12 == 1) %>% 
   mutate(err_fix = case_when((item85 + item86) > 0 & (total5b + total6b) <=0~"FALSE",
-                                                            TRUE~ "TRUE")
-                                     
+                             TRUE~ "TRUE")
+         
   )
 
 #filter for holdings that might need further interventions
@@ -905,7 +910,7 @@ err13_original_count <- nrow(err13)
 #change total pig (item157) to sum of pig items(total10) if item157 ==0
 all_JAC_form <- all_JAC_form %>% 
   mutate(item157 = case_when(item157==0~ total10,
-                            TRUE~ as.numeric(item157)
+                             TRUE~ as.numeric(item157)
   )
   )
 
@@ -966,7 +971,7 @@ all_JAC_form$err13_diff <-
 #       get(other_poultry),
 #   na.rm=TRUE
 #     )
-  
+
 #count number of holdings with original err = 1
 err17_original_count <- nrow(err17)
 
@@ -1101,8 +1106,8 @@ all_JAC_form <- all_JAC_form %>%
          item144= case_when(sheep_round_diff == item144*10 ~item144*10,
                             abs(item144 - sheep_round_diff)<3 ~ sheep_round_diff,
                             TRUE ~as.numeric(item144)
-                                             )
-)
+         )
+  )
 
 #check number of holdings this has fixed
 err16 <-
@@ -1120,7 +1125,7 @@ err16 <-
 err16 <-
   err16 %>%  filter(err16 == 1) %>% 
   mutate(err_fix= case_when(item144 == sheep_round_diff ~ "TRUE",
-                                  TRUE ~ "FALSE"))
+                            TRUE ~ "FALSE"))
 
 #filter for holdings that might need further interventions
 err16_ops<- err16 %>%  filter(err_fix =="FALSE")
@@ -1181,18 +1186,18 @@ main_validations <-
     err57_diff,
     err61_diff,
     #exclude croft error
-  -err34)%>% 
+    -err34)%>% 
   
   #filter to exclude saf_only 
   filter(submisType != "NA")
 
 #list of relevant errors to filter
 #relevant_errors <-
-  #names(main_validations[names(main_validations) %in% all_validations])
+#names(main_validations[names(main_validations) %in% all_validations])
 
 main_validations <-
   main_validations %>% filter(if_any(starts_with("err"), ~ . !=
-                                             0))
+                                       0))
 
 #Work item hierarchy------------------------------------------------------
 

@@ -170,7 +170,7 @@ missing_eligible_area <- function(x) {
 cleaned_datasets <- function(x) {
   filter(
     x,
-         !is.na(brn), !is.na(mlc), !is.na(slc)
+         complete.cases(brn) | complete.cases(mlc) | complete.cases(slc)
   )
 }
 
@@ -365,11 +365,17 @@ othercropscodes<-function(x) {
           code == "ALMS",
           "Almonds",
           ifelse(
+            code == "AMCP",
+            "Aromatic, medicinal and culinary",
+          ifelse(
             code == "BW",
             "Buckwheat",
             ifelse(
               code == "CANS",
               "Canary seed",
+              ifelse(
+                code == "ENG-B",
+                "Energy beet",
               ifelse(
                 code == "EX-SS",
                 "Ex-structural set-aside",
@@ -384,11 +390,16 @@ othercropscodes<-function(x) {
                              code == "MIL",
                              "Millet",
                              ifelse(
+                               code == "MU",
+                               "Mustard",
+                             ifelse(
                                code == "MSC",
                                "Miscanthus",
                                ifelse(
                                  code == "PEM",
                                  "Positive environmental management",
+                                 ifelse(code=="PHA",
+                                        "Phacelia",
                                  ifelse(
                                    code == "RCG",
                                    "Reed canary grass",
@@ -400,11 +411,16 @@ othercropscodes<-function(x) {
                                             ifelse(
                                               code == "SRC",
                                               "Short rotation coppice",
+                                              ifelse(code == "SUN",
+                                                     "Sunflower",
                                               ifelse(
                                                 code == "TURF",
                                                 "Turf production",
                                                 ifelse(code ==
-                                                         "WBS", "Wild bird seed", code)
+                                                         "WBS", "Wild bird seed", 
+                                                       ifelse(code ==
+                                                                "WFM", "Wild flower mix",code)
+                                              )
                                               )
                                             )
                                           )
@@ -418,6 +434,11 @@ othercropscodes<-function(x) {
                 )
               )
             )
+          )
+          )
+          )
+          )
+          )
           )
         ),
         ""
@@ -577,16 +598,139 @@ dupsBetweenGroups <- function (df, idcol) {
 }
 
 
-# Functions for D1 - Pre imputation ---------------------------------------
+# Functions for D2 - Imputation ---------------------------------------
 
 
 create_zeroes<-function(df) {
   df <- df %>% 
     group_by (id) %>% 
-    mutate(across(starts_with("item"), ~ifelse(sum(.[yr<=2021], na.rm=TRUE) ==0 & yr == 2023, 0, .)))
+    dplyr::mutate(across(starts_with("item"), ~ifelse(sum(.[yr<=2021], na.rm=TRUE) ==0 & yr == 2023, 0, .))) %>% 
+  return(df)
+}
+
+
+
+keep_missing<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    filter_all(any_vars(is.na(.[yr==2023]))) 
+  return(df)
+}
+
+
+none_missing<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    filter((if_all(everything(), ~ !is.na(.[yr==2023]))))
+  return(df)
+}
+
+
+saf_filter<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    filter(!(any(saf_madeup>=10 & yr==2021))) %>% 
+    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023]))) #this should result in the same as imptype==full
   
   return(df)
 }
+
+
+
+ags_filter<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    filter(!(any(ags_madeup>=10 & yr==2021))) %>% 
+  filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023]))) #this should result in the same as imptype==Ags
+  
+  return(df)
+}
+
+naLOCFPlusone <- function(x){
+  ix <- cumsum(is.na(x))
+  zoo::na.locf(x) + ix - cummax(ix * !is.na(x))  # This function is taken from online.
+}
+
+
+saf_madeup<-function(df){
+  df <- df %>% 
+    group_by (id) %>% 
+    dplyr::mutate(across(starts_with("saf_madeup"), ~ifelse(is.na(.[yr==2023]) & yr==2023,naLOCFPlusone(.), .))) 
+  return(df)
+}
+
+
+roll_forward<-function(df){
+  df <- df %>% 
+    group_by (id) %>% 
+    dplyr::mutate(across(starts_with("item"), ~ifelse(is.na(.[yr==2023]) & yr==2023, zoo::na.locf(., na.rm = FALSE), .))) 
+  
+  return(df)
+}
+
+
+zero_2023<-function(df){
+  df <- df %>% 
+    group_by (id) %>% 
+    dplyr::mutate(across(starts_with("item"), ~ifelse(is.na(.[yr==2023]) & yr==2023, 0, .))) %>% 
+    dplyr::mutate(flag_not_rf=ifelse(yr==2023, 1, 0))
+  
+  return(df)
+}
+
+
+
+ags_madeup<-function(df){
+  df <- df %>% 
+    group_by (id) %>% 
+    dplyr::mutate(across(starts_with("ags_madeup"), ~ifelse(is.na(.[yr==2023]) & yr==2023,naLOCFPlusone(.), .)))
+  
+  return(df)
+}
+
+
+
+saf_filter_not_rf<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    filter((any(saf_madeup>=10 & yr==2021))) %>% 
+    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023])))
+  
+  return(df)
+}
+
+
+ags_filter_not_rf<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    filter((any(ags_madeup>=10 & yr==2021))) %>% 
+    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023])))
+  
+  return(df)
+}
+
+
+zero_nas<-function(df) {
+  df <- df %>% 
+    dplyr::mutate(across(starts_with("item"), ~ifelse(is.na(.), 0, .)))
+  
+  return(df)
+}
+
+madeup<-function(df) {
+  df <- df %>% 
+    dplyr::mutate(across(starts_with("madeup"), ~ifelse(yr==2023, pmax(ags_madeup,saf_madeup, na.rm = TRUE), .)))
+  
+  return(df)
+}
+
+create_zeroes_post<-function(df) {
+  df <- df %>% 
+    dplyr::mutate(across(starts_with("item"), ~ ifelse(.x < 0, 0, .x)))
+    return(df)
+}
+
+
 
 # Disaggregation functions ------------------------------------------------
 
