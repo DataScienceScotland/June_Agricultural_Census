@@ -52,6 +52,14 @@ load(paste0(Code_directory, "/previous_years.rda"))
 
 previous_years[previous_years==""] <- NA
 
+# Make items numeric
+
+previous_years <- previous_years %>%
+  mutate(across(starts_with("item"), ~as.numeric(.)))
+
+# Check this worked 
+
+str(previous_years, list.len = ncol(previous_years))
 
 # Rename the previous years' summary variables to match the current year's
 
