@@ -222,6 +222,9 @@ v_np_list <- remove_total_id(v_np_list)
 
 #remove columns of just zero before join
 v_np_list <-v_np_list[colSums(v_np_list, na.rm = TRUE) !=0]
+v_list <-v_list[colSums(v_list, na.rm = TRUE) !=0]
+mv_list <-mv_list[colSums(mv_list, na.rm = TRUE) !=0]
+cv_list <-cv_list[colSums(cv_list, na.rm = TRUE) !=0]
 
 all_work_items <- full_join(v_list, v_np_list, by = c("parish", "holding"))
 all_work_items <- full_join(all_work_items, mv_list, by = c("parish", "holding"))
