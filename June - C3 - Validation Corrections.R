@@ -577,13 +577,11 @@ all_JAC_form$err46 <-
   as.numeric(
     ifelse(
       abs(all_JAC_form[total_land] - all_JAC_form[total_area]) >= 3 &
-<<<<<<< HEAD
+
         all_JAC_form[total_land]> all_JAC_form[total_area] &
         all_JAC_form$land_data =="ags",
-=======
+
         all_JAC_form[total_land]> all_JAC_form[total_area], 
-      #all_JAC_form$land_data !="ags",
->>>>>>> 5b8d84e933a14aced4ef7a6f354adf388a0bf9f4
       1,
       0
     ))
@@ -1207,8 +1205,10 @@ priority <-
   c(
     "err46_diff",
     "err46",
-    "err45",
     "err45_diff",
+    "err45",
+    "err5_diff",
+    "err5",
     "err4",
     "err44",
     "err24",
