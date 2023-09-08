@@ -483,7 +483,12 @@ err45 <-
 
 
 #filter for holdings that might need further interventions
-err45_ops <- err45 %>%  filter(err_fix =="FALSE" )
+err45_ops <- err45 %>%  filter(err_fix =="FALSE" ) %>%
+  mutate(item50eqtotal7 = case_when(
+    item50 == total7 ~1,
+    TRUE ~ 0
+  )
+  ) %>% filter(item50eqtotal7 !=1)
 
 #count for ops
 err45_fix_count <- nrow(err45) - nrow(err45_ops) 
@@ -572,8 +577,8 @@ all_JAC_form$err46 <-
   as.numeric(
     ifelse(
       abs(all_JAC_form[total_land] - all_JAC_form[total_area]) >= 3 &
-        all_JAC_form[total_land]> all_JAC_form[total_area], 
-        #all_JAC_form$land_data !="ags",
+        all_JAC_form[total_land]> all_JAC_form[total_area] &
+        all_JAC_form$land_data =="ags",
       1,
       0
     ))
