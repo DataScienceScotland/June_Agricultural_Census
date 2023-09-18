@@ -55,10 +55,6 @@ rm(combined_JAC,
 
 # Section 1 (area) fixes ---------------------------------------------------------
 
-# Err61 correction --------------------------------------------------------
-#count number of holdings with original err = 1
-err61_original_count <- nrow(err61)
-
 #if area own (item11)  or area rented (item20026) = 0 and rps area own or rent >0, replace item11 and item20026 with rps areas
 
 all_JAC_form<- all_JAC_form %>% mutate(
@@ -67,8 +63,105 @@ all_JAC_form<- all_JAC_form %>% mutate(
                      TRUE ~as.numeric(item11)),
   item20026 = case_when(item20026 <= 0 & rps_totrented_june>0 |
                           is.na(item20026) & rps_totrented_june >0 ~rps_totrented_june, # LN added >0
-                        TRUE~as.numeric(item20026))
+                        TRUE~as.numeric(item20026)))
+
+#if area own or area rented is greater than 0 but respective rps areas are zero, and sum of owned and rented not equal to sum of rps 
+#areas or item12, replace with rps areas
+
+total14 <- c(area_own, area_rent)
+total14rps <- c(rps_own, rps_rent)
+all_JAC_form$total14 <- rowSums(all_JAC_form[total14], na.rm = TRUE)
+all_JAC_form$total14rps <-
+  rowSums(all_JAC_form[total14rps], na.rm = TRUE)
+
+all_JAC_form<- all_JAC_form%>% mutate(
+  item11 = case_when((rps_totowned_june <= 0 & item11 >0 |
+                       is.na(rps_totowned_june)  & item11 >0 ) &
+                       total14rps != total14 &
+                       total14 != item12 ~rps_totowned_june,
+                     TRUE ~as.numeric(item11)),
+  item20026 = case_when(item20026 <= 0 & rps_totrented_june>0 |
+                          is.na(item20026) & rps_totrented_june >0 &
+                          total14rps != total14 &
+                          total14 != item12
+                        ~rps_totrented_june, # LN added >0
+                        TRUE~as.numeric(item20026)))
+
+
+
+
+#if total area (item12) is zero and area owned and area rented is non zero AND
+#area owned + rented (total14) is equal to RPS values (total14rps), change item12 to rps_total area
+total14 <- c(area_own, area_rent)
+total14rps <- c(rps_own, rps_rent)
+all_JAC_form$total14 <- rowSums(all_JAC_form[total14], na.rm = TRUE)
+all_JAC_form$total14rps <-
+  rowSums(all_JAC_form[total14rps], na.rm = TRUE)
+
+all_JAC_form <- all_JAC_form %>% 
+  mutate(item12= case_when(item12==0 & total14 == total14rps
+                           ~rps_totarea_june,
+                           is.na(item12)& total14 == total14rps
+                           ~rps_totarea_june,
+                           TRUE ~ as.numeric(item12)
+  )
+  )
+
+
+#if item12 (total area) differs from area own + rented  and area own + rented are equal to RPS areas, 
+#change item12 to sum (area own and rented)
+total14 <- c(area_own, area_rent)
+total14rps <- c(rps_own, rps_rent)
+all_JAC_form$total14 <- rowSums(all_JAC_form[total14], na.rm = TRUE)
+all_JAC_form$total14rps <-
+  rowSums(all_JAC_form[total14rps], na.rm = TRUE)
+
+all_JAC_form<- all_JAC_form %>% mutate(
+  item12 = case_when(item12 != total14 &
+                       total14== total14rps
+                     ~ total14rps,
+                     TRUE~as.numeric(item12))
 )
+
+
+
+#fix possible punch errors (decimal places in wrong place)
+all_JAC_form <- all_JAC_form %>% mutate(item20026 = case_when(item20026 == 0.01 * rps_totrented_june|
+                                                                item20026 == 0.1 * rps_totrented_june|
+                                                                item20026 == 10 * rps_totrented_june |
+                                                                item20026 == 100 * rps_totrented_june |
+                                                                item20026 == 1000 * rps_totrented_june ~ rps_totrented_june,
+                                                              rps_totrented_june == 0 & item20026 == item12 ~ rps_totrented_june,
+                                                              TRUE ~ as.numeric(item20026))
+)
+
+
+#fix possible punch errors (decimal places in wrong place)
+all_JAC_form <- all_JAC_form %>% mutate(item11 = case_when(item11 == 0.01 * rps_totowned_june|
+                                                             item11 == 0.1 * rps_totowned_june|
+                                                             item11 == 10 * rps_totowned_june |
+                                                             item11 == 100 * rps_totowned_june |
+                                                             item11 == 1000 * rps_totowned_june ~ rps_totowned_june,
+                                                           rps_totowned_june == 0 & item11 == item12 ~ rps_totowned_june,
+                                                           TRUE ~ as.numeric(item11))
+)
+
+#fix possible punch errors (decimal places in wrong place)
+all_JAC_form <- all_JAC_form %>% mutate(item12 = case_when(item12 == 0.01 * rps_totarea_june|
+                                                             item12 == 0.1 * rps_totarea_june|
+                                                             item12 == 10 * rps_totarea_june |
+                                                             item12 == 100 * rps_totarea_june |
+                                                             item12 == 1000 * rps_totarea_june ~ rps_totarea_june,
+                                                           TRUE ~ as.numeric(item12))
+)
+
+
+# Err61 correction --------------------------------------------------------
+#count number of holdings with original err = 1
+err61_original_count <- nrow(err61)
+
+
+
 
 #check number of holdings this has fixed
 
@@ -179,19 +272,6 @@ all_JAC_form$err38 <-
 #count number of holdings with original err = 1
 err37_original_count <- nrow(err37)
 
-#if total area (item12) is zero and area owned and area rented is non zero AND
-#area owned + rented (total14) is equal to RPS values (total14rps), change item12 to rps_total area
-
-
-all_JAC_form <- all_JAC_form %>% 
-  mutate(item12= case_when(item12==0 & total14 == total14rps
-                           ~rps_totarea_june,
-                           is.na(item12)& total14 == total14rps
-                           ~rps_totarea_june,
-                           TRUE ~ as.numeric(item12)
-  )
-  )
-
 
 #err37 after err61 fix
 
@@ -247,16 +327,6 @@ all_JAC_form$err37 <-
 err1_original_count <- nrow(err1)
 
 
-#if item12 (total area) differs from area own + rented  and area own + rented are equal to RPS areas, 
-#change item12 to sum (area own and rented)
-
-all_JAC_form<- all_JAC_form %>% mutate(
-  item12 = case_when(item12 != total14 &
-                       total14== total14rps
-                     ~ total14rps,
-                     TRUE~as.numeric(item12))
-)
-
 #check number of holdings this has fixed
 
 
@@ -268,7 +338,7 @@ err1 <-
     submisType,
     land_data,
     saf_data,
-    all_of(c(area_own, area_rent, total_area, rps_total_area)),
+    all_of(c(area_own, area_rent, total_area, rps_total_area, rps_own, rps_rent)),
     total14,
     total14rps,
     err1,
@@ -379,6 +449,7 @@ err57 <-
   )
 
 
+
 #filter for holdings that might need further interventions
 err57_ops<- err57 %>%  filter(err_fix =="FALSE")
 
@@ -394,11 +465,11 @@ all_JAC_form$err57_diff <-  as.numeric(ifelse(all_JAC_form$err57 == 1,
                                               rowSums(abs(all_JAC_form[area_rent] - all_JAC_form[rps_rent])), 0))
 
 
-
 # Err59 correction --------------------------------------------------------
 
 #count number of holdings with original err = 1
 err59_original_count <- nrow(err59)
+
 
 #err59 after err61 and err1 fixes
 
@@ -472,7 +543,6 @@ err45 <-
     err45,
     err45_diff,
     total7, 
-    err5_diff
   )
 
 err45 <-
@@ -544,7 +614,6 @@ err46 <-
     total13,
     err45_diff,
     total7,
-    err5_diff,
     item9999
   )
 
@@ -564,7 +633,7 @@ err46<- err46 %>%  filter(err_fix =="FALSE")
 
 #add column to see if item50 is greater than item12 - these need to be checked by Ops
 err46_ops <- err46 %>% 
-  filter(item50gtitem12 == "TRUE")
+  filter(item50gtitem12 == "TRUE" & land_data== "ags")
 
 #count for ops
 err46_fix_count <- nrow(err46) - nrow(err46_ops) 
@@ -573,15 +642,13 @@ err46_fix_count <- nrow(err46) - nrow(err46_ops)
 
 #Total at end of land use section equal to total area
 
+
 all_JAC_form$err46 <-
   as.numeric(
     ifelse(
       abs(all_JAC_form[total_land] - all_JAC_form[total_area]) >= 3 &
-
         all_JAC_form[total_land]> all_JAC_form[total_area] &
         all_JAC_form$land_data =="ags",
-
-        all_JAC_form[total_land]> all_JAC_form[total_area], 
       1,
       0
     ))
@@ -660,104 +727,104 @@ all_JAC_form$err32_diff <- abs(all_JAC_form$err32_diff)
 
 
 # Err5 correction ---------------------------------------------------------
-
-#count number of holdings with original err = 1
-err5_original_count <- nrow(err5)
-
-#change item50 to total7 (sum of all land items)  if item50< total 7 
-
-all_JAC_form <- all_JAC_form %>% mutate(item50 = case_when(land_data != "ags" & total7>item50 ~ total7,
-                                                           TRUE ~ as.numeric(item50))
-)
-
-
-#check number of holdings this has fixed
-
-err5 <-
-  all_JAC_form %>% select(
-    parish,
-    holding,
-    survtype,
-    submisType,
-    land_data,
-    saf_data,
-    all_of(
-      c(
-        total_crops_grass,
-        rough_graze,
-        woodland,
-        other_land,
-        total_land
-      )
-    ),
-    total7,
-    err5,
-    err5_diff
-  )
-
-err5 <-
-  err5 %>%  filter(err5 == 1) %>% mutate(err_fix = case_when(item50>=total7 & total7 !=0 ~ "TRUE",
-                                                             TRUE ~ "FALSE"))
-
-#filter for holdings that might need further interventions
-err5_ops<- err5 %>%  filter(err_fix =="FALSE")
-
-err5_fix_count <- err5_original_count-nrow(err5_ops)
-
-#Re-run to update error flag on all_JAC_form
-
-all_JAC_form$err5 <-
-  as.numeric(ifelse(abs(
-    round(all_JAC_form[total_land], digits = 2) - round(all_JAC_form$total7, digits = 2)
-  ) >= 3 &
-    all_JAC_form$land_data != "ags", 1, 0))
-
-all_JAC_form$err5_diff <-   as.numeric(ifelse(all_JAC_form$err5 == 1,
-                                              rowSums(all_JAC_form[total_land] - all_JAC_form$total7), 0))
-
-
+# 
+# #count number of holdings with original err = 1
+# err5_original_count <- nrow(err5)
+# 
+# #change item50 to total7 (sum of all land items)  if item50< total 7 
+# 
+# all_JAC_form <- all_JAC_form %>% mutate(item50 = case_when(land_data != "ags" & total7>item50 ~ total7,
+#                                                            TRUE ~ as.numeric(item50))
+# )
+# 
+# 
+# #check number of holdings this has fixed
+# 
+# err5 <-
+#   all_JAC_form %>% select(
+#     parish,
+#     holding,
+#     survtype,
+#     submisType,
+#     land_data,
+#     saf_data,
+#     all_of(
+#       c(
+#         total_crops_grass,
+#         rough_graze,
+#         woodland,
+#         other_land,
+#         total_land
+#       )
+#     ),
+#     total7,
+#     err5,
+#     err5_diff
+#   )
+# 
+# err5 <-
+#   err5 %>%  filter(err5 == 1) %>% mutate(err_fix = case_when(item50>=total7 & total7 !=0 ~ "TRUE",
+#                                                              TRUE ~ "FALSE"))
+# 
+# #filter for holdings that might need further interventions
+# err5_ops<- err5 %>%  filter(err_fix =="FALSE")
+# 
+# err5_fix_count <- err5_original_count-nrow(err5_ops)
+# 
+# #Re-run to update error flag on all_JAC_form
+# 
+# all_JAC_form$err5 <-
+#   as.numeric(ifelse(abs(
+#     round(all_JAC_form[total_land], digits = 2) - round(all_JAC_form$total7, digits = 2)
+#   ) >= 3 &
+#     all_JAC_form$land_data != "ags", 1, 0))
+# 
+# all_JAC_form$err5_diff <-   as.numeric(ifelse(all_JAC_form$err5 == 1,
+#                                               rowSums(all_JAC_form[total_land] - all_JAC_form$total7), 0))
+# 
+# 
 
 
 # Err10 correction --------------------------------------------------------
 #Not for Ops: all ags, no SAF itemised data for flower/bulbs just summary total.
 #count number of holdings with original err = 1
-err10_original_count <- nrow(err10)
-
-#check number of holdings this has fixed
-
-err10 <-
-  all_JAC_form %>% select(
-    parish,
-    holding,
-    survtype,
-    submisType,
-    land_data,
-    saf_data,
-    all_of(c(all_flow_bulb, total4)),
-    err10,
-    err10_diff
-  )
-err10 <-
-  err10 %>% filter(err10 == 1)
-
-#filter for holdings that might need further interventions
-err10_ops<- err10 %>%  filter(land_data != "ags")
-
-err10_fix_count <- err10_original_count-nrow(err10_ops)
-
-#Re-run to update error flag on all_JAC_form
-all_JAC_form$err10 <-
-  as.numeric(ifelse(
-    round(all_JAC_form[all_flow_bulb], digits = 2) !=
-      round(all_JAC_form$total4, digits = 2) &
-      round(all_JAC_form$total4, digits = 2) !=0 &
-      all_JAC_form$land_data !="ags",
-    1,
-    0)
-  )
-all_JAC_form$err10_diff <-   as.numeric(ifelse(all_JAC_form$err10 == 1,
-                                               abs(rowSums(all_JAC_form[all_flow_bulb] - all_JAC_form$total4)), 0)
-)
+# err10_original_count <- nrow(err10)
+# 
+# #check number of holdings this has fixed
+# 
+# err10 <-
+#   all_JAC_form %>% select(
+#     parish,
+#     holding,
+#     survtype,
+#     submisType,
+#     land_data,
+#     saf_data,
+#     all_of(c(all_flow_bulb, total4)),
+#     err10,
+#     err10_diff
+#   )
+# err10 <-
+#   err10 %>% filter(err10 == 1)
+# 
+# #filter for holdings that might need further interventions
+# err10_ops<- err10 %>%  filter(land_data != "ags")
+# 
+# err10_fix_count <- err10_original_count-nrow(err10_ops)
+# 
+# #Re-run to update error flag on all_JAC_form
+# all_JAC_form$err10 <-
+#   as.numeric(ifelse(
+#     round(all_JAC_form[all_flow_bulb], digits = 2) !=
+#       round(all_JAC_form$total4, digits = 2) &
+#       round(all_JAC_form$total4, digits = 2) !=0 &
+#       all_JAC_form$land_data !="ags",
+#     1,
+#     0)
+#   )
+# all_JAC_form$err10_diff <-   as.numeric(ifelse(all_JAC_form$err10 == 1,
+#                                                abs(rowSums(all_JAC_form[all_flow_bulb] - all_JAC_form$total4)), 0)
+# )
 
 
 
@@ -1207,8 +1274,6 @@ priority <-
     "err46",
     "err45_diff",
     "err45",
-    "err5_diff",
-    "err5",
     "err4",
     "err44",
     "err24",
