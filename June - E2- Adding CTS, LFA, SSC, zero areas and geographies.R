@@ -32,6 +32,47 @@ schema <-   "juneagriculturalsurvey2023alpha"
 
 # Functions ---------------------------------------------------------------
 remove_id <- function(x) { x <-  x %>% select(-contains("ID", ignore.case = FALSE))  }
+
+
+
+#June Item categories
+# Item categories ---------------------------------------------------------
+
+all_holding_areas <- c("item11", "item12", "item20026")
+all_seasonal <- c("item1", "item2827", "item2828", "item2")
+#all_seasonal_saf <- "item1"
+all_glasshouse_ags <- c("item2713", "item2707", "item2866", "item2714", "item2708", "item2715", 
+                        "item2709", "item2716", "item2710", "item2717", "item2711", "item2862", "item2867")
+all_glasshouse_saf <- c("item2858", "item2859", "item2860", "item2861", "item2863", "item2864", "item2865")
+all_glasshouse <- c(all_glasshouse_ags, all_glasshouse_saf, "item85", "item86")
+all_cattle <- c("cts301", "cts302", "cts303", "cts304", "cts305", "cts306", "cts307", "cts308", "cts309", "cts310", "cts311", "cts312")
+all_sheep <- c("item139", "item140", "item141", "item144", "item145")
+all_crops <- c("item14", "item15", "item16", "item18", "item17", "item20", "item3156", "item22", "item19", 
+               "item23", "item21", "item24", "item2320", "item27", "item28", "item2034", "item29", "item30",
+               "item31", "item2059", "item32", "item34", "item36", "item2469", "item2470")
+all_grass <- c("item2321", "item2322")
+all_other_land <- c("item47", "item48", "item49")
+all_veg  <- c("item52", "item53", "item55", "item56", "item2323", "item59", "item60", "item61", "item63", "item64", "item65", "item66")
+all_fruit <- c("item70", "item71", "item72", "item2832", "item75")
+all_nursery <- c("item2324", "item1709", "item80", "item81", "item1710", "item82", "item83")
+all_pig <-c("item146", "item147", "item148", "item149", "item50", "item151", "item27760","item27765", "item27770", "item157")
+all_poultry <- c("item158", "item159", "item160", "item161", "item162", "item163", "item164", "item167", "item170", "item1708", "item2038", "item2039")
+all_other_livestock <- c("item94", "item95", "item96", "item1712", "item1713", "item98", "item2472", "item2473", "item2474", "item2826", "item2868", "item171")
+occupier_12 <- c("item2877","item2878", "item27785","item177","item178", "item179", "item2566","item3056","item3057", "item27805", "item27795", "item182","item183","item184", "item2567")
+workforce <- c("item1714", "item1715", "item1716", "item1717", "item192", "item193", "item1718", "item194", "item195", "item1719", "item196", "item197", "item198", "item199", "item200")
+other_labour <- c("item2712", "item2066", "item2511")
+ags_leftover <- c("item48", "item2980")
+string_answers <- c("item185", "item186")
+
+
+#all JAC items
+all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf, 
+               "item2", all_crops, "item35", "item37", "item38", "item40", "item41", 
+               all_grass, "item46", all_other_land, "item50", all_veg, "item68",
+               all_fruit, "item76", all_nursery, "item84", all_glasshouse, "item85", "item86", "item2836",
+               all_cattle, "cts312", all_sheep, "item145", all_pig, "item157", all_poultry, "item170",
+               all_other_livestock, "item171", occupier_12, workforce, "item200", other_labour, "item2980") 
+
 #Import-------------------------------------------------------------
 # Cattle data from  
 source("June - E - ScotEID.R")
@@ -201,117 +242,28 @@ june_lfa <-   june_lfa %>% mutate(holdclas = as.integer(Holding_Classification_I
 
 
 # Fix Sheep Stock Club Areas ----------------------------------------------
-# 
-# # Geography lists ---------------------------------------------------------
-# district <-  list(
-# Shetland  = 1,
-# Orkney = 2,
-# `Western Isles` = 3,
-# Caithness = 4,
-# Sutherland = 5,
-# `Ross & Cromarty` = 6,
-# `Skye & Lochalsh` = 7,
-# Lochaber = 8,
-# Inverness = 9,
-# `Badenoch & Strathspey` = 10,
-# Nairn = 11,
-# Moray = 12,
-# `Banff & Buchan` = 13,
-# Gordon = 14,
-# `City of Aberdeen` = 15,
-# `Kincardine & Deeside` = 16,
-# Angus = 17,
-# `City of Dundee` = 18,
-# `Perth & Kinross` = 19,
-# Kirkcaldy = 20,
-# `North East Fife` = 21,
-# Dunfermline = 22,
-# `West Lothian` = 23,
-# `City of Edinburgh` = 24,
-# Midlothian = 25,
-# `East Lothian` = 26,
-# Tweeddale = 27,
-# `Ettrick & Lauderdale` = 28,
-# Roxburgh = 29,
-# Berwickshire = 30,
-# Clackmannan = 31,
-# Stirling = 32,
-# Falkirk = 33,
-# `Argyll & Bute` = 34,
-# Dumbarton = 35,
-# `City of Glasgow` = 36,
-# Clydebank = 37,
-# `Bearsden & Milngavie` = 38,
-# Strathkelvin = 39,
-# `Cumbernauld & Kilsyth` = 40,
-# Monklands = 41,
-# Motherwell = 42,
-# Hamilton = 43,
-# `East Kilbride` = 44,
-# Eastwood = 45,
-# Renfrew = 46,
-# Inverclyde = 47,
-# Clydesdale = 48,
-#  Cunninghame = 49,
-# `Kilmarnock & Loudoun` = 50,
-# `Cumnock & Doone Valley` = 51,
-# `Kyle & Carrick` = 52,
-# Wigtown = 53,
-#  Stewartry = 54,
-# Nithsdale = 55,
-# `Annandale & Eskdale` = 56
-# )
-# 
-# region <-  list(
-#   Highland = 1,
-#   Grampian = 2,
-#   Tayside = 3,
-#   Fife = 4,
-#   Lothian = 5,
-#   Borders = 6,
-#   Central = 7,
-#   Strathcylde = 8,
-#   `Dumfries & Galloway` = 9
-# )
-# 
-#   
-# county <- list(
-# Aberdeen = 66,
-# Angus = 67,
-# Argyll = 68,
-# Ayr = 69,
-# Banff = 70,
-# Berwick = 71,
-# Bute = 72,
-# Caithness = 73,
-# Clackmannan = 74,
-# Dumfries = 75,
-# Dunbarton = 76,
-# `East Lothian` = 77,
-# Fife= 78,
-# Inverness = 79,
-# Kincardine = 80,
-# Kinross = 81,
-# Kirkcudbright = 82,
-# Lanark = 83,
-# Midlothian = 84,
-# Moray = 85,
-# Nairn = 86,
-# Orkney = 87,
-# Peebles = 88,
-# Perth = 89,
-# Renfrew = 90,
-# `Ross & Cromarty` = 91,
-# Roxburgh = 92,
-# Selkirk = 93,
-# Shetland = 94,
-# Stirling = 95,
-# Sutherland = 96,
-# `West Lothian` = 97,
-# Wigtown = 98
-# )
+#SSC areas should be zero
+ssc_cols <-c(all_holding_areas, 
+           all_seasonal,
+           all_crops,
+           "item50",
+           "item35",
+           "item37",
+           "item38",
+           "item40",
+           "item41",
+           "item46",
+           all_grass,
+           all_other_land
+           )
 
-
+june_lfa<- june_lfa %>% mutate(across(any_of(ssc_cols), ~ifelse(holdclas==4 & !is.na(holdclas), 0, .)))
+june_lfa <- june_lfa %>% mutate(landless = case_when(holdclas==4 & !is.na(holdclas) ~ 0,
+                                                     TRUE ~as.numeric(landless)),
+                                completedata = case_when(holdclas==4 & !is.na(holdclas) ~ 1,
+                                                         TRUE ~ as.numeric(completedata))
+)
+  
 # Add Unitary Authority code to June Dataset --------------------------------
 #remove ID cols
 june_lfa <- remove_id(june_lfa)
