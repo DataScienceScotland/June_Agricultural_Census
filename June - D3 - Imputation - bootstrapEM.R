@@ -91,7 +91,7 @@ pre_imputation_reduced_zeroes<-rows_update(pre_imputation_reduced_zeroes, madeup
 
 save(pre_imputation_reduced_zeroes, file = paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
 
-# Keep holdings only when 2023 has NAs. This should reduce the size of the dataset significantly, .e.g end up with ~321000 rows (as of 06/09/23, will be fewer as we receive more census responses)
+# Keep holdings only when 2023 has NAs. This should reduce the size of the dataset significantly, .e.g end up with ~270000 rows (as of 20/09/23, this will be fewer as we receive more census responses)
 
 pre_imputation_final <- keep_missing(pre_imputation_reduced_zeroes)
 
