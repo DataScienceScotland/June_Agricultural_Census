@@ -78,11 +78,21 @@ pre_imputation_reduced<-as.data.frame(pre_imputation_reduced)
 
 # Add zeroes for items when 2023 is NA and all historic data are zero
 
-pre_imputation_reduced<-create_zeroes(pre_imputation_reduced)
+pre_imputation_reduced_zeroes<-create_zeroes(pre_imputation_reduced)
+
+# Add zeroes when ags_madeup >=10 and saf_madeup>=10 
+
+madeupoverten<-create_df_madeup(pre_imputation_reduced_zeroes)
+
+madeupoverten<-create_zeroes_madeup(madeupoverten)
+
+# Recreate dataset with zeroes
+
+pre_imputation_reduced_zeroes<-rows_update(pre_imputation_reduced_zeroes, madeupoverten, by=c("id", "yr"))
 
 # Save this so that the imputed items can be added back to it in D4
 
-save(pre_imputation_reduced, file = paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
+save(pre_imputation_reduced_zeroes, file = paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
 
 # Keep holdings only when 2023 has NAs. This should reduce the size of the dataset significantly, .e.g end up with ~321000 rows (as of 06/09/23, will be fewer as we receive more census responses)
 
