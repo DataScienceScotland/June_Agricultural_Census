@@ -64,27 +64,36 @@ imputed_items<-c("item14","item24","item94","item139","item140","item141","item1
 # Keep only imputed items in the dataset
 
 pre_imputation_reduced<-pre_imputation_rolled_forward %>% 
-  select(c("yr","id","parish","holding"),all_of(imputed_items))
+  select(c("yr","id","parish","holding", "ags_madeup", "saf_madeup"),all_of(imputed_items))
 
 # Check 2023 data to see if it looks sensible
 
 check2023full<-pre_imputation_reduced %>% filter(yr=="2023")
 
 
-
 pre_imputation_reduced<-as.data.frame(pre_imputation_reduced)
 
 # Add zeroes for items when 2023 is NA and all historic data are zero
 
-pre_imputation_reduced<-create_zeroes(pre_imputation_reduced)
+pre_imputation_reduced_zeroes<-create_zeroes(pre_imputation_reduced)
+
+# Add zeroes when ags_madeup >=10 and saf_madeup>=10 
+
+madeupoverten<-create_df_madeup(pre_imputation_reduced_zeroes)
+
+madeupoverten<-create_zeroes_madeup(madeupoverten)
+
+# Recreate dataset with zeroes
+
+pre_imputation_reduced_zeroes<-rows_update(pre_imputation_reduced_zeroes, madeupoverten, by=c("id", "yr"))
 
 # Save this so that the imputed items can be added back to it in D4
 
-save(pre_imputation_reduced, file = paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
+save(pre_imputation_reduced_zeroes, file = paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
 
 # Keep holdings only when 2023 has NAs. This should reduce the size of the dataset significantly, .e.g end up with ~321000 rows (as of 06/09/23, will be fewer as we receive more census responses)
 
-pre_imputation_final <- keep_missing(pre_imputation_reduced)
+pre_imputation_final <- keep_missing(pre_imputation_reduced_zeroes)
 
 pre_imputation_final<-as.data.frame(pre_imputation_final)
 
