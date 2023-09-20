@@ -138,11 +138,12 @@ error_desc_df <- function(x){
   desc_list <- as.list(paste(x, "desc", sep= "_")) 
   names(desc_list) <- x 
   desc_list <- lapply(desc_list, function(x) get(x)) 
-  bind_rows(desc_list)
+  bind_cols(desc_list)  %>% 
+    pivot_longer(everything(), names_to ="error_name", values_to = "error_description")
   }
 
 
-
+x <- error_desc(main_validation_list)
 #remove total errors per case and ID col before joining
 remove_total_id <- function(x) { x <-  x %>% select(-total_errors_per_case, -contains("ID", ignore.case = FALSE))  }
 
@@ -206,11 +207,9 @@ mv_list <- read_table_from_db(server=server,
 
 
 #Error descriptions into tables -----------------------------------
-main_validations_desc <- error_desc_df(main_validation_list)
+main_validations_desc <- error_desc_df(main_validation_list) 
 all_context_desc <- error_desc_df(context_error_list)
 all_module_validations_desc <- error_desc_df(merr_list)
-
-
 
 # Join tables -------------------------------------------------------------
 
@@ -222,6 +221,9 @@ v_np_list <- remove_total_id(v_np_list)
 
 #remove columns of just zero before join
 v_np_list <-v_np_list[colSums(v_np_list, na.rm = TRUE) !=0]
+v_list <-v_list[colSums(v_list, na.rm = TRUE) !=0]
+mv_list <-mv_list[colSums(mv_list, na.rm = TRUE) !=0]
+cv_list <-cv_list[colSums(cv_list, na.rm = TRUE) !=0]
 
 all_work_items <- full_join(v_list, v_np_list, by = c("parish", "holding"))
 all_work_items <- full_join(all_work_items, mv_list, by = c("parish", "holding"))
@@ -255,16 +257,20 @@ write_dataframe_to_db(server=server,
 
 # Export xlsx -------------------------------------------------------------
 
-
-#change error column headings to error + description
-colnames(all_work_items)[colnames(all_work_items)%in% names(all_context_desc)] <- all_context_desc %>% select(any_of(names(all_work_items)))
-colnames(all_work_items)[colnames(all_work_items)%in% names(main_validations_desc)] <- main_validations_desc %>% select(any_of(names(all_work_items)))
-colnames(all_work_items)[colnames(all_work_items)%in% names(all_module_validations_desc)] <- all_module_validations_desc %>% select(any_of(names(all_work_items)))
+# 
+# #change error column headings to error + description
+# colnames(all_work_items)[colnames(all_work_items)%in% names(all_context_desc)] <- all_context_desc %>% select(any_of(names(all_work_items)))
+# colnames(all_work_items)[colnames(all_work_items)%in% names(main_validations_desc)] <- main_validations_desc %>% select(any_of(names(all_work_items)))
+# colnames(all_work_items)[colnames(all_work_items)%in% names(all_module_validations_desc)] <- all_module_validations_desc %>% select(any_of(names(all_work_items)))
 
 #rename err60.x and err60.y as legal error
-all_work_items <- all_work_items %>% rename('err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given'= err60.x,
-                                            'only error=err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given' = err60.y)
+# all_work_items <- all_work_items %>% rename('err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given'= err60.x,
+#                                             'only error=err60_Legal responsbility box is not ticked (item2727) and no legal responsibility details (item2980) are given' = err60.y)
+# 
 
+all_work_items <- all_work_items %>% rename('err60'= err60.x,
+                                            'only error=err60' = err60.y)
+all_desc <- bind_rows(main_validations_desc, all_context_desc, all_module_validations_desc)
 #create holdings-ignored form to append to work item spreadsheet
 #holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignored = "",	Rationale ="", Date = "") 
 
@@ -278,54 +284,13 @@ all_work_items <- all_work_items %>% rename('err60_Legal responsbility box is no
 # work_item_list <-list("work_items" = all_work_items, "main_error_summary" = v_summary_prioritised,  "main_errors_by_submisType" = v_summary_all, 
 #                       "context_error_summary" = cv_summary, "module_error_summary" = mv_summary)
 
-work_item_list <-list("work_items" = all_work_items
-                      #"Checked Holdings not Cleared" = holdings_not_cleared_form
-                      )
+work_item_list <-list("work_items" = all_work_items,
+                      "error_codes" = all_desc)
+                        
 
+
+
+all_error_descriptions <- 
 #export  as xlsx for Ops
 write_xlsx(work_item_list, paste(output_path, Sys.Date(), "work_item_list.xlsx"))
-
-
-# 
-# # Clearing holdings that Ops have looked at previously  RUN AFTER FIRST BATCH OF WORK ITEMS HAVE BEEN CHECKED BY OPS-------------------
-# #(could be another script but, for simplicity, appended here)
-# 
-# 
-# # Import latest work item list ----------------------------------------------
-# 
-# all_work_items<- read_table_from_db(server=server, 
-#                              database=database, 
-#                              schema=schema, 
-#                              table_name="JAC_Ops_work_items")
-# 
-# 
-# #Import form from previous work items list
-# 
-# #change date in name of work item list
-# non_cleared_holdings <- read_xlsx(paste0(output_path,"Checked holdings not cleared.xlsx" )) %>% 
-#   select(Parish, Holding) %>% 
-#   rename(parish = Parish, holding = Holding)
-# 
-# # Remove non-cleared holdings from latest work item list -------
-# non_checked_holdings <- anti_join(all_work_items, non_cleared_holdings, by = c("parish", "holding"))
-# 
-# 
-# #change error column headings to error + description
-# colnames(non_checked_holdings)[colnames(non_checked_holdings)%in% names(all_context_desc)] <- all_context_desc %>% select(any_of(names(non_checked_holdings)))
-# colnames(non_checked_holdings)[colnames(non_checked_holdings)%in% names(main_validations_desc)] <- main_validations_desc %>% select(any_of(names(non_checked_holdings)))
-# colnames(non_checked_holdings)[colnames(non_checked_holdings)%in% names(all_module_validations_desc)] <- all_module_validations_desc %>% select(any_of(names(non_checked_holdings)))
-# 
-# non_checked_holdings <- non_checked_holdings %>% mutate(across(where(is.numeric), ~ ifelse(.==0, NA, .)))
-# 
-# #create holdings-ignored form to append to work item spreadsheet
-# holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignored = "",	Rationale ="", Date = "") 
-# 
-# work_item_list <-list("work_items" = non_checked_holdings, "Checked Holdings not Cleared" = holdings_not_cleared_form)
-# 
-# #write new xlsx with checked holdings removed
-# write_xlsx(work_item_list, paste(output_path, Sys.Date(), "work_item_list_dups_removed.xlsx"))
-
-
-
-
 
