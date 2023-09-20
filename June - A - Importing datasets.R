@@ -3,7 +3,7 @@
 # The data used currently is from June 2023.
 # This script is based on programs A1, A2, A2.(a) and A3 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Created by Lucy Nevard 24.02.23 (original individual scripts created 22.11.22),
-# Modified by Lucy Nevard 08.09.23
+# Modified by Lucy Nevard 19.09.23
 
 
 
@@ -106,7 +106,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 # Import Ags data (downloaded from Ags)
 
 
-df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_080923.csv"),
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_190923.csv"),
                     fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # # # Tidy Ags data ----------------------------------------------------------------
