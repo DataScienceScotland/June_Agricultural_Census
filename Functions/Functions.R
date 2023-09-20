@@ -628,7 +628,7 @@ create_zeroes_madeup<-function(df) {
 keep_missing<-function(df) {
   df <- df %>% 
     group_by (id) %>% 
-    filter_all(any_vars(is.na(.[yr==2023]))) 
+    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023])))
   return(df)
 }
 
