@@ -33,7 +33,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 # They are currently a list, so need to be processed in D3 before saving in ADM. Will move this in the future.
 # For now, load from the datashare.
 
-load(paste0(Code_directory, "/jac_bootstrapEM_060923.rda"))
+load(paste0(Code_directory, "/jac_bootstrapEM_140923.rda"))
 
 
 
@@ -57,7 +57,7 @@ means <- output_bootstrapEM %>%
   group_by(ID) %>%
   dplyr::summarise(across(starts_with("item"), list(mean=mean, sd=sd)))
 
-save(means, file = paste0(Code_directory, "/bootstrapmeans_060923.rda"))
+save(means, file = paste0(Code_directory, "/bootstrapmeans_140923.rda"))
 
 
 means<-clean_names(means)
@@ -87,12 +87,12 @@ means_only$imp_madeup<-1
 
 load(paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
 
-pre_imputation_zeros_2023<-pre_imputation_reduced %>% 
+pre_imputation_zeros_2023<-pre_imputation_reduced_zeroes %>% 
   filter(yr==2023) %>% 
   mutate(imp_madeup=0) %>% 
   select(-yr)
   
-post_imputation<-rows_update(pre_imputation_zeros_2023, means_only, by="id")
+post_imputation<-rows_update(pre_imputation_zeros_2023, means_only, by="id", unmatched="ignore")
 
 # Merge back into full pre_imputation_rolled_forward (all items) dataset 
 
@@ -143,7 +143,11 @@ whole_population <- read_table_from_db(server=server,
 
 whole_population <- whole_population %>% 
   mutate(flag_not_rf=0,
-         imp_madeup=0)
+         imp_madeup=0,
+         madeup=as.integer(madeup),
+         ags_madeup=as.integer(ags_madeup),
+         saf_madeup=as.integer(saf_madeup))
+
 
 post_imputation_whole_pop<-rows_update(whole_population, post_imputation, by=c("parish", "holding"))
 
@@ -176,12 +180,24 @@ checkfinal<-post_imputation_final %>%
 
 # Save  -------------------------------------------------------------------
 
+post_imputation_final <- post_imputation_final %>% 
+  select(-in2023, -combined_data_2023ID, -not_in_populationID, pre_imputation_currentyear_fullID)
+
+post_imputation_final<-ungroup(post_imputation_final) 
+
+# Remove functions which have same name as variables. In future, change this. 
+rm(ags_madeup, saf_madeup)
+
+post_imputation_final<-post_imputation_final %>% 
+  mutate(ags_madeup=as.numeric(ags_madeup),
+         saf_madeup=as.numeric(saf_madeup),
+         madeup=as.numeric(madeup))
+
 
 # Save final post-imputation dataset 
 post_imputation_final<-as.data.frame(post_imputation_final)
 
 save(post_imputation_final, file = paste0(Code_directory, "/post_imputation.rda"))
-
 
 # The save to ADM isn't working - Error: All unnamed arguments must be length 1. Fix this... 06.09.23 - LN. 
 
@@ -191,7 +207,7 @@ write_dataframe_to_db(server=server,
                       table_name="post_imputation",
                       dataframe=post_imputation_final,
                       append_to_existing = FALSE,
-                      batch_size=10000,
+                      batch_size=1000,
                       versioned_table=FALSE)
 
 
