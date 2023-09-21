@@ -59,7 +59,7 @@ load(paste0(Code_directory, "/pre_imputation_rolled_forward.rda"))
 imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item145","item2038","item2039",
                  "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
                  "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
-                 "item27755","item27775","item27780") 
+                 "item27755","item27775","item27780","item146", "item147","item148", "item149","item150", "item151") 
 
 # Keep only imputed items in the dataset
 
@@ -115,28 +115,28 @@ pre_imputation_final$id<-factor(pre_imputation_final$id)
 list_subsets<-list(
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-  select(c("yr","id"),5:12),
+  select(c("yr","id"),7:16),
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-    select(c("yr","id"),13:20),
+    select(c("yr","id"),17:26),
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-    select(c("yr","id"),21:28),
+    select(c("yr","id"),27:36),
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-    select(c("yr","id"),29:36),
+    select(c("yr","id"),37:44),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),5:12),
+    select(c("yr","id"),7:16),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),13:20),
+    select(c("yr","id"),17:26),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),21:28),
+    select(c("yr","id"),27:36),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),29:36)
+    select(c("yr","id"),37:44)
 )
 
 
@@ -167,8 +167,6 @@ rm(pre_imputation_rolled_forward, pre_imputation_reduced)
 gc()
 
 
-
-
 # Run imputation ----------------------------------------------------------
 
 # bootstrapEM is the imputeJAS function created by BIOSS, which wraps around Amelia. 
@@ -187,7 +185,6 @@ outputs<-lapply(
 
 
 # Save outputs ------------------------------------------------------------
-
 
 
 # Save these for use in D4. Change date as needed. 

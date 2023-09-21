@@ -649,3 +649,23 @@ section_13 <-
     separate_applications
   )
 
+
+# Imputation items --------------------------------------------------------
+
+
+
+
+rolled_forward_saf_items<-c("item1", "item2879", "item2827", "item2828", "item41")
+
+
+rolled_forward_ags_items<-c("item171", "item192", "item193", "item194", "item195", "item196", "item197", "item198", "item199", "item1714",
+                            "item1715","item1716","item1717","item1718","item1719","item2867","item2862","item177","item178","item179",
+                            "item182","item183","item184","item2566","item2567")
+
+
+
+imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item145","item2038","item2039",
+                 "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
+                 "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
+                 "item27755","item27775","item27780","item146", "item147","item148", "item149","item150", "item151") 
+
