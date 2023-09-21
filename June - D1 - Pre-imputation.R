@@ -81,6 +81,12 @@ previous_years <- previous_years %>%
   )
 
 
+# Make any negative numbers zero - item27750 had a few tiny negative numbers because of the way it was calculated.
+
+previous_years<-previous_years %>%
+  dplyr::mutate(across(starts_with("item"), ~ ifelse(. < 0, 0, .)))
+
+
 # Load combined_data_2023.
 
 # As of 06/09/23 this is the combined dataset (made in B2) prior to the corrections. It is from the Ags extract on 04/09/23. 
