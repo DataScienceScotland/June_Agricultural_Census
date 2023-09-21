@@ -66,7 +66,7 @@ saf_rf<-as.data.frame(saf_rf)
 
 saf_rf<- saf_rf[order(as.numeric(as.character(saf_rf$yr))), ]
 
-# Alter 2023's saf_madeup to increase by 1 from 2021 (i.e. if 5 in 2021, it will be 6 in 2023).
+# Alter 2023's saf_madeup to increase by 1 from 2021 (i.e. if 5 in 2021, it will be 6 in 2023). Should we do this before excluding? e.g. make saf_madeup for 2023 and then exclude when >10
 
 saf_rf<-saf_madeup(saf_rf)
 
@@ -86,9 +86,9 @@ rolled_forward_ags_items<-c("item171", "item192", "item193", "item194", "item195
 # Keep only necessary items
 
 ags_items<-pre_imputation %>% 
-  select(c(id, yr, madeup, imptype, ags_madeup), all_of(rolled_forward_ags_items))
+  select(c(id, yr, madeup, imptype, ags_madeup, saf_madeup), all_of(rolled_forward_ags_items))
 
-# Keep only holdings where Ags items are NA and ags_madeup <10 in 2021.
+# Keep only holdings where Ags items are NA and ags_madeup <10 OR saf_madeup <10 in 2021. Note that this was originally ags_madeup <10 - Paul suggested we keep holdings with SAF returned in last 10 years even if census hasn't been returned in that time
 
 ags_rf<-ags_items %>% 
   ags_filter()
@@ -112,6 +112,7 @@ ags_rf<-roll_forward(ags_rf)
 
 # Adding zeroes -----------------------------------------------------
 
+# SAF items
 
 # Holdings where saf_madeup >=10
 
@@ -127,13 +128,14 @@ saf_not_rf<- saf_not_rf[order(as.numeric(as.character(saf_not_rf$yr))), ]
 
 saf_not_rf<-saf_madeup(saf_not_rf)
 
-# Produce zeroes when madeup>=10. Also creates flag for "not_rf" to distinguish from other madeup holdings above which have been rolled forward. 
+# Produce zeroes when saf_madeup>=10. Also creates flag for "not_rf" to distinguish from other madeup holdings above which have been rolled forward. 
 
 saf_not_rf<-saf_not_rf %>% 
   zero_2023()
 
+# Ags items
 
-# Holdings where ags_madeup >=10
+# Holdings where ags_madeup >=10 AND saf_madeup>=10
 
 ags_not_rf<-ags_items %>% 
   ags_filter_not_rf()
@@ -147,7 +149,7 @@ ags_not_rf<- ags_not_rf[order(as.numeric(as.character(ags_not_rf$yr))), ]
 
 ags_not_rf<-ags_madeup(ags_not_rf)
 
-# Produce zeroes when madeup>=10. Also creates flag for "not_rf" to distinguish from other madeup holdings above which have been rolled forward. 
+# Produce zeroes when ags_madeup>=10 and saf_madeup>=10. Also creates flag for "not_rf" to distinguish from other madeup holdings above which have been rolled forward. 
 
 ags_not_rf<-ags_not_rf %>% 
   zero_2023()
@@ -237,4 +239,4 @@ write_dataframe_to_db(server=server,
                       batch_size=10000,
                       versioned_table=FALSE)
 
-save(pre_imputation, file = paste0(Code_directory, "/pre_imputation_rolled_foward.rda"))
+save(pre_imputation_rolled_forward, file = paste0(Code_directory, "/pre_imputation_rolled_forward.rda"))

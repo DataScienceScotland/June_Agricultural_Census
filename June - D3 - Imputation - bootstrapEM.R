@@ -59,32 +59,41 @@ load(paste0(Code_directory, "/pre_imputation_rolled_forward.rda"))
 imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item145","item2038","item2039",
                  "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
                  "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
-                 "item27755","item27775","item27780") 
+                 "item27755","item27775","item27780","item146", "item147","item148", "item149","item150", "item151") 
 
 # Keep only imputed items in the dataset
 
 pre_imputation_reduced<-pre_imputation_rolled_forward %>% 
-  select(c("yr","id","parish","holding"),all_of(imputed_items))
+  select(c("yr","id","parish","holding", "ags_madeup", "saf_madeup"),all_of(imputed_items))
 
 # Check 2023 data to see if it looks sensible
 
 check2023full<-pre_imputation_reduced %>% filter(yr=="2023")
 
 
-
 pre_imputation_reduced<-as.data.frame(pre_imputation_reduced)
 
 # Add zeroes for items when 2023 is NA and all historic data are zero
 
-pre_imputation_reduced<-create_zeroes(pre_imputation_reduced)
+pre_imputation_reduced_zeroes<-create_zeroes(pre_imputation_reduced)
+
+# Add zeroes when ags_madeup >=10 and saf_madeup>=10 
+
+madeupoverten<-create_df_madeup(pre_imputation_reduced_zeroes)
+
+madeupoverten<-create_zeroes_madeup(madeupoverten)
+
+# Recreate dataset with zeroes
+
+pre_imputation_reduced_zeroes<-rows_update(pre_imputation_reduced_zeroes, madeupoverten, by=c("id", "yr"))
 
 # Save this so that the imputed items can be added back to it in D4
 
-save(pre_imputation_reduced, file = paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
+save(pre_imputation_reduced_zeroes, file = paste0(Code_directory, "/pre_imputation_reduced_zeroes.rda"))
 
-# Keep holdings only when 2023 has NAs. This should reduce the size of the dataset significantly, .e.g end up with ~321000 rows (as of 06/09/23, will be fewer as we receive more census responses)
+# Keep holdings only when 2023 has NAs. This should reduce the size of the dataset significantly, .e.g end up with ~270000 rows (as of 20/09/23, this will be fewer as we receive more census responses)
 
-pre_imputation_final <- keep_missing(pre_imputation_reduced)
+pre_imputation_final <- keep_missing(pre_imputation_reduced_zeroes)
 
 pre_imputation_final<-as.data.frame(pre_imputation_final)
 
@@ -106,28 +115,28 @@ pre_imputation_final$id<-factor(pre_imputation_final$id)
 list_subsets<-list(
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-  select(c("yr","id"),5:12),
+  select(c("yr","id"),7:16),
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-    select(c("yr","id"),13:20),
+    select(c("yr","id"),17:26),
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-    select(c("yr","id"),21:28),
+    select(c("yr","id"),27:36),
   pre_imputation_final %>%
     filter(str_starts(id, '1')|str_starts(id, '2')|str_starts(id, '3')|str_starts(id, '4')) %>%
-    select(c("yr","id"),29:36),
+    select(c("yr","id"),37:44),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),5:12),
+    select(c("yr","id"),7:16),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),13:20),
+    select(c("yr","id"),17:26),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),21:28),
+    select(c("yr","id"),27:36),
   pre_imputation_final %>%
     filter(str_starts(id, '5')|str_starts(id, '6')|str_starts(id, '7')|str_starts(id, '8')|str_starts(id, '9')) %>%
-    select(c("yr","id"),29:36)
+    select(c("yr","id"),37:44)
 )
 
 
@@ -158,8 +167,6 @@ rm(pre_imputation_rolled_forward, pre_imputation_reduced)
 gc()
 
 
-
-
 # Run imputation ----------------------------------------------------------
 
 # bootstrapEM is the imputeJAS function created by BIOSS, which wraps around Amelia. 
@@ -178,7 +185,6 @@ outputs<-lapply(
 
 
 # Save outputs ------------------------------------------------------------
-
 
 
 # Save these for use in D4. Change date as needed. 

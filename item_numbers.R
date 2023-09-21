@@ -478,3 +478,194 @@ all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf,
                all_fruit, "item76", all_nursery, "item84", all_glasshouse, "item85", "item86", "item2836",
                all_cattle, "cts312", all_sheep, "item145", all_pig, "item157", all_poultry, "item170",
                all_other_livestock, "item171", occupier_12, workforce, "item200", other_labour, "item2980") 
+
+
+# Module items (from Module response data exploration script)
+
+rough_grazing_woodland_only <- "item20705"
+
+#Crop_rotation and cropping land
+crop_rotation <- "item2653"
+not_crop_rotation <- "item2654"
+arable_mix_with_legume <- "item2680"
+
+#Soil cover on cropping land
+autumn_winter_crops <- "item2358"
+field_veg_potatoes	<- "item2359"
+multi_annual	<- "item3027"
+cover_legume	<- "item2360"
+cover_non_legume	<- "item2365"
+plant_residues_stubble	<- "item2361"
+bare_soil	<- "item2362"
+
+#Tillage
+zero_tillage	<- "item2655"
+reduced_tillage	<- "item2364"
+inversion_tillage	<- "item2369"
+
+#Irrigation
+irrrigation	<- "item2638"
+
+#Nutrient management
+soil_testing_grass	<- "item3028"
+soil_testing_crop	<- "item3029"
+soil_testing_change_nutrient	<- "item3032"
+area_ph_grass	<- "item3512"
+area_ph_crop	<- "item3513"
+nutrient_plan_update	<- "item3514"
+nutrient_plan_grass	<- "item2656"
+nutrient_plan_crop	<- "item2657"
+grass_legume_sward	<- "item2681"
+nitrogen_mixed_sward	<- "item2682"
+manure_mixed_sward	<- "item2683"
+protected_urea	<- "item2684"
+precision_farming	<- "item2685"
+
+section_12 <-
+  c(
+    rough_grazing_woodland_only,
+    crop_rotation,
+    not_crop_rotation,
+    arable_mix_with_legume,
+    autumn_winter_crops,
+    field_veg_potatoes,
+    multi_annual,
+    cover_legume,
+    cover_non_legume,
+    plant_residues_stubble,
+    bare_soil,
+    zero_tillage,
+    reduced_tillage,
+    inversion_tillage,
+    irrrigation,
+    soil_testing_grass,
+    soil_testing_crop,
+    soil_testing_change_nutrient,
+    area_ph_grass,
+    area_ph_crop,
+    nutrient_plan_update,
+    nutrient_plan_grass,
+    nutrient_plan_crop,
+    grass_legume_sward,
+    nitrogen_mixed_sward,
+    manure_mixed_sward,
+    protected_urea,
+    precision_farming
+  )
+
+#Section 13 – Manure, slurry and mineral fertiliser application-------- ------------------------------------------------
+
+ghouse_fallow_woodland_oland_only <- "item21207"
+
+#Area fertilised
+fertiliser_mineral_area	<- "item5100"
+fertiliser_organic_area	<- "item5101"
+
+#Solid manure use and import/export
+manure_use	<- "item5129"
+solid_manure_export	<- "item5104"
+solid_manure_import <- "item5105"
+
+#Slurry/liquid manure use and import/export
+slurry_used	<- "item5102"
+slurry_export	<- "item5106"
+slurry_import	<- "item5107"
+
+#Mineral fertiliser and other organic fertilisers
+mineral_fertilisers_spread	<- "item5130"
+organic_fertilisers_spread	<- "item5103"
+
+
+#What percentage of the manure/slurry spread on your holding is spread using the following techniques?
+broadcast_spreader_less_four_hours <- "item5108"
+broadcast_spreader_more_four_hours	<- "item5109"
+broadcast_spreader_not_ploughed	<- "item5110"
+band_spreader_hose	<- "item5111"
+band_spreader_shoe	<- "item5112"
+open_slot_shallow_injection	<- "item5113"
+closed_slot_deep_injection	<- "item5114"
+other_spread	<- "item5131"
+
+#Please indicate the percentage of total manure or slurry stored (including that eventually exported) in the following systems
+storage_heaps	<- "item5115"
+storage_compost	<- "item5116"
+storage_pits_below_animals	<- "item5117"
+storage_deep_litter	<- "item5118"
+storage_without_cover	<- "item5119"
+storage_permeable_cover	<- "item5120"
+storage_impermeable_cover	<- "item5121"
+storage_other_facilities	<- "item5122"
+daily_spread	<- "item5123"
+other_systems	<- "item5132"
+
+#Please enter the number of months for which manure produced on the holding can be held, without risk of runoff, and without occasional emptying.
+manure_compost_months	<- "item5124"
+manure_pits_months	<- "item5125"
+manure_deep_litter_months	<- "item5126"
+slurry_months	<- "item5127"
+manure_other_facilities_months	<- "item5128"
+
+#Manure (over the last 12 months)
+tested_nutrient_value	<- "item2662"
+separate_applications	<- "item2663"
+
+section_13 <-
+  c(
+    ghouse_fallow_woodland_oland_only,
+    fertiliser_mineral_area,
+    fertiliser_organic_area,
+    manure_use,
+    solid_manure_export,
+    solid_manure_import,
+    slurry_used,
+    slurry_export,
+    slurry_import,
+    mineral_fertilisers_spread,
+    organic_fertilisers_spread,
+    broadcast_spreader_less_four_hours,
+    broadcast_spreader_more_four_hours,
+    broadcast_spreader_not_ploughed,
+    band_spreader_hose,
+    band_spreader_shoe,
+    open_slot_shallow_injection,
+    closed_slot_deep_injection,
+    other_spread,
+    storage_heaps,
+    storage_compost,
+    storage_pits_below_animals,
+    storage_deep_litter,
+    storage_without_cover,
+    storage_permeable_cover,
+    storage_impermeable_cover,
+    storage_other_facilities,
+    daily_spread,
+    other_systems,
+    manure_compost_months,
+    manure_pits_months,
+    manure_deep_litter_months,
+    slurry_months,
+    manure_other_facilities_months,
+    tested_nutrient_value,
+    separate_applications
+  )
+
+
+# Imputation items --------------------------------------------------------
+
+
+
+
+rolled_forward_saf_items<-c("item1", "item2879", "item2827", "item2828", "item41")
+
+
+rolled_forward_ags_items<-c("item171", "item192", "item193", "item194", "item195", "item196", "item197", "item198", "item199", "item1714",
+                            "item1715","item1716","item1717","item1718","item1719","item2867","item2862","item177","item178","item179",
+                            "item182","item183","item184","item2566","item2567")
+
+
+
+imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item145","item2038","item2039",
+                 "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
+                 "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
+                 "item27755","item27775","item27780","item146", "item147","item148", "item149","item150", "item151") 
+

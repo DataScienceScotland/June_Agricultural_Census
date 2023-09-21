@@ -24,6 +24,7 @@ library(data.table)
 # Load functions
 
 source("Functions/Functions.R")
+source("item_numbers.R")
 
 # Directories
 
@@ -78,6 +79,12 @@ previous_years <- previous_years %>%
     item27780=goats_27780
     
   )
+
+
+# Make any negative numbers zero - item27750 had a few tiny negative numbers because of the way it was calculated.
+
+previous_years<-previous_years %>%
+  dplyr::mutate(across(starts_with("item"), ~ ifelse(. < 0, 0, .)))
 
 
 # Load combined_data_2023.
@@ -155,9 +162,9 @@ pre_imputation_2023$yr<-as.numeric(pre_imputation_2023$yr)
 
 pre_imputation_2023<-pre_imputation_2023 %>% 
   mutate(
-    madeup=0,
-    saf_madeup=0,
-    ags_madeup=0
+    madeup=NA,
+    saf_madeup=NA,
+    ags_madeup=NA
   )
 
 
@@ -214,7 +221,8 @@ write_dataframe_to_db(server=server,
 
 # Remove module items to reduce size of the dataset. Fix this in future to remove all module items
 pre_imputation_2023<-pre_imputation_2023 %>% 
-  select(-c(item5100:item5128))
+  select(-(any_of(section_12))) %>% 
+  select(-(any_of(section_13)))
 
 # Keep only holdings which need to be imputed
 
@@ -245,6 +253,8 @@ pre_imputation_2023<-pre_imputation_2023 %>%
 
 previous_years<-previous_years %>% 
   select(any_of(names(pre_imputation_2023)))
+
+
 
 # Combine the two datasets
 

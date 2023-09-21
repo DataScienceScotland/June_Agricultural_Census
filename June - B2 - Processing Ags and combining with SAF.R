@@ -6,7 +6,7 @@
 ##Modified by Lucy Nevard 08.06.23
 
 
-rm(list = ls())
+#rm(list = ls())
 
 # Before Import -----------------------------------------------------------
 
@@ -699,13 +699,13 @@ combined_data_excl<-combined_data_excl %>%
 combined_data_2023<-combined_data_excl %>% 
   rowwise() %>% 
   mutate(
-  item50=sum(c(item46,item47,item48,item49), na.rm=TRUE))
+  item50=ifelse(saf_data!="none", sum(c(item46,item47,item48,item49), na.rm=TRUE), item50))
 
 check<-combined_data_2023 %>% 
-  select(parish, holding, item46, item47, item48, item49, item48_15, item49_15, strata, wood9999, item9999,  wood_prop, item48_23, item49_23, flag, item50, survtype)
+  select(parish, holding, item46, item47, item48, item49, item48_15, item49_15, strata, wood9999, item9999,  wood_prop, item48_23, item49_23, flag, item50, survtype, land_data, saf_data)
 
 checkorig<-combined_with_strata %>% 
-  select(parish, holding, item48, item49, item48_15, item49_15, strata, item9999,  wood_prop, item50, survtype)
+  select(parish, holding, item48, item49, item48_15, item49_15, strata, item9999,  wood_prop, item50, survtype, saf_data)
 
 
 # Add additional checks here from SAS project. 

@@ -598,7 +598,7 @@ dupsBetweenGroups <- function (df, idcol) {
 }
 
 
-# Functions for D2 - Imputation ---------------------------------------
+# Functions for D2 and D3 - Imputation ---------------------------------------
 
 
 create_zeroes<-function(df) {
@@ -608,12 +608,27 @@ create_zeroes<-function(df) {
   return(df)
 }
 
+create_df_madeup<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    filter((any(ags_madeup>=10 & saf_madeup>=10 & yr==2021))) %>% 
+    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023])))
+  return(df)
+}
+
+create_zeroes_madeup<-function(df) {
+  df <- df %>% 
+    group_by (id) %>% 
+    mutate(across(starts_with("item"), ~ifelse(yr==2023, 0, .)))
+  return(df)
+}
+
 
 
 keep_missing<-function(df) {
   df <- df %>% 
     group_by (id) %>% 
-    filter_all(any_vars(is.na(.[yr==2023]))) 
+    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023])))
   return(df)
 }
 
@@ -629,9 +644,9 @@ none_missing<-function(df) {
 saf_filter<-function(df) {
   df <- df %>% 
     group_by (id) %>% 
-    filter(!(any(saf_madeup>=10 & yr==2021))) %>% 
-    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023]))) #this should result in the same as imptype==full
-  
+    filter((any(saf_madeup<10 & yr==2021))) %>% 
+    filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023]))) %>%  #this should result in the same as imptype==full
+  ungroup()
   return(df)
 }
 
@@ -640,9 +655,9 @@ saf_filter<-function(df) {
 ags_filter<-function(df) {
   df <- df %>% 
     group_by (id) %>% 
-    filter(!(any(ags_madeup>=10 & yr==2021))) %>% 
-  filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023]))) #this should result in the same as imptype==Ags
-  
+    filter((any(saf_madeup<10 & yr==2021 | ags_madeup<10 & yr==2021))) %>% 
+  filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023]))) %>%  #this should result in the same as imptype==Ags
+  ungroup()
   return(df)
 }
 
@@ -703,7 +718,7 @@ saf_filter_not_rf<-function(df) {
 ags_filter_not_rf<-function(df) {
   df <- df %>% 
     group_by (id) %>% 
-    filter((any(ags_madeup>=10 & yr==2021))) %>% 
+    filter((any(ags_madeup>=10 & saf_madeup>=10 & yr==2021))) %>% 
     filter_at(vars(starts_with("item")), any_vars(is.na(.[yr==2023])))
   
   return(df)
