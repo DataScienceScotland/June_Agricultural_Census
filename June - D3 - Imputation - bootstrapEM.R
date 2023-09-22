@@ -170,11 +170,11 @@ gc()
 # Run imputation ----------------------------------------------------------
 
 # bootstrapEM is the imputeJAS function created by BIOSS, which wraps around Amelia. 
-# Running the following should take <2h with the current dataset (06.09.23)
+# Running the following should take <2h with the current dataset (20.09.23)
 # m indicates the number of imputations run for each item (if NA) within each holding
 
 old <- Sys.time()
-list_jacs_imputed<-pbapply::pblapply(list_subsets, function (x) bootstrapEM(x, ts = "YR", cs = "ID", m = 20)) # pbapply shows a progress bar - this will update after every 12.5% (i.e. for each 8 dfs in the list)
+list_jacs_imputed<-pbapply::pblapply(list_subsets, function (x) bootstrapEM(x, ts = "YR", cs = "ID", m = 20)) # pbapply shows a progress bar - this will update after every 12.5% (i.e. for each of the 8 dfs in the list)
 new <- Sys.time() - old 
 print(new)
 
@@ -190,5 +190,5 @@ outputs<-lapply(
 # Save these for use in D4. Change date as needed. 
 # They are currently a list, so need to be processed further before saving in ADM at this point. Will add this in the future.
 
-save(outputs, file = paste0(Code_directory, "/jac_bootstrapEM_060923.rda"))
+save(outputs, file = paste0(Code_directory, "/jac_bootstrapEM_210923.rda"))
 
