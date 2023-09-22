@@ -1154,6 +1154,34 @@ main_validations <-
 
 corrected_combined <- all_JAC_form %>% select(-starts_with(c("err", "merr", "total", "sheep")))
 
+
+# load combined_data_2023, add crofts and overwrite with corrections 
+
+
+combined <- read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "combined_data_2023"
+)
+
+croft <- read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "crofts_A_2023"
+)
+
+croft <- croft %>% mutate(croft = 1)
+
+combined_croft <-
+  left_join(combined, croft, by = c("parish", "holding")) %>%
+  mutate(croft = case_when(croft == 1 ~ as.numeric(croft),
+                           TRUE ~ 0))
+
+combined_data_corrected<-rows_update(combined_croft, corrected_combined, by=c("parish", "holding"))
+
+
 # #Save Outputs----------------------------------------------------------------------------------------------
 
 #Uncomment as necessary
@@ -1212,7 +1240,7 @@ write_dataframe_to_db(server=server,
                       database=database,
                       schema=schema,
                       table_name="combined_data_2023_corrected",
-                      dataframe=corrected_combined,
+                      dataframe=combined_data_corrected,
                       append_to_existing = FALSE,
                       versioned_table=FALSE,
                       batch_size = 10000)
