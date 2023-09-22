@@ -89,14 +89,14 @@ previous_years<-previous_years %>%
 
 # Load combined_data_2023.
 
-# As of 06/09/23 this is the combined dataset (made in B2) prior to the corrections. It is from the Ags extract on 04/09/23. 
+# As of 20/09/23 this is the combined dataset (made in B2) prior to the corrections. It is from the Ags extract on 20/09/23. 
 # Eventually, this should be the corrected dataset produced at the end of C3 (post validations and corrections). 
 
 
 combined_data_2023 <- read_table_from_db(server=server,
                                 database=database,
                                 schema=schema,
-                                table_name="combined_data_2023")
+                                table_name="combined_data_2023") #change to combined_data_2023_corrected
 
 
 data_2023 <- combined_data_2023 %>% 
