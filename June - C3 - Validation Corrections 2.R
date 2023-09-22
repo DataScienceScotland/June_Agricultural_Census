@@ -20,7 +20,7 @@ yr_list <- c(yr, yr2, yr3)
 
 # Before import -----------------------------------------------------------
 
-source("./C2 - Validations/June - Main Validations.R")
+source("C2 -  Validations/June - Main Validations.R")
 
 
 # ADM schema for export
@@ -1043,9 +1043,9 @@ main_validations <-
     err45_diff,
     err59_diff,
     err57_diff,
-    err61_diff,
+    err61_diff)%>% 
     #exclude croft error
-    -err34)%>% 
+    #-err34
   
   #filter to exclude saf_only 
   filter(submisType != "NA")
@@ -1208,6 +1208,9 @@ combined_data_corrected<-rows_update(combined_croft, corrected_combined, by=c("p
 #                         batch_size = 10000)
 #
 #main validations
+
+# this doesn't save currently, need to change structure - LN 22/09/23
+
 write_dataframe_to_db(
   server = server,
   database = database,
@@ -1218,8 +1221,6 @@ write_dataframe_to_db(
   versioned_table = FALSE,
   batch_size = 10000
 )
-
-
 
 
 
