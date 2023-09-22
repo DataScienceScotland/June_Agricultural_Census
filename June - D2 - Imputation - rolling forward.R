@@ -81,7 +81,7 @@ saf_rf<-roll_forward(saf_rf)
 
 rolled_forward_ags_items<-c("item171", "item192", "item193", "item194", "item195", "item196", "item197", "item198", "item199", "item1714",
                             "item1715","item1716","item1717","item1718","item1719","item2867","item2862","item177","item178","item179",
-                            "item182","item183","item184","item2566","item2567")
+                            "item182","item183","item184","item2566","item2567","item2877", "item2878","item2980","item3056","item3057")
 
 # Keep only necessary items
 
