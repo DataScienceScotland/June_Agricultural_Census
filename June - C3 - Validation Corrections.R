@@ -31,7 +31,7 @@ remove_total_id <- function(x) { x <-  x %>% select(-total_errors_per_case, -con
 
 # Before import -----------------------------------------------------------
 
-source("./C2 - Validations/June - Main Validations.R")
+source("C2 -  Validations/June - Main Validations.R")
 
 
 # ADM schema for export
@@ -1249,9 +1249,10 @@ main_validations <-
     err45_diff,
     err59_diff,
     err57_diff,
-    err61_diff,
+    err61_diff) %>% 
     #exclude croft error
-    -err34)%>% 
+    #-err34
+    
   
   #filter to exclude saf_only 
   filter(submisType != "NA")
@@ -1373,7 +1374,33 @@ main_validations <-
 
 # prepare all_JAC_form to save as new combined_data  ----------------------
 
-corrected_combined <- all_JAC_form %>% select(-starts_with(c("err", "total")))
+corrected_combined <- all_JAC_form %>% select(-sheep_round_diff, -starts_with(c("err", "total")))
+
+# load combined_data_2023, add crofts and overwrite with corrections 
+
+
+combined <- read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "combined_data_2023"
+)
+
+croft <- read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "crofts_A_2023"
+)
+
+croft <- croft %>% mutate(croft = 1)
+
+combined_croft <-
+  left_join(combined, croft, by = c("parish", "holding")) %>%
+  mutate(croft = case_when(croft == 1 ~ as.numeric(croft),
+                           TRUE ~ 0))
+
+combined_data_corrected<-rows_update(combined_croft, corrected_combined, by=c("parish", "holding"))
 
 # #Save Outputs----------------------------------------------------------------------------------------------
 
@@ -1431,11 +1458,13 @@ write_dataframe_to_db(server=server,
                       database=database,
                       schema=schema,
                       table_name="combined_data_2023_corrected",
-                      dataframe=corrected_combined,
+                      dataframe=combined_data_corrected,
                       append_to_existing = FALSE,
                       versioned_table=FALSE,
                       batch_size = 10000)
 
+
+# Save to datashare
 
 
 
