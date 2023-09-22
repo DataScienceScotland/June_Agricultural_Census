@@ -10,9 +10,9 @@ rm(list = ls())
 library(tidyverse)
 library(RtoSQLServer)
 library(readxl)
-library(haven)
 
 
+source("June - E - ScotEID.R")
 
 
 
@@ -33,14 +33,20 @@ schema <-   "juneagriculturalsurvey2023alpha"
 # Functions ---------------------------------------------------------------
 remove_id <- function(x) { x <-  x %>% select(-contains("ID", ignore.case = FALSE))  }
 
-
+recode_response <- function(x) {
+  ifelse(x != 0 | !is.na(x), 1, 0)
+}
+recode_number_response <- function(x) {
+  x %>%
+    mutate(number_responses = rowSums(.))
+}
 
 #June Item categories
 # Item categories ---------------------------------------------------------
 
 all_holding_areas <- c("item11", "item12", "item20026")
 all_seasonal <- c("item1", "item2827", "item2828", "item2")
-#all_seasonal_saf <- "item1"
+all_seasonal_saf <- "item1"
 all_glasshouse_ags <- c("item2713", "item2707", "item2866", "item2714", "item2708", "item2715", 
                         "item2709", "item2716", "item2710", "item2717", "item2711", "item2862", "item2867")
 all_glasshouse_saf <- c("item2858", "item2859", "item2860", "item2861", "item2863", "item2864", "item2865")
@@ -75,7 +81,7 @@ all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf,
 
 #Import-------------------------------------------------------------
 # Cattle data from  
-source("June - E - ScotEID.R")
+
 
 #Post imputation June data
 #change!!
@@ -106,6 +112,16 @@ agscens_format <-read_table_from_db(server = server,
                                     database = database,
                                     schema = schema,
                                     table_name = "agscens_SAS_format")
+
+
+#previous year's data (2021)
+
+prev_yr <-  read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "jac_2021_update"
+)
 
 # Add CTS data to June dataset --------------------------------------------
 
@@ -556,3 +572,66 @@ june_geog <- full_join(june_geog, agric_reg, by = "agric_reg")
 
 
 disreg <- june_geog %>% filter(region == 99 | district==99)
+
+
+
+# Summary -----------------------------------------------------------------
+
+june_summary <-june_geog %>% select(where(is.numeric))
+june_count <-as.data.frame(recode_response(june_summary)) 
+june_summary <- as.data.frame(list(count = colSums(june_count, na.rm = TRUE), mean = colMeans(june_summary, na.rm = TRUE) ) ) 
+
+rm(june_count)
+
+
+# Checks ------------------------------------------------------------------
+
+#livestock check
+livestock <- june_geog %>% select(parish,
+                                  holding,
+                                  madeup,
+                                  saf_madeup,
+                                  ags_madeup,
+                                  item27780,
+                                  item94,
+                                  item145,
+                                  item157,
+                                  item170) %>% 
+  rename(goats="item27780",
+         deer = "item94",
+         sheep = "item145",
+         pigs = "item157", 
+         poultry= "item170")
+
+
+cattle <- june_geog %>%
+  filter(completedata !=1 & CTS312>0) %>% 
+  select(starts_with("CTS")) %>% 
+  mutate(year =paste0("20", yr))
+
+
+cattle_prev <- rename_with(prev_yr, toupper) %>% 
+  filter(COMPLETEDATA !=1 & CTS312>0) %>% 
+  select(starts_with("CTS")) %>% 
+  mutate(year =paste0("20", yr1))
+
+cattle <- bind_rows(cattle, cattle_prev)
+cattle$year <- as.numeric(cattle$year)
+cattle_count <-as.data.frame(recode_response(cattle))   
+cattle_summary <- as.data.frame(list(count = colSums(cattle_count, na.rm = TRUE), mean = colMeans(cattle, na.rm = TRUE) ) ) 
+
+#20/9 - pause here: to do: all items data frame (sum and count) ...need to check all items object is relevant. might copy paste item list from main_validations  
+
+rm()
+# Export june_geog to ADM -------------------------------------------------
+
+write_dataframe_to_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "JAC23_preSOSLRTypology",
+  dataframe = june_geog,
+  append_to_existing = FALSE,
+  versioned_table = FALSE,
+  batch_size = 10000
+)
