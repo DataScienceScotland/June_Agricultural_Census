@@ -41,6 +41,9 @@ load(paste0(Code_directory, "/pre_imputation.rda"))
 
 
 
+# # Rolling forward for non-response --------------------------------------
+
+
 
 # Rolling forward SAF items ---------------------------------------------------------
 
@@ -77,7 +80,9 @@ saf_rf<-roll_forward(saf_rf)
 
 # Rolling forward Ags items -----------------------------------------------
 
-# Ags items which are rolled forward. This list may be updated if decided by the Census team. 
+# Ags items which are rolled forward. These lists may be updated if decided by the Census team. 
+
+
 
 rolled_forward_ags_items<-c("item171", "item192", "item193", "item194", "item195", "item196", "item197", "item198", "item199", "item1714",
                             "item1715","item1716","item1717","item1718","item1719","item2867","item2862","item177","item178","item179",
@@ -226,9 +231,35 @@ items_check<-pre_imputation_rolled_forward %>%
 
 
 
+# # Rolling forward for incomplete responses --------------------------------
+
+
+load(paste0(Code_directory, "/pre_imputation_incomplete.rda"))
+
+pre_imputation_incomplete<-pre_imputation_incomplete 
+
+
+
+sections8to10_items<-c("item2980") # This list could change in future, but in 2023 we have decided to only roll-forward incomplete data for item2980 - legal and financial resposibility
+
+
+sections8to10<-pre_imputation_incomplete %>% 
+  select(c(id, yr, madeup, imptype, ags_madeup, saf_madeup, item2727), all_of(sections8to10_items))
+
+
+section8rf<- sections8to10 %>% 
+  group_by (id) %>% 
+  filter(any(yr==2023 & item2727==0 & item2980==0)) %>% 
+  dplyr::mutate(item2980=ifelse(yr==2023, NA, item2980)) %>% 
+  dplyr::mutate(item2980=ifelse(yr==2023,zoo::na.locf(item2980), item2980))
+
+
+pre_imputation_rolled_forward_incomplete<-rows_update(pre_imputation_incomplete, section8rf, by=c("id","yr"))
+
+
 # Save --------------------------------------------------------------------
 
-
+# Main pre-imputation dataset rolled forward
 
 write_dataframe_to_db(server=server,
                       database=database,
@@ -240,3 +271,17 @@ write_dataframe_to_db(server=server,
                       versioned_table=FALSE)
 
 save(pre_imputation_rolled_forward, file = paste0(Code_directory, "/pre_imputation_rolled_forward.rda"))
+
+
+# Secondary incomplete-response pre-imputation dataset rolled forward
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="pre_imputation_rolled_forward_incomplete",
+                      dataframe=pre_imputation_rolled_forward_incomplete,
+                      append_to_existing = FALSE,
+                      batch_size=10000,
+                      versioned_table=FALSE)
+
+save(pre_imputation_rolled_forward_incomplete, file = paste0(Code_directory, "/pre_imputation_rolled_forward_incomplete.rda"))

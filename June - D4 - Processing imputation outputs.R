@@ -32,8 +32,7 @@ source("item_numbers.R")
 # They are currently a list, so need to be processed in D3 before saving in ADM. Will move this in the future.
 # For now, load from the datashare.
 
-load(paste0(Code_directory, "/jac_bootstrapEM_140923.rda"))
-
+load(paste0(Code_directory, "/jac_bootstrapEM_210923.rda"))
 
 
 # Process outputs ---------------------------------------------------------
@@ -61,11 +60,31 @@ imputed_holdings<-output_bootstrapEM
 
 # Load chainedEQ outputs --------------------------------------------------
 
-# Add this later - 20.09.23
+# Comment this back in if using chainedEQ outputs
 
-
-
-
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_one.rda"))
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_two.rda"))
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_three.rda"))
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_four.rda"))
+# 
+# 
+# 
+# outputsone<-do.call(rbind.data.frame, outputs_one)
+# outputstwo<-do.call(rbind.data.frame, outputs_two)
+# outputsthree<-do.call(rbind.data.frame, outputs_three)
+# outputsfour<-do.call(rbind.data.frame, outputs_four)
+# 
+# output_chainedEQ<-rbind(outputsone, outputstwo, outputsthree, outputsfour)
+# 
+# str(output_chainedEQ)
+# 
+# 
+# rm(outputs_one, outputs_two, outputs_three, outputs_four)
+# 
+# output_chainedEQ<-clean_names(output_chainedEQ)
+# 
+# 
+# imputed_holdings<-output_chainedEQ
 # Process outputs ---------------------------------------------------------
 
 
@@ -143,6 +162,21 @@ post_zero_rf_full<-gtools::smartbind(post_zero_rf_whole_pop, not_in_population)
 
 rownames(post_zero_rf_full)<-NULL
 
+
+# Add back the rolled forward for incomplete responses (made in D2)
+
+pre_imputation_rolled_forward_incomplete<- read_table_from_db(server=server,
+                                        database=database,
+                                        schema=schema,
+                                        table_name="pre_imputation_rolled_forward_incomplete")
+
+
+pre_imputation_rolled_forward_incomplete<-pre_imputation_rolled_forward_incomplete %>% 
+  filter(yr==2023) %>% 
+  select(-yr)
+
+post_zero_rf_full<-rows_update(post_zero_rf_full, pre_imputation_rolled_forward_incomplete, by="id")
+
 # check final
 
 
@@ -154,6 +188,18 @@ nlevels(as.factor(post_zero_rf_full$id))
 
 # Save this dataset
 
+save(post_zero_rf_full, file = paste0(Code_directory, "/post_zero_rf_full.rda"))
+
+# Save to ADM
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="post_zero_rf_full",
+                      dataframe=post_zero_rf_full,
+                      append_to_existing = FALSE,
+                      batch_size=10000,
+                      versioned_table=FALSE)
 
 rm(pre_imputation, pre_imputation_reduced_zeroes, pre_imputation_rolled_forward)
 gc()

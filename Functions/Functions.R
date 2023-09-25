@@ -297,9 +297,9 @@ fid_index   <-  function(x) {
 
 summarycheckarea<-function(x) {
   dplyr::summarize(x,
-    sum_area = sum(area),
-    sum_field = sum(field_area),
-    sum_eligible = sum(eligible_area),
+    sum_area = sum(area, na.rm = TRUE),
+    sum_field = sum(field_area, na.rm = TRUE),
+    sum_eligible = sum(eligible_area, na.rm = TRUE),
     max_field = max(field_area),
     var_field = var(field_area),
     flag1 = max(flag1),
@@ -310,8 +310,8 @@ summarycheckarea<-function(x) {
 
 mutateareamismatches<-function(x) {
 mutate(x,
-  diff = round(max_field - sum_area, 3),
-  ratio = round(sum_area / max_field, 3)
+  diff = round_half_up(max_field - sum_area, 3),
+  ratio = round_half_up(sum_area / max_field, 3)
 ) 
 }
 
@@ -328,7 +328,7 @@ mutatellolfass<-function(x) {
 }
 
 summaryfids<-function(x) {
-  summarize(x,
+  dplyr::summarize(x,
   mlc = unique(mlc),
   slc = unique(slc),
   brn = unique(brn),
@@ -342,7 +342,7 @@ summaryfids<-function(x) {
 }
 
 aggregatefids<-function(x){
-  summarize(x,
+  dplyr::summarize(x,
   area = sum(area),
   llo_area = sum(llo_area),
   lfass_area = sum(lfass_area),
@@ -357,7 +357,7 @@ aggregatefids<-function(x){
 # B9
 
 othercropscodes<-function(x) {
-  mutate(x,
+  dplyr::mutate(x,
     ncode =
       ifelse(
         cens_code == "item41",
@@ -448,7 +448,7 @@ othercropscodes<-function(x) {
 
 
 ncode<-function(x){
-  mutate(x,
+  dplyr::mutate(x,
     item185 =
       ifelse(cens_code == "item41",
              ifelse(
@@ -461,7 +461,7 @@ ncode<-function(x){
 
 
 censusformat<-function(x){
-  summarise(x,
+dplyr::summarise(x,
     area = sum(area),
     llo_area = sum(llo_area),
     lfass_area = sum(lfass_area),
@@ -472,7 +472,7 @@ censusformat<-function(x){
 
 
 extrafields <-  function(x){
-  summarise(x,
+  dplyr::summarise(x,
   llo_area = sum(llo_area),
   lfass_area = sum(lfass_area),
   mlc = unique(mlc),
@@ -482,7 +482,7 @@ extrafields <-  function(x){
 
 
 brnmutate<-function(x) {
-  mutate(x, 
+  dplyr::mutate(x, 
          parish=str_pad(parish, width = 3, pad = "0"),
          holding=str_pad(holding, width = 4, pad = "0"),
          location_type =
@@ -494,7 +494,7 @@ brnmutate<-function(x) {
 }
 
 brnsummary<-function(x) {
-  summarise(x,
+  dplyr::summarise(x,
     area = sum(area),
     mlc = unique(mlc),
     location_type = unique(location_type)
@@ -503,7 +503,7 @@ brnsummary<-function(x) {
 }
 
 newitemssaf<-function(x) {
-  mutate(x,
+  dplyr::mutate(x,
     item1 = llo_area,
     item2 = item2879 + item2827 + item2828,
     item27730 = item52 + item53 + item55 + item56 + item2323 + item59 + item60 + item61 +
