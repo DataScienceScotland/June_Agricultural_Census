@@ -47,7 +47,7 @@ all_ags <- read_table_from_db(server=server,
                               schema=schema, 
                               table_name="Ags_A_2023")
 all_ags <- all_ags %>% 
-  select(-Ags_A_2023ID)
+  select(-any_of("Ags_A_2023ID"))
 
 # Load from datashare
 # load(paste0(output_path, "nonSAF_ags_", yr, ".rda"))
@@ -60,7 +60,7 @@ all_saf <- read_table_from_db(server=server,
                                schema=schema, 
                                table_name="allsaf_final_2023")
 all_saf <- all_saf %>% 
-  select(-allsaf_final_2023ID)
+  select(-any_of("allsaf_final_2023ID"))
 
 
 june2015 <- read_table_from_db(server=server, 
@@ -84,20 +84,17 @@ unmatched<-read_table_from_db(server=server,
 ##NB SAS code replaces missing numeric values with zeros, as imputation is for missing data only.
 
 all_ags  <-
-  all_ags %>% group_by(parish, holding) %>% arrange(by_group = TRUE)
+  all_ags %>% arrange(parish, holding)
 
 
 all_ags <- all_ags %>% add_land_other() %>%
   mutate(survdata = as.factor("full"),
          i = 1 + length(c(all_glasshouse, "item85", "item86"))) %>%
-  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .)))  # if the last line doesn't work, restart the session
+  dplyr::mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) 
 
+# Convert glasshouse from sq m to hectares
 
-
-glasshouse_cols <- names(all_ags) %in% all_glasshouse
-all_ags[glasshouse_cols] <-
-  all_ags[glasshouse_cols] %>% mutate(across(where(is.numeric), ~ .x / 10000))
-
+all_ags <- all_ags %>% mutate(across(any_of(all_glasshouse), ~ .x / 10000))
 
 # Process SAF: split into seasonal/non-seasonal ---------------------------
 
@@ -209,8 +206,8 @@ full_JAC_SAF <-
     land_data,
     saf_data,
     other_data,
-    contains(all_items),
-    contains(string_answers),
+    any_of(all_items),
+    any_of(string_answers),
     mlc,
     brn,
     lfass_area,
@@ -218,7 +215,7 @@ full_JAC_SAF <-
   )
 
 full_JAC_SAF <-
-  full_JAC_SAF %>% select(!maderight) %>% arrange(by_group = TRUE)  # original script also took out item3166 and item2726 but these don't exist
+  full_JAC_SAF %>% select(!maderight) %>% dplyr::arrange(.by_group = TRUE)  # original script also took out item3166 and item2726 but these don't exist
 
 
 
@@ -252,7 +249,7 @@ full_JAC_SAF_SAF_SEAS_inner <-
     suffix = c(".SAF_SEAS", "JAC_SAF")
   ) %>%
   mutate(saf_data = as.factor("seasonal_only")) %>%
-  select(!contains("JAC_SAF")) %>% arrange(by_group = TRUE)
+  select(!contains("JAC_SAF")) %>% dplyr::arrange(.by_group = TRUE)
 
 names(full_JAC_SAF_SAF_SEAS_inner) <-
   gsub(".SAF_SEAS", "", names(full_JAC_SAF_SAF_SEAS_inner))
@@ -268,12 +265,12 @@ FJS_anti <-
             FJS_SEAS,
             by = c('parish', 'holding'),
             all = TRUE)
-FJS <- bind_rows(FJS_anti, FJS_SEAS) %>% arrange(by_group = TRUE)
+FJS <- bind_rows(FJS_anti, FJS_SEAS) %>% dplyr::arrange(.by_group = TRUE)
 
 
 
 full_JAC_SAF_corr <- FJS %>%
-  group_by(parish, holding) %>% arrange(by_group = TRUE)
+  group_by(parish, holding) %>% dplyr::arrange(.by_group = TRUE)
 
 
 check_glasshouse <-
@@ -303,7 +300,7 @@ full_JAC_SAF <-
     item2836 = sum(item2860, item2865, na.rm = TRUE),
     
     #item6000 = sum(item2861, item2866, na.rm = TRUE),
-    item6001 = sum(item2862, item2867),
+    item6001 = sum(item2862, item2867, na.rm=TRUE),
     
     item68 = sum(
       item52,
@@ -387,7 +384,7 @@ full_JAC_SAF <-
 full_JAC_SAF <-
   full_JAC_SAF %>% mutate(
     item85 = case_when(
-      survtype == "SAF" &
+      survtype == "SAF_only" &
         land_data == "saf"  ~ sum(
           #item2713,
           item2858,
@@ -406,7 +403,7 @@ full_JAC_SAF <-
     
     
     item86 = case_when(
-      survtype == "SAF" &
+      survtype == "SAF_only" &
         land_data == "saf"  ~ sum(
           item2707,
           item2863,
@@ -449,7 +446,7 @@ full_JAC_SAF <-
   )
 
 full_JAC_SAF <-
-  full_JAC_SAF %>% arrange(parish, holding, by_group = TRUE)
+  full_JAC_SAF %>% dplyr::arrange(parish, holding, .by_group = TRUE)
 
 #clear unused dataframes
 rm(
@@ -485,11 +482,11 @@ FJS$saf_data <- as.factor(FJS$saf_data)
 
 
 FJS <- FJS %>%
-  mutate(across(starts_with('item') & !starts_with("item185") &!starts_with("item186"), ~ as.numeric(.))) 
+  dplyr::mutate(across(starts_with('item') & !starts_with("item185") &!starts_with("item186"), ~ as.numeric(.))) 
 
 
 FJS <- FJS %>%
-  mutate(across(
+  dplyr::mutate(across(
     starts_with('item')& !starts_with("item185") &!starts_with("item186"),
     ~ ifelse(survtype != "SAF_only" & is.na(.), 0, .)
   ))
@@ -593,7 +590,7 @@ strata23<-june2015 %>%
 
 strata23_<-strata23 %>% 
   group_by(strata) %>% 
-  summarise(item48_15=sum(item48_15, na.rm=TRUE), item49_15=sum(item49_15, na.rm=TRUE))
+  dplyr::summarise(item48_15=sum(item48_15, na.rm=TRUE), item49_15=sum(item49_15, na.rm=TRUE))
 
 
 strata_prop <- strata23_ %>% 
@@ -609,14 +606,13 @@ combined_with_strata<-left_join(FJS, strata23, by= c("parish", "holding"))
 
 
 
-
 unmatchsplit<- unmatched %>% 
   filter((woodland15+otherland15) < newarea)
 
 
 woodothadd <-unmatchsplit %>% 
   group_by(parish, holding) %>% 
-  summarise(woodland15=sum(woodland15),otherland15=sum(otherland15)) %>% 
+  dplyr::summarise(woodland15=sum(woodland15),otherland15=sum(otherland15)) %>% 
   select(parish, holding, woodland15, otherland15)
 
 
@@ -634,7 +630,7 @@ combined15strata<-combined15strata %>%
       ifelse(otherland15>0, item9999-otherland15, item9999)
   )
 
-combined15strata<-as.data.frame(combined15strata)
+combined15strata <- ungroup(combined15strata)
 
 combined_data_excl<-combined15strata %>% 
   dplyr::mutate(
@@ -725,7 +721,7 @@ addressfileorig<-clean_names(addressfileorig)
 
 addressfile<-addressfileorig %>% 
   select(c(parish, holding, tot_area, tot_own_area, totrented_area)) %>% 
-  rename(rps_totarea_june="tot_area",
+  dplyr::rename(rps_totarea_june="tot_area",
          rps_totowned_june = "tot_own_area",
          rps_totrented_june = "totrented_area") %>% 
   mutate(parish=as.integer(parish),
@@ -741,7 +737,7 @@ check<-combined_data_address %>%
 combined_data_address<-data.frame(combined_data_address)
 
 combined_data_address <- combined_data_address %>% 
-  mutate(across(where(is.numeric), round, 2))
+  mutate(across(where(is.numeric), round_half_up, 2))
 
 
 
