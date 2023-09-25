@@ -52,7 +52,7 @@ cattle <- read_table_from_db(server=server,
 June_data <- read_table_from_db(server=server, 
                                      database=database, 
                                      schema=schema, 
-                                     table_name="combined_data_2023_corrected")
+                                     table_name="post_imputation")
 
 
 # Process variables -------------------------------------------------------

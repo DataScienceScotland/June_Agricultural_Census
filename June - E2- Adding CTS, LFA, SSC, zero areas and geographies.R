@@ -5,6 +5,7 @@
 
 rm(list = ls())
 
+
 # Load packages
 
 library(tidyverse)
@@ -13,7 +14,11 @@ library(readxl)
 
 
 source("June - E - ScotEID.R")
-
+yr <- 2023
+yr1 <- yr - 1
+yr2 <-  yr - 2
+yr3 <-  yr - 3
+yr_list <- c(yr, yr2, yr3)
 
 
 #<-Datashare<-file path for import and export
@@ -84,27 +89,26 @@ all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf,
 
 
 #Post imputation June data
-#change!!
 June_data <-  read_table_from_db(server=server, 
                                 database=database, 
                                 schema=schema, 
-                                table_name="combined_data_2023_corrected")
+                                table_name="post_imputation")
 
 #address file for LFAs
 addressfileorig <-  read_table_from_db(server=server, 
                                     database=database, 
                                     schema=schema, 
                                     table_name="address_occid_01jun_2023")
-
-#unitary authorities for geog
-unit_auth <-  read_table_from_db(server=server, 
-                                       database=database, 
-                                       schema=schema, 
-                                       table_name="unitary_authorities")
-#Nuts geographies
-nuts_2018 <-  read_table_from_db(server=server, 
-                                 database=database, 
+# 
+# #unitary authorities for geog
+unit_auth <-  read_table_from_db(server=server,
+                                 database=database,
                                  schema=schema, 
+                                 table_name="unitary_authorities")
+# #Nuts geographies
+nuts_2018 <-  read_table_from_db(server=server,
+                                 database=database,
+                                 schema=schema,
                                  table_name="NUTS_2018_ITL2")
 
 #formats
@@ -165,8 +169,9 @@ june_cts <-  bind_rows(june_only, june_cts_inner, CTS_only)
 # Add common grazing to dataset -------------------------------------------
 
 addressfile <-  addressfileorig %>% 
-  select(c(Parish, Holding, Holding_Classification_Id, TotArea)) %>% 
-  rename(parish = "Parish",
+  select(Parish, Holding, Holding_Classification_Id, TotArea)
+
+addressfile <- addressfile %>%  dplyr::rename(parish = "Parish",
          holding = "Holding")
    
 #mutate common grazing area = total area  for holding classification ID =3
@@ -206,7 +211,7 @@ addressfile <-   addressfileorig %>%
            TotNonLfaArea,
            Name,
            Holding_Classification_Id)) %>% 
-  rename(parish = "Parish",
+  dplyr::rename(parish = "Parish",
          holding = "Holding")
 
 #inner join and mutate lfa vars
@@ -289,9 +294,9 @@ unit_auth <- remove_id(unit_auth)
 
 june_geog <- full_join(june_lfa, unit_auth, by = "parish")
 
-
-# Add NUTS code and ITL2 to June Dataset--------------------------------------------------
-nuts_2018 <- nuts_2018 %>% 
+# 
+# # Add NUTS code and ITL2 to June Dataset--------------------------------------------------
+nuts_2018 <- nuts_2018 %>%
   select(parish,
          Parish_Name,
          nuts2_2018,
@@ -299,8 +304,8 @@ nuts_2018 <- nuts_2018 %>%
          nuts4_2018,
          ITL2_2021_code)
 
-nuts_2018 <- nuts_2018%>% 
-  rename(NUTS2= "nuts2_2018",
+nuts_2018 <- nuts_2018%>%
+  dplyr::rename(NUTS2= "nuts2_2018",
          NUTS3= "nuts3_2018",
          NUTS4= "nuts4_2018")
 
@@ -329,13 +334,13 @@ names(geog) <- tolower(names(geog))
 #parish
 parish <- geog %>% ungroup %>%  
   filter(fmtname=="PARISH") %>%
-  rename(parish = "start") %>% 
+  dplyr::rename(parish = "start") %>% 
   select(parish, label)
 
 #district
 district <- geog %>% ungroup %>%  
   filter(fmtname=="DISTRICT") %>%
-  rename(district = "start",
+  dplyr::rename(district = "start",
          district_label= "label") %>% 
   select(district, district_label)
 
@@ -345,7 +350,7 @@ district$district <-as.numeric(district$district)
 #region
 region <- geog %>% ungroup %>%  
   filter(fmtname=="REGALT") %>%
-  rename(region = "start",
+  dplyr::rename(region = "start",
          region_label= "label") %>% 
   select(region, region_label)
 
@@ -355,17 +360,17 @@ region$region <-as.numeric(region$region)
 #agricultural region
 agric_reg <- geog %>% ungroup %>%  
   filter(fmtname=="AGRICREG") %>%
-  rename(agric_reg = "start",
+  dplyr::rename(agricreg = "start",
          agric_reg_label= "label") %>% 
-  select(agric_reg, agric_reg_label)
+  select(agricreg, agric_reg_label)
 
 #make numeric before join
-agric_reg$agric_reg <-as.numeric(agric_reg$agric_reg) 
+agric_reg$agricreg <-as.numeric(agric_reg$agricreg) 
 
 #county
 county <- geog %>% ungroup %>%  
   filter(fmtname=="COUNTY") %>%
-  rename(county = "start",
+  dplyr::rename(county = "start",
          county_label= "label") %>% 
   select(county, county_label)
 
@@ -375,7 +380,7 @@ county$county <-as.numeric(county$county)
 #NUTS
 nuts2 <- geog %>% ungroup %>%  
   filter(fmtname=="NUT2S") %>%
-  rename(NUTS2 = "start",
+  dplyr::rename(NUTS2 = "start",
          NUTS2_label = "label") %>% 
   select(NUTS2, NUTS2_label) 
 
@@ -384,7 +389,7 @@ nuts2$NUTS2<- as.numeric(nuts2$NUTS2)
 
 nuts3 <- geog %>% ungroup %>%  
   filter(fmtname=="NUT3S") %>%
-  rename(NUTS3 = "start",
+  dplyr::rename(NUTS3 = "start",
          NUTS3_label = "label") %>% 
   select(NUTS3, NUTS3_label)
 
@@ -393,7 +398,7 @@ nuts3$NUTS3<- as.numeric(nuts3$NUTS3)
 
 nuts4 <- geog %>% ungroup %>%  
   filter(fmtname=="NUT4S") %>%
-  rename(NUTS4 = "start",
+  dplyr::rename(NUTS4 = "start",
          NUTS4_label = "label") %>% 
   select(NUTS4, NUTS4_label)
 
@@ -412,7 +417,7 @@ june_geog <- full_join(june_geog, nuts4, by = "NUTS4")
 # Add agric region codes to June dataset ----------------------------------
 
 june_geog <- june_geog %>% 
-  mutate(agric_reg= case_when(unitary_authority == 360 ~ 1,
+  mutate(agricreg= case_when(unitary_authority == 360 ~ 1,
                               unitary_authority == 330 ~ 2,
                               unitary_authority == 235 ~ 3,
                               unitary_authority == 270 ~ 4,
@@ -568,7 +573,7 @@ june_geog <- full_join(june_geog, region, by = "region")
 june_geog <- full_join(june_geog, county, by = "county") 
 
 # Add agric reg label to June dataset --------------------------------------
-june_geog <- full_join(june_geog, agric_reg, by = "agric_reg") 
+june_geog <- full_join(june_geog, agric_reg, by = "agricreg") 
 
 
 disreg <- june_geog %>% filter(region == 99 | district==99)
@@ -597,7 +602,7 @@ livestock <- june_geog %>% select(parish,
                                   item145,
                                   item157,
                                   item170) %>% 
-  rename(goats="item27780",
+  dplyr::rename(goats="item27780",
          deer = "item94",
          sheep = "item145",
          pigs = "item157", 
@@ -610,7 +615,7 @@ cattle <- june_geog %>%
   mutate(year =paste0("20", yr))
 
 
-cattle_prev <- rename_with(prev_yr, toupper) %>% 
+cattle_prev <- dplyr::rename_with(prev_yr, toupper) %>% 
   filter(COMPLETEDATA !=1 & CTS312>0) %>% 
   select(starts_with("CTS")) %>% 
   mutate(year =paste0("20", yr1))
@@ -623,14 +628,59 @@ cattle_summary <- as.data.frame(list(count = colSums(cattle_count, na.rm = TRUE)
 #20/9 - pause here: to do: all items data frame (sum and count) ...need to check all items object is relevant. might copy paste item list from main_validations  
 
 rm()
-# Export june_geog to ADM -------------------------------------------------
+
+
+# Save dataset ready to add SOs -------------------------------------------
+# 
+june_geog <-june_geog %>% dplyr::rename(unitauth = "unitary_authority")
+june_temp_23 <- june_geog %>% select(parish, 
+                                     holding,
+                                     madeup,
+                                     saf_madeup,
+                                     ags_madeup, 
+                                     agricreg,
+                                     unitauth,
+                                     county,
+                                     district, 
+                                     region, 
+                                     NUTS2, 
+                                     NUTS3, 
+                                     NUTS4, 
+                                    ITL2_2021_code,
+                                     survtype,
+                                     imptype, 
+                                     survdata,
+                                     land_data,
+                                     other_data, 
+                                     contains(c("item", "CTS")),
+                                     #lsu,
+                                     #LFA_area,
+                                     #NLFA_area,
+                                     #LFASS_area, 
+                                     lfatemp, 
+                                     cga, 
+                                     #strata, 
+                                     holdclas, 
+                                     holdtype, 
+                                     cc_tot_area,
+                                     cc_rented_area,
+                                     cc_owned_area, 
+                                     #forestry_only, 
+                                     landless,
+                                     completedata,  
+                                     saf_completed, 
+                                     ) %>% 
+  mutate(year = yr)
+
+
+# Export june_temp to ADM -------------------------------------------------
 
 write_dataframe_to_db(
   server = server,
   database = database,
   schema = schema,
-  table_name = "JAC23_preSOSLRTypology",
-  dataframe = june_geog,
+  table_name = "JAC23_temp",
+  dataframe = june_temp_23,
   append_to_existing = FALSE,
   versioned_table = FALSE,
   batch_size = 10000

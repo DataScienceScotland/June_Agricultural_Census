@@ -20,8 +20,7 @@ yr_list <- c(yr, yr2, yr3)
 
 # Before import -----------------------------------------------------------
 
-source("C2 -  Validations/June - Main Validations.R")
-
+source("C2 - Validations/June - Main Validations.R") 
 
 # ADM schema for export
 #server <- "s0196a\\ADM"
@@ -32,13 +31,13 @@ source("C2 -  Validations/June - Main Validations.R")
 rm(combined_JAC,
    croft,
    legal_only_error,
-   brn_fruit,
-   check_labour,
-   check_labour_error_summary, 
+   # brn_fruit,
+   # check_labour,
+   # check_labour_error_summary, 
    croft,
    fruit_holdings,
-   large_fruit,
-   non_priority_full,
+   #large_fruit,
+   #non_priority_full,
    clean_JAC)
 
 
@@ -1019,7 +1018,7 @@ JAC_validation_corrected_errors <-
   all_JAC_form %>% select(parish, holding, submisType, any_of(all_validations)) %>%  filter(if_any(starts_with("err"), ~ . !=
                                                                                                      0))
 JAC_validation_corrected_error_summary <-
-  JAC_validation_corrected_errors %>% ungroup() %>% group_by(submisType) %>%   select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE))
+  JAC_validation_corrected_errors %>% ungroup() %>% group_by(submisType) %>%   select(starts_with("err")) %>% dplyr::summarize(across(everything(), sum, na.rm = TRUE))
 JAC_validation_corrected_error_summary <-
   cbind(
     JAC_validation_corrected_error_summary,
