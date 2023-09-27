@@ -1521,7 +1521,7 @@ brn_fruit <-
   fruit_holdings %>% ungroup() %>% select(brn, sumfruit, slr_fruit, lab_returned, all_of(c(labour_cas_f, labour_cas_m))) %>% group_by(brn) %>% filter(brn >
                                                                                                                                                         0) %>% arrange(brn)
 brn_fruit <-
-  brn_fruit %>% summarise(
+  brn_fruit %>% dplyr::summarise(
     freq = n(),
     sumfruit_sum = sum(sumfruit),
     slr_fruit_sum = sum(slr_fruit),
@@ -1531,7 +1531,7 @@ brn_fruit <-
 #holdings with more than 2ha of fruit
 large_fruit <-
   fruit_holdings %>% filter(sumfruit > 2 &
-                              survtype != "SAF_only") %>% arrange(brn, by_group = FALSE)
+                              survtype != "SAF_only") %>% dplyr::arrange(brn, .by_group = FALSE)
 
 check_labour <- left_join(large_fruit, brn_fruit, by = "brn")
 
@@ -1681,7 +1681,7 @@ JAC_validation_errors <-
   all_JAC_form %>% select(parish, holding, submisType, any_of(all_validations)) %>%  filter(if_any(starts_with("err"), ~ . !=
                                                                                                      0))
 JAC_validation_error_summary <-
-  JAC_validation_errors %>% ungroup() %>% group_by(submisType) %>%   select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE))
+  JAC_validation_errors %>% ungroup() %>% group_by(submisType) %>%   select(starts_with("err")) %>% dplyr::summarize(across(everything(), sum, na.rm = TRUE))
 JAC_validation_error_summary <-
   cbind(
     JAC_validation_error_summary,
@@ -1696,7 +1696,7 @@ colnames(JAC_validation_error_summary) <-
 
 #soft fruit migrant labour check
 check_labour_error_summary <-
-  check_labour %>% ungroup() %>%  select(starts_with("err")) %>% summarize(across(everything(), sum, na.rm = TRUE)) %>% pivot_longer(cols = everything(),
+  check_labour %>% ungroup() %>%  select(starts_with("err")) %>% dplyr::summarize(across(everything(), sum, na.rm = TRUE)) %>% pivot_longer(cols = everything(),
                                                                                                                                      names_to = "error",
                                                                                                                                      values_to = "count")
 # R Markdown Tables -------------------------------------------------------
@@ -2983,7 +2983,7 @@ non_priority_trim_error_count <-
 
 #priority validation summary
 priority_main_validations_summary <-
-  holding_list %>% ungroup %>% select(-c(parish, holding, contains(c("diff", "total")))) %>%  summarize(across(everything(), sum, na.rm = TRUE))
+  holding_list %>% ungroup %>% select(-c(parish, holding, contains(c("diff", "total")))) %>%  dplyr::summarize(across(everything(), sum, na.rm = TRUE))
 priority_main_validations_summary <-
   cbind(
     priority_main_validations_summary,
@@ -2998,7 +2998,7 @@ priority_main_validations_summary <-
 
 #non_priority-full validation summary
 non_priority_main_validations_summary <-
-  non_priority_full %>% ungroup %>% select(-c(parish, holding, contains(c("diff", "total")))) %>%  summarize(across(everything(), sum, na.rm = TRUE))
+  non_priority_full %>% ungroup %>% select(-c(parish, holding, contains(c("diff", "total")))) %>%  dplyr::summarize(across(everything(), sum, na.rm = TRUE))
 non_priority_main_validations_summary <-
   cbind(
     non_priority_main_validations_summary,
@@ -3013,7 +3013,7 @@ non_priority_main_validations_summary <-
 
 #non_priority trim validation summary
 non_priority_trim_validations_summary <-
-  non_priority_trim %>% ungroup %>% select(-c(parish, holding, contains(c("diff", "total")))) %>%  summarize(across(everything(), sum, na.rm = TRUE))
+  non_priority_trim %>% ungroup %>% select(-c(parish, holding, contains(c("diff", "total")))) %>%  dplyr::summarize(across(everything(), sum, na.rm = TRUE))
 non_priority_trim_validations_summary <-
   cbind(
     non_priority_trim_validations_summary,
@@ -3057,6 +3057,8 @@ write_dataframe_to_db(server=server,
 #                         versioned_table=FALSE,
 #                         batch_size = 10000)
 #
+
+
 #main validations
 write_dataframe_to_db(
   server = server,
