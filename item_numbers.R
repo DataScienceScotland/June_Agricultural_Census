@@ -667,5 +667,6 @@ rolled_forward_ags_items<-c("item171", "item192", "item193", "item194", "item195
 imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item145","item2038","item2039",
                  "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
                  "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
-                 "item27755","item27775","item27780","item146", "item147","item148", "item149","item150", "item151") 
+                 "item27755","item27775","item27780") 
 
+pig_imputed_items<-c("item146", "item147","item148", "item149","item150", "item151", "item27760","item27770")
