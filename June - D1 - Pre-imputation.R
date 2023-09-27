@@ -2,7 +2,7 @@
 # This needs to be run every time the combinef_data or combined_data_2023_corrected is updated (i.e. using new data cuts)
 # This script is based on programs D0-D2 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Created by Lucy Nevard July 2023.
-# Modified by Lucy Nevard 07.09.23
+# Modified by Lucy Nevard 25.09.23
 
 
 # Before import -----------------------------------------------------------
@@ -23,8 +23,8 @@ library(data.table)
 
 # Load functions
 
-source("Functions/Functions.R")
-source("item_numbers.R")
+# source("Functions/Functions.R")
+# source("item_numbers.R")
 
 # Directories
 
@@ -38,12 +38,11 @@ schema <- "juneagriculturalsurvey2023alpha"
 # Load and prepare datasets ------------------------------------------------------------------
 
 
-
 # Previous years is a large dataset and is time-consuming to read in from ADM - read in from the datashare instead if needed. 
 
-# previous_years <- read_table_from_db(server=server, 
-#                                      database=database, 
-#                                      schema=schema, 
+# previous_years <- read_table_from_db(server=server,
+#                                      database=database,
+#                                      schema=schema,
 #                                      table_name="jac_previous_data_ten_years")
 
 
@@ -54,18 +53,18 @@ previous_years_full<-previous_years
 
 # Load combined_data_2023.
 
-# As of 20/09/23 this is the combined dataset (made in B2) prior to the corrections. It is from the Ags extract on 20/09/23. 
-# Eventually, this should be the corrected dataset produced at the end of C3 (post validations and corrections). 
+# As of 26/09/23 this is the corrected combined dataset produced at the end of C3 (post validations and corrections). It is from the Ags extract on 26/09/23. 
+
 
 
 combined_data_2023 <- read_table_from_db(server=server,
                                 database=database,
                                 schema=schema,
-                                table_name="combined_data_2023") # change to combined_data_2023_corrected
+                                table_name="combined_data_2023_corrected") 
 
 
 data_2023 <- combined_data_2023 %>% 
-  mutate(in2023="1") 
+  dplyr::mutate(in2023="1") 
 
 
 # Load population frame
@@ -252,6 +251,11 @@ pre_imputation_2023_incomplete<-combined_data_2023 %>%
 
 pre_imputation_2023_incomplete<-pre_imputation_2023_incomplete %>% 
   mutate(yr=2023)
+
+pre_imputation_2023_incomplete<-pre_imputation_2023_incomplete %>% 
+  select(-(any_of(section_12))) %>% 
+  select(-(any_of(section_13)))
+
 
 # Create id variable
 
