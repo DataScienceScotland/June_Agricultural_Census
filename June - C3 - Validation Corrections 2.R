@@ -3,13 +3,19 @@
 
 #Script corrects errors from C2 validation checks  
 
+
+# Clear environment prior
+rm(list = ls())
+
+
+# Load packages 
+
 library(tidyverse)
 library(RtoSQLServer)
 library(writexl)
 library(janitor)
 
-# Clear environment prior
-rm(list = ls())
+
 
 #yr = this year 20xxR
 yr <- 2023
@@ -20,8 +26,11 @@ yr_list <- c(yr, yr2, yr3)
 
 # Before import -----------------------------------------------------------
 
-source("C2 - Validations/June - Main Validations.R") 
+source("C2 -  Validations/June - Main Validations.R") # this works for Lucy, if it doesn't work use next line
 
+#source("C2 - Validations/June - Main Validations.R")
+
+Code_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023")
 # ADM schema for export
 #server <- "s0196a\\ADM"
 
@@ -1208,7 +1217,7 @@ combined_data_corrected<-rows_update(combined_croft, corrected_combined, by=c("p
 #
 #main validations
 
-# this doesn't save currently, need to change structure - LN 22/09/23
+# this doesn't save currently, need to change structure - LN 26/09/23
 
 write_dataframe_to_db(
   server = server,
@@ -1221,7 +1230,7 @@ write_dataframe_to_db(
   batch_size = 10000
 )
 
-
+# this doesn't save currently, need to change structure - LN 26/09/23
 
 #non-priority main validations-full
 write_dataframe_to_db(server=server,
@@ -1246,7 +1255,7 @@ write_dataframe_to_db(server=server,
                       batch_size = 10000)
 
 
-
+save(combined_data_corrected, file = paste0(Code_directory, "/combined_data_corrected.rda"))
 
 #
 # #migrant checks
