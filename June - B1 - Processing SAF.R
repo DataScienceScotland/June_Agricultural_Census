@@ -3,7 +3,7 @@
 # This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Data used currently is from end of June 2023. This is the second SAF data drop.
 # Created by Lucy Nevard 27.01.23
-# Modified by Lucy Nevard 17.08.23
+# Modified by Lucy Nevard 25.09.23
 
 
 # Before import -----------------------------------------------------------
@@ -1169,7 +1169,7 @@ extra_ncode <- extra_ncode %>%
 
 extra_ncode$item185 [is.na(extra_ncode$item185)] <- ""
 
-
+gc()
 
 # Group by parish and holding. item185 consists of multiple strings concatenated - should change this to include semicolon (if collapse=";" it ends up with lots of unwanted semicolons!)
 
@@ -1179,10 +1179,8 @@ extra_item185 <- extra_ncode %>%
   mutate(
     parish = as.numeric(parish),
     holding = as.numeric(holding)
-  )
-
-
-
+  )  # On the run-through on 26.09.23 R gave an error at this point Error in stopifnot(is.character(filename), length(filename) == 1L) : reached elapsed time limit
+# 
 
 # Group by SLC
 
