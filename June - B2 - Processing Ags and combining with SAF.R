@@ -1,12 +1,12 @@
 ##Code to combine Ags (SAF and Non-SAF aka full and partial AGS/JAC) and SAF datasets
 ## Based on sections B5 and B10 from the SAS project.
 ##NB June 2023 will only have one form - so no need to import and join df_SAF(ags) and df_Non_SAF to form the census (ags) dataset. It will just be imported as is....
-##Data from 2023 - 9th June. First data extract from Ags.
+##Data from 2023 - 26/09/23
 ##Written by Jackie Massaya 31/01/2023
-##Modified by Lucy Nevard 08.06.23
+##Modified by Lucy Nevard 26.09.23
 
 
-#rm(list = ls())
+rm(list = ls())
 
 # Before Import -----------------------------------------------------------
 
