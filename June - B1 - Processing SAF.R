@@ -3,7 +3,7 @@
 # This script is based on the code in B4 and B6 of the June Project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Data used currently is from end of June 2023. This is the second SAF data drop.
 # Created by Lucy Nevard 27.01.23
-# Modified by Lucy Nevard 17.08.23
+# Modified by Lucy Nevard 25.09.23
 
 
 # Before import -----------------------------------------------------------
@@ -58,10 +58,10 @@ saf_seas <- read_table_from_db(server=server,
 # Reading in from ADM creates a new variable with id. Remove.
 
 saf_perm<-saf_perm %>% 
-  select(-saf_perm_A_2023ID)
+  select(-any_of("saf_perm_A_2023ID"))
 
 saf_seas<-saf_seas%>% 
-  select(-saf_seas_A_2023ID)
+  select(-any_of("saf_seas_A_2023ID"))
 
 list_perm_seas<-list(saf_perm,saf_seas)
 
@@ -247,7 +247,7 @@ fidfreqsorig<-saf_perm %>%
 
 fidfreqs<-fidfreqsorig %>% 
   group_by(fid) %>% 
-  summarise(count=n()) %>% 
+  dplyr::summarise(count=n()) %>% 
   flatten() %>% 
   dplyr::rename(fid_uses_by_slc = count)
 
@@ -301,7 +301,7 @@ llo_error<-inner_join(saf_perm,fids_with_multiple_slcs,fids_with_llo, by=c("slc"
 
 flag1<-llo_error %>% 
   filter(llo=="Y") %>%
-  mutate(flag1=1,
+  dplyr::mutate(flag1=1,
        flag7=0)
 
 
@@ -312,7 +312,7 @@ flag7<-anti_join(flag7,flag1,by=c("slc","fid"))
 
 flag7<-flag7 %>% 
   select(slc, fid) %>% 
-  mutate(flag1=0,
+  dplyr::mutate(flag1=0,
          flag7=1)
 
 
@@ -379,7 +379,8 @@ areaoverreported <- checkareamismatches_fids %>%
 
 remove_duplicates <- areaoverreported %>%
   group_by(fid, area, code) %>%
-  filter(!(claimtype == "OTHER" & n() > 1))
+  filter(!(claimtype == "OTHER" & n() > 1)) %>% 
+  ungroup()
 
 # 0 records (DD1:21)
 
@@ -393,11 +394,11 @@ duplicates <- areaoverreported %>%
 # flag EXCL land where total crop area is too large
 
 
-areastilloverreported <- group_by(remove_duplicates, fid) %>%
-  summarize(
+areastilloverreported <- remove_duplicates %>%
+  group_by(fid) %>% 
+  dplyr::summarize(
     max_field = max(field_area),
-    sum_area = sum(area)
-  )
+    sum_area = sum(area))
 
 areastilloverreported <- merge(areastilloverreported, saf_perm, by = "fid")
 
@@ -422,7 +423,7 @@ areastilloverreported2 <- areastilloverreported %>%
 # Currently 41 records (DD1:36).
 
 areastilloverreported2 <- group_by(areastilloverreported2, fid) %>%
-  summarize(
+  dplyr::summarize(
     max_field = max(field_area),
     sum_area = sum(area)
   )
@@ -455,7 +456,7 @@ areastilloverreported3 <- areastilloverreported2 %>%
 # 27 records (DD1:27) 
 
 areastilloverreported3 <- group_by(areastilloverreported3, fid) %>%
-  summarize(
+  dplyr::summarize(
     max_field = max(field_area),
     sum_area = sum(area)
   )
@@ -482,7 +483,7 @@ overreportedllofids <- overreportedlloerror %>%
   group_by(fid) %>%
   filter(!(n() > 1)) %>% 
   select(fid, mlc) %>%
-  rename(llomlc = mlc)
+  dplyr::rename(llomlc = mlc)
 
 
 overreportedothererror <- merge(overreportedllofids, areastilloverreported3, by = "fid", all = TRUE)
@@ -514,7 +515,7 @@ duplicates <- duplicates %>%
 
 # Create flag 3 (overreported llo error). Currently df is empty.
 
-#overreportedlloerror$flag3<-1 #this doesn't work on an empty dataframe. Comment in if not empty.
+overreportedlloerror <- overreportedlloerror %>% dplyr::mutate(flag3 = 1)
 
 overreportedlloerror <- overreportedlloerror %>%
   select(brn, fid, line, claimtype, code, area) 
@@ -548,10 +549,6 @@ df_list <- list(saf_perm, duplicates, overreportedlloerror, dperror, overreporte
 
 finalsaf_perm <- df_list %>% reduce(full_join, by = c("brn", "fid", "line", "claimtype", "code", "area"))
 
-finalsaf_perm$flag3<- "0"
-
-finalsaf_perm$flag3<-as.numeric(finalsaf_perm$flag3)
-
 
 
 # Seasonal dataset flagging 
@@ -573,7 +570,7 @@ checkarea_seas <- saf_seas %>%
   filter(claimtype != "LMC")
 
 checkarea_seas <- group_by(checkarea_seas, fid) %>%
-  summarize(
+  dplyr::summarize(
     sum_area = sum(area),
     sum_field = sum(field_area),
     sum_eligible = sum(eligible_area),
@@ -591,8 +588,8 @@ inconsistentfieldareas_seas <- checkarea_seas %>%
 checkareamismatches_seas <- checkarea_seas %>%
   filter(max_field > 0 & sum_area > 0) %>%
   mutate(
-    diff = round(max_field - sum_area, 3),
-    ratio = round(sum_area / max_field, 3)
+    diff = round_half_up(max_field - sum_area, 3),
+    ratio = round_half_up(sum_area / max_field, 3)
   ) %>% 
   filter(diff > under_reportlimit | diff < (-over_report_limit) | ratio > over_report_percent | ratio < under_report_percent) %>% 
   select(fid, sum_area, max_field, diff, ratio)
@@ -630,7 +627,7 @@ areaoverreported_seas <- checkareamismatches_fids_seas %>%
 
 # order by Business Name
 
-areaoverreported_seas <- areaoverreported_seas[order(areaoverreported_seas$business_name), ]
+areaoverreported_seas <- areaoverreported_seas %>% arrange(business_name)
 
 # 60 records (DD1:84)
  
@@ -644,7 +641,7 @@ duplicates_seas <- areaoverreported_seas[duplicated(areaoverreported_seas[c("fid
 # Check fids where the claimed area is much larger than field area
 
 areastilloverreported_seas <- group_by(remove_duplicates_seas, fid) %>%
-  summarize(
+  dplyr::summarize(
     max_field = max(field_area),
     sum_area = sum(area)) %>% 
   select(fid, max_field, sum_area)
@@ -693,7 +690,7 @@ finalsaf_seas <- df_list_seas %>% reduce(full_join, by = c("brn", "fid", "line",
 
 
 
-# Addiitonal checks and automatic corrections -------------------------------------------------
+# Additional checks and automatic corrections -------------------------------------------------
 
 # From B8 section of SAS code
 
@@ -712,12 +709,12 @@ saf_prev <- read_table_from_db(server=server,
 # Reading in from ADM creates a new variable with id. Remove if necessary.
 
 saf_prev<-saf_prev %>% 
-  select(-allsaf_B8_2022ID)
+  select(-any_of("allsaf_B8_2022ID"))
 
 # rename area in current seasonal data
 
 saf_seascurr_fid <- saf_seascurr %>%
-  rename(areacurr = area)
+  dplyr::rename(areacurr = area)
 
 
 
@@ -725,7 +722,7 @@ saf_seascurr_fid <- saf_seascurr %>%
 
 saf_seasprev_fid <- saf_prev %>%
   filter(substr(code, 1, 4) == "LLI-" & claimtype == "SFPS") %>%
-  rename(areaprev = area) %>% 
+  dplyr::rename(areaprev = area) %>% 
   distinct(parish, holding, fid, .keep_all = TRUE) %>% 
   filter(!(is.na(parish) | is.na(holding)))
 
@@ -785,7 +782,7 @@ split <- rbind(bothyears, onlycurr_fid)
 
 
 pfdscurr_seas <- split %>%
-  rename(area = areacurr) %>%
+  dplyr::rename(area = areacurr) %>%
   mutate(
     llo = 0,
     landtype = "SEAS",
@@ -811,7 +808,7 @@ pfds_finalcurr <- bind_rows(saf_permcurr, pfdscurr_seas)
 
 pfds_corrections1 <- pfds_finalcurr %>%
   filter(flag6 == 1 & !is.na(mlc) & landtype == "PERM") %>%
-  mutate(
+  dplyr::mutate(
     parish = str_remove(substr(mlc, 1, 3), "^0+"),
     holding = str_remove(substr(mlc, 5, 8), "^0+"),
     flag6 = 0
@@ -831,8 +828,8 @@ pfdscorrections <- rbind(pfds_corrections1, pfds_corrections2, pfds_corrections3
 
 # Following chunk only works when flag3 is present.
 
-pfds_finalcurr<-pfds_finalcurr %>%
-  filter(!flag3>0)
+# pfds_finalcurr<-pfds_finalcurr %>%
+#   filter(!flag3>0)
 
 
 pfds_finalcurr <- setdiff(pfds_finalcurr, pfds_corrections2)
@@ -925,7 +922,6 @@ write_dataframe_to_db(server=server,
 
 saf2015orig<-saf2015
 
-saf2015<-saf2015orig
 
 #levels(as.factor(saf2015$code))
 
@@ -938,7 +934,7 @@ saf2015<-saf2015 %>%
     brn15 = brn,
     mlc15 = mlc,
     slc15 = slc ) %>% 
-  mutate(rgr15=ifelse((code=="RGR" | code =="IFL"), area, ""),
+  dplyr::mutate(rgr15=ifelse((code=="RGR" | code =="IFL"), area, ""),
          woodland15=ifelse((code=="EX-SS"|code=="NETR-A"|code=="NETR-NA"|code=="TREES"|code=="WDG"), area, ""),
          otherland15=ifelse((code=="BRA"|code=="BUI"|code=="FSE"|code=="GOR"|code=="MAR"|code=="PRSL"|code=="ROAD"|code=="ROK"|code=="SCB"|code=="SCE"|code=="SCR"|code=="UNSP"|code=="WAT"|code=="OTH-LAND"), area, "")) %>%
   select(brn15, mlc15, slc15, field_area15,eligible_area15,rgr15,woodland15,otherland15,parish,holding,fid) %>% 
@@ -946,7 +942,7 @@ saf2015<-saf2015 %>%
 
 saf2015<-saf2015 %>% 
   group_by(parish, holding, fid) %>% 
-  summarise(brn15=max(brn15), slc15=max(slc15), mlc15=max(mlc15), field_area15=max(field_area15, na.rm=TRUE), eligible_area15=max(eligible_area15, na.rm=TRUE), rgr15=sum(rgr15, na.rm=TRUE), woodland15=sum(woodland15, na.rm=TRUE), otherland15=sum(otherland15, na.rm=TRUE), .groups="keep") %>% 
+  dplyr::summarise(brn15=max(brn15), slc15=max(slc15), mlc15=max(mlc15), field_area15=max(field_area15, na.rm=TRUE), eligible_area15=max(eligible_area15, na.rm=TRUE), rgr15=sum(rgr15, na.rm=TRUE), woodland15=sum(woodland15, na.rm=TRUE), otherland15=sum(otherland15, na.rm=TRUE), .groups="keep") %>% 
   ungroup()
 saf2015<-as.data.frame(saf2015)
 
@@ -986,7 +982,7 @@ saf2023<-saf_curr %>%
     brn23 = brn,
     mlc23 = mlc,
     slc23 = slc ) %>% 
-  mutate(rgr23=ifelse((code=="RGR" | code =="IFL"), area, ""),
+  dplyr::mutate(rgr23=ifelse((code=="RGR" | code =="IFL"), area, ""),
          woodland23=ifelse((code=="EX-SS"|code=="NETR-A"|code=="NETR-NA"|code=="TREE"|code=="WDG"), area, ""),
          otherland23=ifelse((code=="BRA"|code=="BUI"|code=="FSE"|code=="GOR"|code=="MAR"|code=="PRSL"|code=="ROAD"|code=="ROK"|code=="SCB"|code=="SCE"|code=="SCR"|code=="UNSP"|code=="WAT"|code=="OTH-LAND"), area, "")) %>%
   select(brn23, mlc23, slc23, field_area23,eligible_area23,rgr23,woodland23,otherland23,parish,holding,fid) %>% 
@@ -995,7 +991,7 @@ saf2023<-saf_curr %>%
 
 saf2023<-saf2023 %>% 
   group_by(parish, holding, fid) %>% 
-  summarise(brn23=max(brn23), slc23=max(slc23), mlc23=max(mlc23), field_area23=max(field_area23, na.rm=TRUE), eligible_area23=max(eligible_area23, na.rm=TRUE), rgr23=sum(rgr23, na.rm=TRUE), woodland23=sum(woodland23, na.rm=TRUE), otherland23=sum(otherland23, na.rm=TRUE), .groups="keep") %>% 
+  dplyr::summarise(brn23=max(brn23), slc23=max(slc23), mlc23=max(mlc23), field_area23=max(field_area23, na.rm=TRUE), eligible_area23=max(eligible_area23, na.rm=TRUE), rgr23=sum(rgr23, na.rm=TRUE), woodland23=sum(woodland23, na.rm=TRUE), otherland23=sum(otherland23, na.rm=TRUE), .groups="keep") %>% 
   ungroup()
 saf2023<-as.data.frame(saf2023)
 
@@ -1006,7 +1002,7 @@ excl_all<-saf_curr %>%
 
 excl<-excl_all %>% 
   group_by(parish, holding, fid) %>% 
-  summarise(area=sum(area), .groups="keep") %>% 
+  dplyr::summarise(area=sum(area), .groups="keep") %>% 
   ungroup()
 
 check_excl<-inner_join(saf2015,excl, by=c("parish", "holding", "fid"))
@@ -1020,7 +1016,7 @@ check_excl<-left_join(check_excl, saf2023, by=c("parish", "holding", "fid"))
 
 
 newcode<-check_excl %>% 
-  mutate(
+  dplyr::mutate(
     newcode=
       ifelse(abs(area+otherland23-otherland15) < 0.01, "OTH-LAND",
              ifelse(abs(area+woodland23-woodland15) < 0.01, "TREE",
@@ -1155,7 +1151,7 @@ extra_ncode$item185 <- ""
 
 extra_ncode <- extra_ncode %>%
   group_by(parish, holding) %>%
-  mutate(
+  dplyr::mutate(
     item185 =
       ifelse(row_number() == 1, "a", "")
   )
@@ -1173,20 +1169,18 @@ extra_ncode <- extra_ncode %>%
 
 extra_ncode$item185 [is.na(extra_ncode$item185)] <- ""
 
-
+gc()
 
 # Group by parish and holding. item185 consists of multiple strings concatenated - should change this to include semicolon (if collapse=";" it ends up with lots of unwanted semicolons!)
 
 extra_item185 <- extra_ncode %>%
   group_by(parish, holding) %>%
-  summarise(item185 = paste(item185, collapse = "")) %>% 
+  dplyr::summarise(item185 = paste(item185, collapse = "")) %>% 
   mutate(
     parish = as.numeric(parish),
     holding = as.numeric(holding)
-  )
-
-
-
+  )  # On the run-through on 26.09.23 R gave an error at this point Error in stopifnot(is.character(filename), length(filename) == 1L) : reached elapsed time limit
+# 
 
 # Group by SLC
 

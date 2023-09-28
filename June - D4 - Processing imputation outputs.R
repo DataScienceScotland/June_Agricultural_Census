@@ -11,9 +11,9 @@ rm(list = ls())
 
 library(imputeJAS)
 library(RtoSQLServer)
-library(dplyr)
 library(janitor)
 library(stringr)
+library(dplyr)
 
 
 
@@ -26,15 +26,15 @@ schema <- "juneagriculturalsurvey2023alpha"
 source("Functions/Functions.R")
 source("item_numbers.R")
 
-# Load botstrapEM imputation outputs------------------------------------------------------------------
+# Load bootstrapEM imputation outputs------------------------------------------------------------------
 
 
 # They are currently a list, so need to be processed in D3 before saving in ADM. Will move this in the future.
 # For now, load from the datashare.
 
-load(paste0(Code_directory, "/jac_bootstrapEM_140923.rda"))
+load(paste0(Code_directory, "/jac_bootstrapEM_260923.rda"))
 
-
+load(paste0(Code_directory, "/jac_pigs_bootstrapEM_270923.rda"))
 
 # Process outputs ---------------------------------------------------------
 
@@ -57,21 +57,47 @@ output_bootstrapEM<-clean_names(output_bootstrapEM)
 
 imputed_holdings<-output_bootstrapEM
 
+# Pigs
 
+outputspigs<-clean_names(outputspigs)
+
+imputed_pigs<-outputspigs
 
 # Load chainedEQ outputs --------------------------------------------------
 
-# Add this later - 20.09.23
+# Comment this back in if using chainedEQ outputs
 
-
-
-
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_one.rda"))
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_two.rda"))
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_three.rda"))
+# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_four.rda"))
+# 
+# 
+# 
+# outputsone<-do.call(rbind.data.frame, outputs_one)
+# outputstwo<-do.call(rbind.data.frame, outputs_two)
+# outputsthree<-do.call(rbind.data.frame, outputs_three)
+# outputsfour<-do.call(rbind.data.frame, outputs_four)
+# 
+# output_chainedEQ<-rbind(outputsone, outputstwo, outputsthree, outputsfour)
+# 
+# str(output_chainedEQ)
+# 
+# 
+# rm(outputs_one, outputs_two, outputs_three, outputs_four)
+# 
+# output_chainedEQ<-clean_names(output_chainedEQ)
+# 
+# 
+# imputed_holdings<-output_chainedEQ
 # Process outputs ---------------------------------------------------------
 
 
 # Add flag - these holdings all have imp_madeup.
 
 imputed_holdings$imp_madeup<-1
+
+imputed_pigs$imp_madeup<-1
 
 
 # Create full dataset with zeroes and rolled forward prior to multiple imputation --------------------------------------------
@@ -143,6 +169,21 @@ post_zero_rf_full<-gtools::smartbind(post_zero_rf_whole_pop, not_in_population)
 
 rownames(post_zero_rf_full)<-NULL
 
+
+# Add back the rolled forward for incomplete responses (made in D2)
+
+pre_imputation_rolled_forward_incomplete<- read_table_from_db(server=server,
+                                        database=database,
+                                        schema=schema,
+                                        table_name="pre_imputation_rolled_forward_incomplete")
+
+
+pre_imputation_rolled_forward_incomplete<-pre_imputation_rolled_forward_incomplete %>% 
+  filter(yr==2023) %>% 
+  select(-yr)
+
+post_zero_rf_full<-rows_update(post_zero_rf_full, pre_imputation_rolled_forward_incomplete, by="id")
+
 # check final
 
 
@@ -154,6 +195,18 @@ nlevels(as.factor(post_zero_rf_full$id))
 
 # Save this dataset
 
+save(post_zero_rf_full, file = paste0(Code_directory, "/post_zero_rf_full.rda"))
+
+# Save to ADM
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="post_zero_rf_full",
+                      dataframe=post_zero_rf_full,
+                      append_to_existing = FALSE,
+                      batch_size=10000,
+                      versioned_table=FALSE)
 
 rm(pre_imputation, pre_imputation_reduced_zeroes, pre_imputation_rolled_forward)
 gc()
@@ -177,9 +230,9 @@ nlevels(as.factor(post_zero_rf_twenty$id))
 
 # Add imputed values into full dataset (twenty imps) ----------------------
 
-output_bootstrapEM<-output_bootstrapEM %>% select(-yr)
+imputed_holdings<-imputed_holdings %>% select(-yr)
 
-post_imputation<-rows_update(post_zero_rf_twenty, output_bootstrapEM, by=c("id","imp"))
+post_imputation<-rows_update(post_zero_rf_twenty, imputed_holdings, by=c("id","imp"))
 
 
 checkbefore<-post_zero_rf_twenty %>% 
@@ -212,6 +265,65 @@ means<-means %>%
 
 
 
+
+# Pigs --------------------------------------------------------------------
+
+# Pigs - create equivalent dataset - 20 copies of the same dataset with imp 1:20 only with imputed items
+
+post_zero_rf_imputed_pigs<-post_zero_rf_full%>% 
+  select(c(id,land_data, imptype, madeup, saf_madeup, ags_madeup, imp_madeup),all_of(pig_imputed_items))
+
+
+post_zero_rf_twenty_pigs<-data.frame()
+
+for (i in 1:20) {
+  df_temp<-post_zero_rf_imputed_pigs
+  df_temp$imp<-i
+  post_zero_rf_twenty_pigs<-rbind(post_zero_rf_twenty_pigs, df_temp)
+}
+
+nlevels(as.factor(post_zero_rf_twenty_pigs$id))
+
+
+# Add imputed values into full dataset (twenty imps) ----------------------
+
+imputed_pigs<-imputed_pigs %>% select(-yr)
+
+post_imputation_pigs<-rows_update(post_zero_rf_twenty_pigs, imputed_pigs, by=c("id","imp"))
+
+
+checkbefore<-post_zero_rf_twenty_pigs %>% 
+  select(id, imp, land_data, imptype, madeup, saf_madeup, ags_madeup, imp_madeup, pig_imputed_items)
+
+checkafter<-post_imputation_pigs %>% 
+  select(id, imp, land_data, imptype, madeup, saf_madeup, ags_madeup, imp_madeup, pig_imputed_items)
+
+
+nlevels(as.factor(post_imputation_pigs$id))
+
+# Create mean values and confidence intervals for imputed items ---------------------------
+
+# Dataset with only imputed items
+
+pigs_imputed<-post_imputation_pigs %>% 
+  select(c("imp","id"),all_of(pig_imputed_items))
+
+# Create means and confidence intervals
+
+pigs_means <- pigs_imputed %>%
+  group_by(id) %>%
+  dplyr::summarise(across(starts_with("item"), list(mean = ~ifelse(mean(.)<0,0, mean(.)),
+                                                    sd = ~ifelse(mean(.)<0,0, sd(.)))))
+
+nlevels(as.factor(pigs_means$id))
+
+pigs_means<-pigs_means %>% 
+  rename_with(~str_remove(.,"_mean"), contains("_mean"))
+
+
+
+
+
 # Add means and confidence intervals back into full dataset  --------------
 
 # Update with imputed means 
@@ -226,7 +338,29 @@ sdsonly<-means %>%
 
 post_imputation_final<-merge(post_imputation_final, sdsonly, by="id")
 
+
+pigs_meansonly<-pigs_means %>% 
+  select(id, all_of(pig_imputed_items))
+
+post_imputation_final<-rows_update(post_imputation_final, pigs_meansonly, by="id")
+
+pigs_sdsonly<-pigs_means %>% 
+  select(id, ends_with("sd"))
+
+post_imputation_finaltest<-merge(post_imputation_final, pigs_sdsonly, by="id")
+
 checksds<-post_imputation_final %>% select(id, ends_with("sd"))
+
+checkbefore<-post_zero_rf_full %>% 
+  filter(id=="80_36"|id=="51_19"|id=="284_366")%>% 
+  select(id, item146)
+
+
+checkafter<-post_imputation_final %>% 
+  filter(id=="80_36"|id=="51_19"|id=="284_366") %>% 
+  select(id, item146, item146_sd)
+
+
 
 # Save  -------------------------------------------------------------------
 

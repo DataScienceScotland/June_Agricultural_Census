@@ -13,7 +13,8 @@ library(RtoSQLServer)
 library(readxl)
 
 
-source("June - E - ScotEID.R")
+source("June - E1 - ScotEID.R")
+
 yr <- 2023
 yr1 <- yr - 1
 yr2 <-  yr - 2

@@ -2,7 +2,7 @@
 # This needs to be run every time the combinef_data or combined_data_2023_corrected is updated (i.e. using new data cuts)
 # This script is based on programs D0-D2 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Created by Lucy Nevard July 2023.
-# Modified by Lucy Nevard 07.09.23
+# Modified by Lucy Nevard 25.09.23
 
 
 # Before import -----------------------------------------------------------
@@ -23,8 +23,8 @@ library(data.table)
 
 # Load functions
 
-source("Functions/Functions.R")
-source("item_numbers.R")
+# source("Functions/Functions.R")
+# source("item_numbers.R")
 
 # Directories
 
@@ -38,69 +38,33 @@ schema <- "juneagriculturalsurvey2023alpha"
 # Load and prepare datasets ------------------------------------------------------------------
 
 
-
 # Previous years is a large dataset and is time-consuming to read in from ADM - read in from the datashare instead if needed. 
 
-# previous_years <- read_table_from_db(server=server, 
-#                                      database=database, 
-#                                      schema=schema, 
+# previous_years <- read_table_from_db(server=server,
+#                                      database=database,
+#                                      schema=schema,
 #                                      table_name="jac_previous_data_ten_years")
 
 
 load(paste0(Code_directory, "/previous_years.rda"))
 
-# Convert blank spaces in historic data to NAs
 
-previous_years[previous_years==""] <- NA
-
-# Make items numeric
-
-previous_years <- previous_years %>%
-  mutate(across(starts_with("item"), ~as.numeric(.)))
-
-# Check this worked 
-
-str(previous_years, list.len = ncol(previous_years))
-
-# Rename the previous years' summary variables to match the current year's
-
-previous_years <- previous_years %>% 
-  dplyr::rename(
-    item27710=barley_27710,
-    item27715=oats_27715,
-    item27720=osr_27720,
-    item27725=stockfeed_27725,
-    item27730=veginopen_27730,
-    item27735=fruitinopen_27735,
-    item27740=nursery_27740,
-    item27750=opensoil_27750,
-    item27755=solidfloor_27755,
-    item27775=horses_27775,
-    item27780=goats_27780
-    
-  )
-
-
-# Make any negative numbers zero - item27750 had a few tiny negative numbers because of the way it was calculated.
-
-previous_years<-previous_years %>%
-  dplyr::mutate(across(starts_with("item"), ~ ifelse(. < 0, 0, .)))
-
+previous_years_full<-previous_years
 
 # Load combined_data_2023.
 
-# As of 20/09/23 this is the combined dataset (made in B2) prior to the corrections. It is from the Ags extract on 20/09/23. 
-# Eventually, this should be the corrected dataset produced at the end of C3 (post validations and corrections). 
+# As of 26/09/23 this is the corrected combined dataset produced at the end of C3 (post validations and corrections). It is from the Ags extract on 26/09/23. 
+
 
 
 combined_data_2023 <- read_table_from_db(server=server,
                                 database=database,
                                 schema=schema,
-                                table_name="combined_data_2023") #change to combined_data_2023_corrected
+                                table_name="combined_data_2023_corrected") 
 
 
 data_2023 <- combined_data_2023 %>% 
-  mutate(in2023="1") 
+  dplyr::mutate(in2023="1") 
 
 
 # Load population frame
@@ -203,7 +167,7 @@ not_in_population<-not_in_population %>%
 
 # Save these holdings to be added back after all imputation complete
 
-save(pre_imputation_2023, file = paste0(Code_directory, "/not_in_population.rda"))
+save(not_in_population, file = paste0(Code_directory, "/not_in_population.rda"))
 
 write_dataframe_to_db(server=server,
                       database=database,
@@ -224,20 +188,23 @@ pre_imputation_2023<-pre_imputation_2023 %>%
   select(-(any_of(section_12))) %>% 
   select(-(any_of(section_13)))
 
-# Keep only holdings which need to be imputed
+pre_imputation_2023_full<-pre_imputation_2023
 
-pre_imputation_2023<-pre_imputation_2023 %>% 
+# Create main pre-imputation dataset - no response ------------------------
+
+
+# Keep only holdings which need to be imputed - non-response
+
+pre_imputation_2023<-pre_imputation_2023_full %>% 
   filter(!imptype=="none")
 
 
 # Combine with historic data ---------------------------------------------
 
 
-# Create id variable in both
+# Create id variable
 
 pre_imputation_2023$id<-paste0(pre_imputation_2023$parish,"_",pre_imputation_2023$holding)
-
-previous_years$id<-paste0(previous_years$parish,"_",previous_years$holding)
 
 # Keep only historic holdings which are in the current dataset
 
@@ -274,11 +241,66 @@ pre_imputation<-pre_imputation %>%
 pre_imputation[pre_imputation==""] <- NA
 
 
+# Create second pre-imputation dataset for incomplete responses -----------
+
+
+pre_imputation_2023_incomplete<-combined_data_2023 %>% 
+  filter(survdata=="full") %>% 
+  filter(item2727==0 & item2980 ==0 | item2727==0 & (item2877+item2878)==0 | (item192+item193+item194+item195+item196+item197+item198+item199+item1714+item1715+
+                                                                                item1716+item1717+item1718+item1719)==0)
+
+pre_imputation_2023_incomplete<-pre_imputation_2023_incomplete %>% 
+  mutate(yr=2023)
+
+pre_imputation_2023_incomplete<-pre_imputation_2023_incomplete %>% 
+  select(-(any_of(section_12))) %>% 
+  select(-(any_of(section_13)))
+
+
+# Create id variable
+
+pre_imputation_2023_incomplete$id<-paste0(pre_imputation_2023_incomplete$parish,"_",pre_imputation_2023_incomplete$holding)
+
+
+# Keep only historic holdings which are in the current dataset
+
+previous_years_incomplete<-subset(previous_years_full, id %in% pre_imputation_2023_incomplete$id)
+
+#take out text items as they're causing issues with binding
+
+pre_imputation_2023_incomplete<-pre_imputation_2023_incomplete %>% 
+  select(-item185, -item186)
+
+
+# Keep only historic items which are in the current dataset
+
+previous_years_incomplete<-previous_years_incomplete %>% 
+  select(id, any_of(names(pre_imputation_2023)))
+
+# Combine the two datasets
+
+pre_imputation_incomplete<-bind_rows(pre_imputation_2023_incomplete,previous_years_incomplete)
+
+# Convert id to a factor
+
+pre_imputation_incomplete$id<-as.factor(pre_imputation_incomplete$id)
+
+# Exclude if year is missing
+
+pre_imputation_incomplete<-pre_imputation_incomplete %>% 
+  filter(!is.na(yr))
+
+# Change all blanks to NA
+
+pre_imputation_incomplete[pre_imputation_incomplete==""] <- NA
+
+
 
 # Save --------------------------------------------------------------------
 
 
 # Save to ADM and datashare for use in D2. 
+# Main dataset
 
 write_dataframe_to_db(server=server,
                       database=database,
@@ -290,3 +312,16 @@ write_dataframe_to_db(server=server,
                       versioned_table=FALSE)
 
 save(pre_imputation, file = paste0(Code_directory, "/pre_imputation.rda"))
+
+# Second dataset
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="pre_imputation_incomplete",
+                      dataframe=pre_imputation_incomplete,
+                      append_to_existing = FALSE,
+                      batch_size=10000,
+                      versioned_table=FALSE)
+
+save(pre_imputation_incomplete, file = paste0(Code_directory, "/pre_imputation_incomplete.rda"))

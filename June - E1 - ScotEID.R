@@ -64,8 +64,8 @@ cattle$holding <- as.numeric(substr(cattle$cph, 8,11))
 #remove birth_cph and cph to be able to group by parish and holding 
 cattle <- cattle %>% select(-c(birth_cph,
                                cph,
-                               current_wbm_cph,
-                               scoteid_A_2023ID))
+                               current_wbm_cph),
+                            -any_of("scoteid_A_2023ID"))
 ## NOTE Parish and Holding will only retain leading zeroes if remaining as strings, if format is changed to numeric then leading zeroes will be dropped
  
 
@@ -597,10 +597,10 @@ cts_time_series$ages <- c("Female beef cattle under 1","Female dairy cattle unde
                           "Male cattle under 1","Aged 1-2","Aged 2 years and over","Total cattle")
 
 # # Merge with JAC data -----------------------------------------------------
-# June_CTS <- full_join(June_data, cts, by = c("parish", "holding"))
-# # #Save Outputs----------------------------------------------------------------------------------------------
-# 
-# #JuneCTS
+#  June_CTS <- full_join(June_data, cts, by = c("parish", "holding"))
+# # # #Save Outputs----------------------------------------------------------------------------------------------
+# # 
+# # #JuneCTS
 # write_dataframe_to_db(
 #   server = server,
 #   database = database,
@@ -611,4 +611,4 @@ cts_time_series$ages <- c("Female beef cattle under 1","Female dairy cattle unde
 #   versioned_table = FALSE,
 #   batch_size = 10000
 # )
-# 
+
