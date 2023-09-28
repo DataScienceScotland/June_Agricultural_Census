@@ -147,7 +147,7 @@ june_so <- june_so %>% rowwise() %>%
         d04 = sum(item16,item18, na.rm=TRUE),
         d05 = sum(item17,
                   item20,
-                  item22,
+                  #item22,
                   na.rm=TRUE),
  
         d08 = item15,
