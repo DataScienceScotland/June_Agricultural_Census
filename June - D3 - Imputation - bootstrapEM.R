@@ -1,7 +1,7 @@
 # This script takes in the pre-imputation dataset rolled forward dataset and performs multiple imputation for imputed items. 
 # There are two D3 scripts. This one is for the function bootstrapEM. The other is for the more time-consuming function chainedEQ. Only one will be run in the final cut.
 # Created by Lucy Nevard June 2023. 
-# Modified by Lucy Nevard 07.09.23
+# Modified by Lucy Nevard 27.09.23
 
 
 
@@ -55,7 +55,7 @@ pre_imputation_rolled_forward<- read_table_from_db(server=server,
 
 # These are the imputed item. This list may be updated if decided by the Census team. 
 
-imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item145","item2038","item2039",
+imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item2038","item2039",
                  "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
                  "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
                  "item27755","item27775","item27780") 
