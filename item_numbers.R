@@ -453,14 +453,14 @@ all_glasshouse_ags <- c("item2713", "item2707", "item2866", "item2714", "item270
 all_glasshouse_saf <- c("item2858", "item2859", "item2860", "item2861", "item2863", "item2864", "item2865")
 all_glasshouse <- c(all_glasshouse_ags, all_glasshouse_saf, "item85", "item86")
 all_cattle <- c("cts301", "cts302", "cts303", "cts304", "cts305", "cts306", "cts307", "cts308", "cts309", "cts310", "cts311", "cts312")
-all_sheep <- c("item139", "item140", "item141", "item144", "item145")
+all_sheep <- c("item139", "item140", "item141", "item143", "item144", "item145")
 all_crops <- c("item14", "item15", "item16", "item18", "item17", "item20", "item3156", "item22", "item19", "item23", "item21", "item24", "item2320", "item27", "item28", "item2034", "item29", "item30", "item31", "item2059", "item32", "item34", "item36", "item2469", "item2470")
 all_grass <- c("item2321", "item2322")
 all_other_land <- c("item47", "item48", "item49")
 all_veg  <- c("item52", "item53", "item55", "item56", "item2323", "item59", "item60", "item61", "item63", "item64", "item65", "item66")
 all_fruit <- c("item70", "item71", "item72", "item2832", "item75")
 all_nursery <- c("item2324", "item1709", "item80", "item81", "item1710", "item82", "item83")
-all_pig <-c("item146", "item147", "item148", "item149", "item50", "item151", "item27760","item27765", "item27770", "item157")
+all_pig <-c("item146", "item147", "item148", "item149", "item150", "item151", "item27760","item27765", "item27770", "item157")
 all_poultry <- c("item158", "item159", "item160", "item161", "item162", "item163", "item164", "item167", "item170", "item1708", "item2038", "item2039")
 all_other_livestock <- c("item94", "item95", "item96", "item1712", "item1713", "item98", "item2472", "item2473", "item2474", "item2826", "item2868", "item171")
 occupier_12 <- c("item2877","item2878", "item27785","item177","item178", "item179", "item2566","item3056","item3057", "item27805", "item27795", "item182","item183","item184", "item2567")
@@ -664,7 +664,7 @@ rolled_forward_ags_items<-c("item171", "item192", "item193", "item194", "item195
 
 
 
-imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item145","item2038","item2039",
+imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item2038","item2039",
                  "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
                  "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
                  "item27755","item27775","item27780") 
