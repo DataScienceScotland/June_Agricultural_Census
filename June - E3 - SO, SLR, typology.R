@@ -138,27 +138,18 @@ june_so <- june_temp %>% filter(completedata==1) %>%
 
 
 # Calculate SGM -----------------------------------------------------------
-# market_veg <- c("item55",
-#                "item56",
-#                "item59",
-#                "item60", 
-#                "item61",
-#                "item63",
-#                "item64", 
-#                "item65", 
-#                "item66", 
-#                "item70",
-#                "item2323")
 
-#item22 missing from June dataset
 june_so <- june_so %>% rowwise() %>% 
   dplyr::mutate(a05 = case_when(lfatemp ==1| lfatemp==2 ~ 1,
                          TRUE ~ 0),
          d01 = item14,
         d03 = item3156,
         d04 = sum(item16,item18, na.rm=TRUE),
-        d05 = sum(item17,item20, na.rm=TRUE),
-                  #item22),
+        d05 = sum(item17,
+                  item20,
+                  #item22,
+                  na.rm=TRUE),
+ 
         d08 = item15,
         d09 = sum(item27,item28,item2034, na.rm=TRUE),
         d10 = sum(item24, item2320, na.rm=TRUE),
@@ -194,6 +185,7 @@ june_so<- june_so %>% dplyr::mutate(subtotal = rowSums(across(c(item55,
                         item2323), ~ replace(.x, .x<2, 0)), na.rm = TRUE))
   
 
+#replace prev items with june 2023 equivalents (previous items are commented out)
 
 june_so <- june_so %>%rowwise %>% 
   dplyr::mutate(d14a = case_when(tot>0 ~case_when(3*subtotal>2*tot ~ sum(item52,
@@ -225,14 +217,26 @@ june_so <- june_so %>%rowwise %>%
                                                     item2323, na.rm =TRUE)),
                           TRUE ~item66),
          threshold = 1,
-         d15 = sum(#item87,
-                   #item2036,
-                   #item2037, 
-                   item2556,
-                   item2557, 
-                   item2836, 
-                   #item6000, 
-                   na.rm = TRUE),
+         # d15 = sum(#item87,
+         #           #item2036,
+         #           #item2037, 
+         #           item2556,
+         #           item2557, 
+         #           item2836, 
+         #           #item6000, 
+         #           na.rm = TRUE),
+         d15 = sum(#item2713,
+                   item2707,
+          #item2714, 
+          #item2708,
+          #item2715,
+          #item2709,
+           item2556,
+           item2557, 
+           item2836, 
+          #item2866,
+          item2861,
+           na.rm = TRUE),
         d16 = sum(item2324,
                   item1709,
                   item81,
@@ -245,7 +249,17 @@ june_so <- june_so %>%rowwise %>%
         #                 TRUE ~ sum(#item1711,
         #                            item1943, 
         #                            na.rm =TRUE)),
-        d17 = 0,                       
+        # d17 = case_when(sum(#item2716, 
+        #                     #item2710,
+        #                     #item2717,
+        #                     #item2711,
+        #                     #na.rm =TRUE)<0 ~ 0,
+        #                 TRUE ~ sum(item2716, 
+        #                            item2710,
+        #                            item2717,
+        #                            item2711,
+        #                            na.rm =TRUE)),
+        d17 =0,
         d18a = item2321,
         d18b1 = item2059,
         d18b2_3 = sum(item30,
@@ -254,8 +268,8 @@ june_so <- june_so %>%rowwise %>%
         d20=item41,
         d21=item2469,
         
-        #SAS queries:
-        #code overwrites prev tot = sum(market_veg) to tot = item50                                          
+        #SAS:
+        #code overwrites prev tot = sum(market_veg) to tot = item50... haven't done this here                                      
         
         f01 = item2322,
         f02 = item47, 
@@ -269,9 +283,11 @@ june_so <- june_so %>%rowwise %>%
                    item2832,
                    item75, na.rm=TRUE),
         g05a = item80,
-        j01 = sum(#item95,
-                  #item96, 
-                  item2868, na.rm=TRUE), 
+        # j01 = sum(#item95,
+        #           #item96, 
+        #           item2868, na.rm=TRUE), 
+        j01 = sum(item27775,
+                     item2868, na.rm=TRUE), 
         j02 = sum(CTS301, 
                   CTS302,
                   CTS309, na.rm=TRUE),
@@ -290,21 +306,26 @@ june_so <- june_so %>%rowwise %>%
                   item144, na.rm=TRUE),
         # j10a = sum(item1712,
         #            item1713, na.rm=TRUE),
-        j10a= 0,
-        #j10b = item98,
+        j10a= item27780,
+        #j10b = item98
         j10b = 0,
         #j11 = item156,
-        j11= 0,
+        j11= item27770,
         j12 = sum(item146,
                   item147,
                   item148,
                   item150, na.rm=TRUE),
+        # j13 = sum(item149,
+        #           item151,
+        #           #item152,
+        #           #item153,
+        #           #item154,
+        #           #item155, 
+        #           na.rm=TRUE),
         j13 = sum(item149,
                   item151,
-                  #item152,
-                  #item153,
-                  #item154,
-                  #item155, 
+                  item27760,
+                  item27765,
                   na.rm=TRUE),
         j14 = item164,
         j15 = sum(item158,
@@ -390,8 +411,12 @@ june_so <- june_so %>%rowwise %>%
           j13a = j13 * sj13,
           j14a = j14 * sj14,
           j15a = j15 * sj15, 
-          #j16a = sum(sum(j16a * sj16a), sum(j16b * sj16b), sum(j16c * sj16c), sum(j16d * sj16d)) 
-          j16a = (j16a * sj16a) + (j16b * sj16b) + (j16c * sj16c) + (j16d * sj16d),
+          j16a = sum(sum(j16a * sj16a, na.rm= TRUE),
+                     sum(j16b * sj16b, na.rm= TRUE), 
+                     sum(j16c * sj16c, na.rm = TRUE), 
+                     sum(j16d * sj16d, na.rm = TRUE),
+                     na.rm=TRUE) 
+          #j16a = (j16a * sj16a) + (j16b * sj16b) + (j16c * sj16c) + (j16d * sj16d),
           
             
           )
@@ -446,7 +471,7 @@ june_so <- june_so %>%rowwise %>%
          P3 = sum(d15a, g01aa, na.rm=TRUE),
          P4 = sum(GL, FCP4, na.rm=TRUE),
          P5 = sum(P51, P52, na.rm=TRUE),
-         sumso = sum(P1, P2, P3, P4, P5),
+         sumso = sum(P1, P2, P3, P4, P5, na.rm = TRUE),
          typso_2_3 = 0.667*sumso,
          typso_1_3 = 0.333*sumso,
          typgz_3_4 =  0.75*GL,
@@ -469,8 +494,8 @@ june_so <- june_so %>%rowwise %>%
                              P3>typso_2_3 ~ 3,
                              P4>typso_2_3 ~ 4,
                              P5>typso_2_3 ~ 5,
-                             sum(P1,P2,P3)> typso_2_3 ~ 6,
-                             sum(P4, P5)>typso_2_3 ~ 7,
+                             sum(P1,P2,P3, na.rm=TRUE)> typso_2_3 ~ 6,
+                             sum(P4, P5, na.rm = TRUE)>typso_2_3 ~ 7,
                              sumso>0 ~ 8,
                              sumso == 0 | is.na(sumso) ~ 9
                              
@@ -481,13 +506,13 @@ june_so <- june_so %>%rowwise %>%
 june_so <- june_so %>%rowwise %>% 
   dplyr::mutate(typmed = case_when(typhigh==1 & sum(P15,
                                              P16,
-                                             d09a)>typso_2_3 ~ 15,
+                                             d09a, na.rm=TRUE)>typso_2_3 ~ 15,
                             typhigh==1 & sum(P15,
                                              P16,
-                                             d09a)<=typso_2_3 ~ 16,
-                            typhigh==2 & sum(d15a, d17a)> typso_2_3 ~21,
-                            typhigh==2 & sum(d14ba, d16a)> typso_2_3 ~22,
-                            typhigh==2 & sum(d15a, d17a)< typso_2_3 & sum(d14ba, d16a)< typso_2_3  ~21,
+                                             d09a, na.rm=TRUE)<=typso_2_3 ~ 16,
+                            typhigh==2 & sum(d15a, d17a, na.rm=TRUE)> typso_2_3 ~21,
+                            typhigh==2 & sum(d14ba, d16a, na.rm=TRUE)> typso_2_3 ~22,
+                            typhigh==2 & sum(d15a, d17a, na.rm=TRUE)< typso_2_3 & sum(d14ba, d16a, na.rm=TRUE)< typso_2_3  ~21,
                             typhigh==3 ~36,
                             typhigh==4 & j07a> typgz_3_4 & GL> typgz_p4x ~45,
                             typhigh==4 & P46> typgz_2_3 & j07a<= typgz_1_10 & GL>typgz_p4x ~46))
@@ -540,19 +565,19 @@ june_so <- june_so %>%rowwise %>%
     dplyr::mutate(typlow = case_when(typmed==15 & 
                                        sum(P151,
                                             P16,
-                                            d09a)>typso_2_3 ~ 151))
+                                            d09a, na.rm=TRUE)>typso_2_3 ~ 151))
                   
   june_so <- june_so %>%rowwise %>%
     dplyr::mutate(typlow = case_when(                 
                             typmed==15 & typlow!=151 ~ 153,
                             typmed==16 & sum(P15, 
                                              P16,
-                                             d09a)> typso_1_3 & P17> typso_1_3 ~162,
+                                             d09a, na.rm=TRUE)> typso_1_3 & P17> typso_1_3 ~162,
                             typmed==16 & d14aa > typso_2_3 ~ 163,
                             TRUE~ as.numeric(typlow)))
                   
   june_so <- june_so %>%rowwise %>%
-    dplyr::mutate(typlow = case_when( typmed==16 & (typlow!=161 | typlow !=162 | typlow != 163) ~ 166,
+    dplyr::mutate(typlow = case_when( typmed==16 & !(typlow %in% c(161, 162, 163)) ~ 166,
                             typmed==21 & d15a> typso_2_3 ~ 211,
                             typmed==21 &  d17a> typso_2_3 ~212,
                             d17a> typso_2_3 ~213,
@@ -562,46 +587,46 @@ june_so <- june_so %>%rowwise %>%
   
   june_so <- june_so %>%rowwise %>% 
     dplyr::mutate(typlow = case_when(
-                            typmed==22 & (typlow !=221 | typlow !=222) ~ 223,
-                            typmed==23 & g05aa>typso_2_3 ~ 232,
-                            typmed==23 & (typlow !=231 | typlow !=232) ~ 233,
-                            typmed==36 ~ 361,
-                            typmed==45 ~ 450,
-                            typmed==46 ~ 460,
-                            typmed==47 ~ 470,
-                            typmed==48 & j09tot> typgz_2_3 & GL> typgz_p4x ~ 481,
-                            typmed==48 & P46> typgz_1_3 & j09tot> typgz_1_3 & GL> typgz_p4x ~482,
-                            typmed==48 & j10tot> typgz_2_3 & GL> typgz_p4x ~ 483,
-                            typmed==48 ~ 484,
-                            typmed==51 & j12a> typso_2_3 ~ 511,
-                            typmed==51 & sum(j11a,j13a)> typso_2_3 ~512,
-                            typmed==51 ~ 513,
-                            typmed==52 & j15a> typso_2_3 ~521,
-                            typmed==52 & sum(j14a, j16a)>typso_2_3 ~ 522,
-                            typmed==52 ~ 523,
-                            typmed==53~ 530,
-                            typmed==61 & (P2>typso_1_3 & P3 > typso_1_3) ~611,
-                            typmed==61 & (P2>typso_1_3 & P1 > typso_1_3)~612,
-                            typmed==61 & (P1>typso_1_3 & P3 > typso_1_3) ~614,
-                            typmed==61 & (P1>typso_1_3 & P2<=typso_1_3 & P3<= typso_1_3)~615,
-                            typmed==61 ~ 616,
-                            typmed==73 & P45>typgz_1_3 & j07a> (0.5*P45) ~ 731,
-                            typmed==73 ~ 732,
-                            typmed==74 & P5>typso_1_3 & P45>typgz_1_3 & j07a> (0.5*P45) ~ 741,
-                            typmed==74 ~742,
-                            typmed==83 & P45>typgz_1_3 & j07a> (0.5*P45) & P45<P1 ~ 831,
-                            typmed==83 & P45>typgz_1_3 & j07a> (0.5*P45) & P45>=P1 ~ 832,
-                            typmed==83 & P4<P1 & typmed != 831 ~ 833,
-                            typmed==83 ~ 834,
-                            typmed==84 & P1>typso_1_3 & P5 > typso_1_3 ~ 841,
-                            typmed==84 & P3>typso_1_3 & P4 > typso_1_3 ~ 842,
-                            typmed==84 ~ 844,
-                            typmed==90 & sumso ==0 ~ 900,
-                            TRUE~ as.numeric(typlow))
-                            
-                            
- 
-  )
+      typmed==22 & !(typlow %in%c(221, 222)) ~ 223,
+      typmed==23 & g05aa>typso_2_3 ~ 232,
+      typmed==23 & !(typlow %in%c(231, 232)) ~ 233,
+      typmed==36 ~ 361,
+      typmed==45 ~ 450,
+      typmed==46 ~ 460,
+      typmed==47 ~ 470,
+      typmed==48 & j09tot> typgz_2_3 & GL> typgz_p4x ~ 481,
+      typmed==48 & P46> typgz_1_3 & j09tot> typgz_1_3 & GL> typgz_p4x ~482,
+      typmed==48 & j10tot> typgz_2_3 & GL> typgz_p4x ~ 483,
+      typmed==48 ~ 484,
+      typmed==51 & j12a> typso_2_3 ~ 511,
+      typmed==51 & sum(j11a,j13a, na.rm=TRUE)> typso_2_3 ~512,
+      typmed==51 ~ 513,
+      typmed==52 & j15a> typso_2_3 ~521,
+      typmed==52 & sum(j14a, j16a, na.rm=TRUE)>typso_2_3 ~ 522,
+      typmed==52 ~ 523,
+      typmed==53~ 530,
+      typmed==61 & (P2>typso_1_3 & P3 > typso_1_3) ~611,
+      typmed==61 & (P2>typso_1_3 & P1 > typso_1_3)~612,
+      typmed==61 & (P1>typso_1_3 & P3 > typso_1_3) ~614,
+      typmed==61 & (P1>typso_1_3 & P2<=typso_1_3 & P3<= typso_1_3)~615,
+      typmed==61 ~ 616,
+      typmed==73 & P45>typgz_1_3 & j07a> (0.5*P45) ~ 731,
+      typmed==73 ~ 732,
+      typmed==74 & P5>typso_1_3 & P45>typgz_1_3 & j07a> (0.5*P45) ~ 741,
+      typmed==74 ~742,
+      typmed==83 & P45>typgz_1_3 & j07a> (0.5*P45) & P45<P1 ~ 831,
+      typmed==83 & P45>typgz_1_3 & j07a> (0.5*P45) & P45>=P1 ~ 832,
+      typmed==83 & P4<P1 & typmed != 831 ~ 833,
+      typmed==83 ~ 834,
+      typmed==84 & P1>typso_1_3 & P5 > typso_1_3 ~ 841,
+      typmed==84 & P3>typso_1_3 & P4 > typso_1_3 ~ 842,
+      typmed==84 ~ 844,
+      typmed==90 & sumso ==0 ~ 900,
+      TRUE~ as.numeric(typlow))
+      
+      
+      
+    )
     
 
   june_so <- june_so %>%rowwise %>% 
@@ -636,41 +661,50 @@ june_so <- june_so %>%rowwise %>%
 
   #fix robust_new =  8, 9 
   
+  
+
   june_so <- june_so %>%rowwise %>% 
     dplyr::mutate(robust_new = case_when(typmed==15 ~ 1,
-                                  typmed==16 & typlow != 166 ~ 2,
-                                  typmed==16 & typlow ==166 & FCP1> sum(d10a, d14aa, d20a) ~ 10,
-                                  typmed==16 & typlow ==166 & FCP1<= sum(d10a, d14aa, d20a) ~ 2,
-                                  typhigh==2 ~ 3,
-                                  typhigh==3 ~ 3,
-                                  typmed==45 ~ 6,
-                                  typmed==9946 ~ 7,
-                                  typmed==9947 ~ 7,
-                                  typmed==9948 & typlow != 484 ~7,
-                                  typmed == 9948 & typlow == 484 & j01a < 0.5*sumso ~7,
-                                  typmed == 9948 & typlow == 484 & j01a >= 0.5*sumso ~9,
-                                  typmed == 7746 ~8,
-                                  typmed == 7747 ~8,
-                                  typmed == 7748 & typlow != 484 ~8,
-                                  typmed == 7748 & typlow == 484 & j01a < 0.5*sumso ~8,
-                                  typmed == 7748 & typlow == 484 & j01a >= 0.5*sumso ~9,
-                                  typmed == 51 ~ 4,
-                                  typmed == 52 ~ 5,
-                                  typmed == 53 & P51 >= P52 ~4,
-                                  typmed == 53 & P51 < P52 ~5,
-                                  typhigh==6 & typlow == 611 ~ 3,
-                                  typhigh==6 & typlow == 616 & sum(P2, P3)> typso_2_3 ~ 3,
-                                  typhigh==6 & typlow == 616 & sum(P2, P3)<=typso_2_3 ~ 9,
-                                  typhigh==6 &  !(typlow %in% c(611, 616)) ~ 9,
-                                  typhigh==7 ~ 9,
-                                  typhigh==8 ~ 9,
-                                  typhigh==9 ~ 11
-                                  
-                                  
-                                  
-      
+                                         typmed==16 & typlow !=166   ~ 2,
+                                         typmed==16 & typlow ==166 & FCP1> sum(d10a, d14aa, d20a, na.rm = TRUE) ~ 10))
+  
+  
+  june_so <- june_so %>%rowwise %>% 
+    dplyr::mutate(robust_new = case_when(typmed==15 ~ 1,
+                                         typmed==16 & typlow ==166 & FCP1< sum(d10a, d14aa, d20a, na.rm = TRUE) ~ 2,
+                                         
+                                         typhigh==2 ~ 3,
+                                         typhigh==3 ~ 3,
+                                         typmed==45 ~ 6,
+                                         typmed==9946 ~ 7,
+                                         typmed==9947 ~ 7,
+                                         typmed==9948 & typlow != 484 ~7,
+                                         typmed == 9948 & typlow == 484 & j01a < 0.5*sumso ~7,
+                                         typmed == 9948 & typlow == 484 & j01a >= 0.5*sumso ~9,
+                                         typmed == 7746 ~8,
+                                         typmed == 7747 ~8,
+                                         typmed == 7748 & typlow != 484 ~8,
+                                         typmed == 7748 & typlow == 484 & j01a < 0.5*sumso ~8,
+                                         typmed == 7748 & typlow == 484 & j01a >= 0.5*sumso ~9,
+                                         typmed == 51 ~ 4,
+                                         typmed == 52 ~ 5,
+                                         typmed == 53 & P51 >= P52 ~4,
+                                         typmed == 53 & P51 < P52 ~5,
+                                         typhigh==6 & typlow == 611 ~ 3,
+                                         typhigh==6 & typlow == 616 & sum(P2, P3, na.rm = TRUE)> typso_2_3 ~ 3,
+                                         typhigh==6 & typlow == 616 & sum(P2, P3, na.rm = TRUE)<=typso_2_3 ~ 9,
+                                         typhigh==6 &  !(typlow %in% c(611, 616)) ~ 9,
+                                         typhigh==7 ~ 9,
+                                         typhigh==8 ~ 9,
+                                         typhigh==9 ~ 11,
+                                         TRUE~ as.numeric(robust_new)
+                                         
+                                         
+                                         
+                                         
     )
     )
+  
   
   
 
@@ -820,6 +854,7 @@ june_slr <- june_slr %>% rowwise %>%
     d16a_slr     = d16  * slr_d16,
     d17a_slr     = d17  * slr_d17,
     d18aa_slr    = d18a * slr_d18a,
+    #following lines are commented out because variables don't exist. SAS code is erroneous
    # d18ba_slr    = d18b * slr_d18b,
     #d19a_slr     = d19  * slr_d19,
     d20a_slr     = d20  * slr_d20,
@@ -862,9 +897,12 @@ june_slr <- june_slr %>% rowwise %>%
     Others_lfa= sum((sum(item141,
                          item143, 
                          item144,
-                         na.rm=TRUE)*lfa_sheep)*slr_lj09b),
-    j09aa_slr=sum(Ewerams_nlfa,Ewerams_lfa),
-    j09ba_slr=sum(Others_nlfa,Others_lfa),
+                         na.rm=TRUE)*lfa_sheep)*slr_lj09b,
+                    na.rm=TRUE),
+    j09aa_slr=sum(Ewerams_nlfa,Ewerams_lfa,
+                  na.rm=TRUE),
+    j09ba_slr=sum(Others_nlfa,Others_lfa,
+                  na.rm=TRUE),
     j10a_slr    = j10tot * slr_j10,
     j11a_slr    = j11 * slr_j11,
     j12a_slr    = j12 * slr_j12,
@@ -877,7 +915,8 @@ june_slr <- june_slr %>% rowwise %>%
                    d03a_slr,
                    d04a_slr, 
                    d05a_slr, 
-                   d08a_slr),
+                   d08a_slr,
+                   na.rm=TRUE),
     p121_slr = d10a_slr,
     p1_slr = sum(p111_slr, 
                  p121_slr, 
@@ -887,33 +926,41 @@ june_slr <- june_slr %>% rowwise %>%
                  #d19a_slr,
                  d20a_slr,
                  it52a_slr,
-                 it53a_slr),
+                 it53a_slr,
+                 na.rm=TRUE),
     p2_slr = sum(d15a_slr,
                  d16a_slr,
                  d17a_slr, 
-                 g05aa_slr),
+                 g05aa_slr,
+                 na.rm=TRUE),
     p3_slr = g01aa_slr,
     p41_slr = sum(j02a_slr, 
                   j04a_slr,
                   j06a_slr, 
-                  j07a_slr),
+                  j07a_slr,
+                  na.rm=TRUE),
     p42_slr = sum(p41_slr, 
                   j03a_slr, 
                   j05a_slr, 
-                  j08a_slr),
+                  j08a_slr,
+                  na.rm=TRUE),
     p4_slr = sum(j01a_slr,
                  p42_slr, 
                  j09aa_slr,
                  j09ba_slr, 
-                 j10a_slr),
+                 j10a_slr,
+                 na.rm=TRUE),
     p51_slr = sum(j11a_slr,
                   j12a_slr, 
-                  j13a_slr),	
+                  j13a_slr,
+                  na.rm=TRUE),	
     p52_slr = sum(j14a_slr,
                   j15a_slr, 
-                  j16a_slr),
+                  j16a_slr,
+                  na.rm=TRUE),
     p5_slr = sum(p51_slr,
-                 p52_slr),
+                 p52_slr,
+                 na.rm=TRUE),
     p6_slr = sum(d18aa_slr, 
                  #d18ba_slr,
                  #d12_slr doens't exist...SAS 
@@ -922,13 +969,15 @@ june_slr <- june_slr %>% rowwise %>%
                  f02a_slr, 
                  f03a_slr, 
                  j19a_slr, 
-                 d21a_slr),
+                 d21a_slr,
+                 na.rm=TRUE),
     slr2006 = sum(p1_slr,
                   p2_slr,
                   p3_slr,
                   p4_slr,
                   p5_slr,
-                  p6_slr),
+                  p6_slr,
+                  na.rm=TRUE),
     slr2006_error = case_when(is.na(slr2006) ~ 1,
                               TRUE ~ 0),
     slr = slr2006/1900,
@@ -1088,26 +1137,40 @@ june_brn_summary <- june_brn %>% select(brn, item50,
                                 item82,
                                 item83,
                                 #item87,
-                                item2556,
+                                #item2713, 
+                                item2707,
+                                item2556, 
                                 item2557,
-                                item2836,
+                                item2836 ,
                                 #item2036,
+                                #item2714,
+                                #item2708,
                                 #item2037,
-                                #item1711,
-                                #item1943,
+                                #item2715,
+                                #item2709,
+                                #item1711, 
+                                #item2716,
+                                #item2710,
+                                #item1943
+                                #item2717,
+                                #item2711,
                                 item94,
                                 sumso)
 
 june_brn_summary <- june_brn_summary %>% group_by(brn) %>% dplyr::summarise(count = n(), sum_= across(everything(),  ~ sum(., na.rm = TRUE)))
+june_brn_summary$sum_ <- june_brn_summary$sum_ %>%  select(-count) 
+names(june_brn_summary$sum_) <- paste0("sum_", names(june_brn_summary$sum_))
 
-june_brn_summary <- cbind(june_brn_summary, june_brn_summary$sum) %>% select(-sum_)
+june_brn_summary <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-sum_)
+
+
 
 june_classification <- full_join(june_brn, june_brn_summary, by = "brn")
 
 
 
 june_classification <- june_classification %>% rowwise %>% 
-  dplyr::mutate(num_holdings = count,
+  dplyr::mutate( num_holdings = ifelse(is.na(brn), brn, count),
                 cowsunder1 = ifelse(completedata==1, sum(sum(CTS301,
                                                             CTS302, 
                                                             CTS309,
@@ -1122,17 +1185,21 @@ june_classification <- june_classification %>% rowwise %>%
                                                              na.rm= TRUE) * 0.8), 0),
                 dairy = ifelse(completedata==1, CTS306, 0),
                 othcows = ifelse(completedata==1,sum(CTS305 * 0.8), 0),
-                sheepgoat = ifelse(completedata==1,sum(sum(#item98,
-                                                           #item1712,
-                                                           #item1713,
-                                                           item145,
-                                                           na.rm= TRUE) * 0.1),0),
+                # sheepgoat = ifelse(completedata==1,sum(sum(#item98,
+                #                                            #item1712,
+                #                                            #item1713,
+                #                                            #item145,
+                #                                            na.rm= TRUE) * 0.1),0),
+                sheepgoat = ifelse(completedata==1, sum(sum(item27780,
+                                                            item145,
+                                                            na.rm= TRUE) * 0.1),0),
+                
                 # horses = ifelse(completedata==1, sum(sum(#item95,
                 #                                          item96, 
                 #                                          na.rm= TRUE) * 0.8),0),
                 horses = ifelse(completedata==1, sum(sum(item27775) *0.8), 0),                                        
                 #weepigs = ifelse(completedata==1,sum(item156 * 0.027)),
-                weepigs = ifelse(completedata==1,sum(item27765 * 0.027), 0),
+                weepigs = ifelse(completedata==1,sum(item27770 * 0.027), 0),
                 breedsows = ifelse(completedata==1,sum(sum(item146,
                                                            item147,
                                                            item148, 
@@ -1148,6 +1215,7 @@ june_classification <- june_classification %>% rowwise %>%
                 othpigs = ifelse(completedata==1, sum(sum(item149,
                                                           item151, 
                                                           item27760,
+                                                          item27765,
                                                           na.rm= TRUE) * 0.3), 0), 
                 broilers = ifelse(completedata==1, sum(item164 * 0.007), 0),  
                 layers = ifelse(completedata==1, sum(sum(item158,
@@ -1233,20 +1301,31 @@ june_classification <- june_classification %>% rowwise %>%
                                   sum_item1716,
                                   sum_item1717,
                                   sum_item192,
-                                  sum_item193) <= 0 & 
+                                  sum_item193,  na.rm=TRUE) <= 0 & 
                               sum(sum_item80,
                                   sum_item81,
                                   sum_item1710,
                                   sum_item82,
                                   sum_item83, 
                                   #sum_item87,
+                                  #sum_item2713, 
+                                  sum_item2707,
                                   sum_item2556, 
                                   sum_item2557, 
-                                  sum_item2836)
-                                  #sum_item2036, 
-                                 #sum_item2037, 
-                                  #sum_item1711, 
-                                  #sum_item1943) 
+                                  sum_item2836,
+                                  #sum_item2036,
+                                  #sum_item2714,
+                                  #sum_item2708,
+                                 #sum_item2037,
+                                 #sum_item2715,
+                                 #sum_item2709, 
+                                  #sum_item1711,
+                                 #sum_item2716,
+                                 #sum_item2710,
+                                  #sum_item1943,
+                                 #sum_item2717,
+                                 #sum_item2711,
+                                 na.rm=TRUE)
                                   <= 0 & 
                               sum_item94 < 100 ~ "minor",
                             completedata == 1 & 
@@ -1261,20 +1340,32 @@ june_classification <- june_classification %>% rowwise %>%
                                   item1716, 
                                   item1717,
                                   item192,
-                                  item193) <= 0 & 
+                                  item193,
+                                  na.rm=TRUE) <= 0 & 
                               sum(item80,
                                   item81, 
                                   item1710,
                                   item82, 
                                   item83, 
                                   #item87,
+                                  #item2713, 
+                                  item2707,
                                   item2556, 
                                   item2557,
-                                  item2836) 
+                                  item2836 ,
                                   #item2036,
-                                  #item2037, 
+                                  #item2714,
+                                  #item2708,
+                                  #item2037,
+                                  #item2715,
+                                  #item2709,
                                   #item1711, 
-                                  #item1943) 
+                                  #item2716,
+                                  #item2710,
+                                  #item1943
+                                  #item2717,
+                                  #item2711,
+                                  na.rm=TRUE) 
                             <= 0 &
                               item94 < 100~  "minor",
                             completedata !=1 ~"NA",  
@@ -1288,6 +1379,10 @@ june_classification <- june_classification %>% rowwise %>%
                                          
                                      
                                   )
+
+
+# Save final dataset ------------------------------------------------------
+
                 
 
 june_classification <- june_classification %>% select(parish,
@@ -1301,4 +1396,20 @@ june_classification <- june_classification %>% select(parish,
                                                       survtype_new)                
     
 
-  
+
+
+
+june_final_23 <- left_join(june_temp, june_classification, by = c("parish", "holding"))
+june_final_23 <- left_join(june_final_23, slr, by = c("parish", "holding"))
+
+
+write_dataframe_to_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "JAC23_final_dataset",
+  dataframe = june_final_23,
+  append_to_existing = FALSE,
+  versioned_table = FALSE,
+  batch_size = 10000
+)  
