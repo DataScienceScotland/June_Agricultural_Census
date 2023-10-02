@@ -114,7 +114,7 @@ pre_imputation_2023<-pre_imputation_2023 %>%
     land_data=ifelse(is.na(in2023), "none", land_data),
     other_data=ifelse(is.na(in2023), "no", other_data),
     imptype=ifelse(is.na(in2023), "full", imptype),
-    survtype=ifelse(is.na(in2023), "none", survtype),
+    survtype=ifelse(is.na(in2023), "none", survtype)
     
   )
 
