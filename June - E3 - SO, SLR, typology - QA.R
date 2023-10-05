@@ -1106,7 +1106,9 @@ poultry_add <- unique_poultry %>%
 
 june_21 <- june_21 %>% select(-sumso)
 
-june_21 <- june_21 %>% select( -brn)
+june_21 <- june_21 %>% select(-contains(c("typ", "sgm", "robust")))
+
+
 june_brn <- dplyr::left_join(x = june_21, y= slr, by = c("parish", "holding"))
 june_brn <- dplyr::left_join(june_brn, poultry_add, by = c("parish", "holding"))
 june_brn <- dplyr::left_join(june_brn, brn, by = c("parish", "holding"))
@@ -1144,14 +1146,16 @@ june_brn_summary <- june_brn_summary %>% group_by(brn) %>% dplyr::summarise(coun
 june_brn_summary$sum_ <- june_brn_summary$sum_ %>%  select(-count) 
 names(june_brn_summary$sum_) <- paste0("sum_", names(june_brn_summary$sum_))
 
-june_brn_summary <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-sum_)
+june_brn_summary2 <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-sum_) %>% filter(!is.na(brn))
 
-june_classification <- full_join(june_brn, june_brn_summary, by = "brn")
+june_brn_summary <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-sum_) 
+june_classification <- full_join(june_brn, june_brn_summary2, by = "brn")
+
 
 
 
 june_classification <- june_classification %>% rowwise %>% 
-  dplyr::mutate( num_holdings = ifelse(is.na(brn), brn, count),
+  dplyr::mutate( num_holdings =  count,
                 cowsunder1 = ifelse(completedata==1, sum(sum(cts301,
                                                             cts302, 
                                                             cts309,
@@ -1247,13 +1251,13 @@ june_classification <- june_classification %>% rowwise %>%
                                           item182,
                                           item183, na.rm = TRUE) <= 0 & 
                                       item94 <= 0 &
-                                      item170 <= 20 &
+                                      item170 < 20 &
                                       sum(item40, 
                                           item2321, 
                                           na.rm=TRUE) <= 0 &
                                      !(land_data %in% c("saf", "both")) & 
                                       large_poultry != 1 &
-                                      num_holdings <= 1 ~1,
+                                      num_holdings<=1 | is.na(num_holdings) ~1,
                                     completedata !=1 ~ 0,
                                     TRUE ~ 0))
 
@@ -1264,88 +1268,259 @@ june_classification <- june_classification %>% rowwise %>%
                 main_min = ifelse(completedata ==1 & domestic ==1 , "domestic", 
                                      ifelse(completedata==1 & forestry_only == 1,  "forestry", NA)))
 ###FIX main_minor 3/10/23
+# june_classification <- june_classification %>% rowwise %>% 
+#   dplyr::mutate(main_min = ifelse(completedata == 1 & !(main_min %in% c("domestic", "forestry")),
+#                                   ifelse(num_holdings > 1,
+#                                            ifelse((sum_item50 < 1 | sumso <= 4400)	& 
+#                                              sum_item170 < 200 
+#                                            & sum(sum_item177, 
+#                                                  sum_item182,
+#                                                  sum_item1714,
+#                                                  sum_item1715,
+#                                                  sum_item1716,
+#                                                  sum_item1717,
+#                                                  sum_item192,
+#                                                  sum_item193, na.rm=TRUE) <= 0 & 
+#                                              sum(sum_item80,
+#                                                  sum_item81,
+#                                                  sum_item1710,
+#                                                  sum_item82,
+#                                                  sum_item83, 
+#                                                  sum_item87,
+#                                                  sum_item2556, 
+#                                                  sum_item2557, 
+#                                                  sum_item2836,
+#                                                  sum_item2036, 
+#                                                  sum_item2037, 
+#                                                  sum_item1711, 
+#                                                  sum_item1943, na.rm=TRUE) 
+#                                            <= 0 & 
+#                                              sum_item94 < 100, "minor", "main"), 
+#                                          ifelse(
+#                                            num_holdings <= 1,
+#                                            ifelse(
+#                                              (item50 < 1 | sumso <= 4400)  & 
+#                                              item170 < 200 & 
+#                                              sum(item177,
+#                                                  item182,
+#                                                  item1714,
+#                                                  item1715,
+#                                                  item1716, 
+#                                                  item1717,
+#                                                  item192,
+#                                                  item193, na.rm=TRUE) <= 0 & 
+#                                              sum(item80,
+#                                                  item81, 
+#                                                  item1710,
+#                                                  item82, 
+#                                                  item83, 
+#                                                  item87,
+#                                                  item2556, 
+#                                                  item2557,
+#                                                  item2836, 
+#                                                  item2036,
+#                                                  item2037, 
+#                                                  item1711, 
+#                                                  item1943, na.rm=TRUE) 
+#                                            <= 0 &
+#                               item94 < 100,  "minor", "main"), NA)), as.character(main_min)),
+#                 survtype_new = case_when(completedata == 1 & land_data %in% c("saf", "both") ~ 1,
+#                                          completedata == 1 & main_min == "main" ~ 2,
+#                                          completedata != 1 ~ 0,
+#                                          TRUE ~ 3)
+#                                          
+#                                      
+#                                   )
+                
+
+
+
+
+
+
+
+
 june_classification <- june_classification %>% rowwise %>% 
-  dplyr::mutate(main_min = case_when(completedata == 1 & 
-                                       !(main_min %in% c("domestic", "forestry")) & 
-                                       num_holdings > 1 &
-                                       (sum_item50 < 1 | (sumso <= 4400))	& 
-                                       sum_item170 < 200 
-                            & sum(sum_item177, 
-                                  sum_item182,
-                                  sum_item1714,
-                                  sum_item1715,
-                                  sum_item1716,
-                                  sum_item1717,
-                                  sum_item192,
-                                  sum_item193, na.rm=TRUE) <= 0 & 
-                              sum(sum_item80,
-                                  sum_item81,
-                                  sum_item1710,
-                                  sum_item82,
-                                  sum_item83, 
-                                  sum_item87,
-                                  sum_item2556, 
-                                  sum_item2557, 
-                                  sum_item2836,
-                                  sum_item2036, 
-                                 sum_item2037, 
-                                  sum_item1711, 
-                                  sum_item1943, na.rm=TRUE) 
-                                  <= 0 & 
-                              sum_item94 < 100 ~ "minor",
-                            completedata == 1 & 
-                              !(main_min %in% c("domestic", "forestry")) &
-                              num_holdings <= 1 &
-                             (item50 < 1 | (sumso <= 4400))  & 
-                              item170 < 200 & 
-                              sum(item177,
-                                  item182,
-                                  item1714,
-                                  item1715,
-                                  item1716, 
-                                  item1717,
-                                  item192,
-                                  item193, na.rm=TRUE) <= 0 & 
-                              sum(item80,
-                                  item81, 
-                                  item1710,
-                                  item82, 
-                                  item83, 
-                                  item87,
-                                  item2556, 
-                                  item2557,
-                                  item2836, 
-                                  item2036,
-                                  item2037, 
-                                  item1711, 
-                                item1943, na.rm=TRUE) 
-                            <= 0 &
-                              item94 < 100~  "minor",
-                            completedata !=1 ~"NA",  
-                            completedata == 1 & 
-                              !(main_min %in% c("domestic", "forestry")) ~  "main",
-                            TRUE~NA),
+  dplyr::mutate(main_min = ifelse(completedata == 1 & !(main_min %in% "forestry"),
+                                  ifelse(num_holdings > 1,  
+                                         ifelse((sum_item50 < 1 | (sum_sumso <= 4400) | is.na(sum_sumso))	& 
+                                                  sum_item170 < 200 & 
+                                                  sum(sum_item177, 
+                                                      sum_item182,
+                                                      sum_item1714,
+                                                      sum_item1715,
+                                                      sum_item1716,
+                                                      sum_item1717,
+                                                      sum_item192,
+                                                      sum_item193, na.rm=TRUE) <= 0 & 
+                                                  sum(sum_item80,
+                                                      sum_item81,
+                                                      sum_item1710,
+                                                      sum_item82,
+                                                      sum_item83, 
+                                                      sum_item87,
+                                                      sum_item2556, 
+                                                      sum_item2557, 
+                                                      sum_item2836,
+                                                      sum_item2036, 
+                                                      sum_item2037, 
+                                                      sum_item1711, 
+                                                      sum_item1943, na.rm=TRUE)  <= 0 & 
+                                                  sum_item94 < 100,
+                                                "minor", 
+                                                "main"),
+                                         ifelse(num_holdings <= 1 | is.na(num_holdings),
+                                           ifelse((item50 < 1 | (sumso <= 4400) | is.na(sumso))  & 
+                                                    item170 < 200 & 
+                                                    sum(item177,
+                                                        item182,
+                                                        item1714,
+                                                        item1715,
+                                                        item1716, 
+                                                        item1717,
+                                                        item192,
+                                                        item193, na.rm=TRUE) <= 0 & 
+                                                    sum(item80,
+                                                        item81, 
+                                                        item1710,
+                                                        item82, 
+                                                        item83, 
+                                                        item87,
+                                                        item2556, 
+                                                        item2557,
+                                                        item2836, 
+                                                        item2036,
+                                                        item2037, 
+                                                        item1711, 
+                                                        item1943, na.rm=TRUE)  <= 0 &
+                                                    item94 < 100, 
+                                                  "minor", 
+                                                  "main")
+                                           )
+                                         ), 
+                                  as.character(main_min)),
                 survtype_new = case_when(completedata == 1 & land_data %in% c("saf", "both") ~ 1,
                                          completedata == 1 & main_min == "main" ~ 2,
                                          completedata != 1 ~ 0,
                                          TRUE ~ 3)
-                                         
-                                     
-                                  )
                 
+                
+  )
+# 
+ june_classification <- june_classification %>%rowwise %>%  mutate(main_min = ifelse(completedata !=1, NA, as.character(main_min)))
+ 
+ # 
+ #                                                      sum_sum1= sum(sum_item177,
+ #                                                          sum_item182,
+ #                                                          sum_item1714,
+ #                                                          sum_item1715,
+ #                                                          sum_item1716,
+ #                                                          sum_item1717,
+ #                                                          sum_item192,
+ #                                                          sum_item193, na.rm=TRUE),
+ #                                                      sum_sum2 =  sum(sum_item80,
+ #                                                                     sum_item81,
+ #                                                                     sum_item1710,
+ #                                                                     sum_item82,
+ #                                                                     sum_item83,
+ #                                                                     sum_item87,
+ #                                                                     sum_item2556,
+ #                                                                     sum_item2557,
+ #                                                                     sum_item2836,
+ #                                                                     sum_item2036,
+ #                                                                     sum_item2037,
+ #                                                                     sum_item1711,
+ #                                                                     sum_item1943, na.rm=TRUE),
+ #                                                      sum_1 = sum(item177,
+ #                                                                  item182,
+ #                                                                  item1714,
+ #                                                                  item1715,
+ #                                                                  item1716,
+ #                                                                  item1717,
+ #                                                                  item192,
+ #                                                                  item193, na.rm=TRUE),
+ #                                                      sum_2=sum(item80,
+ #                                                                item81,
+ #                                                                item1710,
+ #                                                                item82,
+ #                                                                item83,
+ #                                                                item87,
+ #                                                                item2556,
+ #                                                                item2557,
+ #                                                                item2836,
+ #                                                                item2036,
+ #                                                                item2037,
+ #                                                                item1711,
+ #                                                                item1943, na.rm=TRUE),
+ #                                                      sum1_dom =    sum(item1714,
+ #                                                                     item1715,
+ #                                                                     item1716,
+ #                                                                     item1717,
+ #                                                                     item192,
+ #                                                                     item193,
+ #                                                                     item1718,
+ #                                                                     item194, 
+ #                                                                     item195, 
+ #                                                                     item1719,
+ #                                                                     item196, 
+ #                                                                     item197,
+ #                                                                     item198, 
+ #                                                                     item199,
+ #                                                                     item2712, 
+ #                                                                     item2066, na.rm =TRUE),
+ #                                                      sum2_dom =sum(item177,
+ #                                                                item178,
+ #                                                                item182,
+ #                                                                item183, na.rm = TRUE),
+ #                                                      sum3_dom =sum(item40, 
+ #                                                                    item2321, 
+ #                                                                    na.rm=TRUE)
+ #                                                      
+ # )
+ # june_classification <- june_classification %>% 
+#   select(parish,
+#          holding,
+#          brn,
+#          num_holdings,
+#          lsu,
+#          domestic,
+#          forestry_only,
+#          main_min,
+#          survtype_new,
+#          completedata,
+#          #sum_sum1,
+#          #sum_sum2,
+#         # sum_1,
+#          #sum_2,
+#          )                
 
-june_classification <- june_classification %>% 
-  select(parish,
-         holding,
-         brn,
-         num_holdings,
-         lsu,
-         main_min,
-         domestic,
-         forestry_only,
-         survtype_new)                
+x <- june_classification %>% select(parish,
+                                    holding,
+                                    brn, 
+                                    sumso,
+                                    sum_sumso,
+                                    num_holdings,
+                                    main_min, 
+                                    #item50,
+                                    #item12,
+                                    #sum_item50,
+                                    #sum_sum1,
+                                    #sum_sum2,
+                                    # sum_1,
+                                    #sum_2,
+                                    item170,
+                                    item94,
+                                    completedata,
+                                    survtype_new)
+                                    #domestic,
+                                    #sum1_dom,
+                                    #sum2_dom,
+                                    #sum3_dom)
 
 
+
+#domestic/forestry check
+x %>% filter(parish == 182 & holding ==11) 
 
 
 
@@ -1357,9 +1532,9 @@ june_final_21 <- left_join(june_final_21, slr, by = c("parish", "holding"))
 
 june_class_SAS <- read_excel(paste0(Code_directory, "/june_class_SAS.xlsx"))
 
-write.csv(june_classification, paste0(Code_directory, "/june_class_R.csv"))
+write.csv(june_classification, paste0(Code_directory, "/june_class_R2.csv"))
 
 #CHANGED NA TO ZERO
-r_june_class <- read.csv(paste0(Code_directory, "/june_class_R.csv")) %>% select(-X)
+r_june_class <- read.csv(paste0(Code_directory, "/june_class_R2.csv")) 
 
 x <- setdiff(june_class_SAS, r_june_class)
