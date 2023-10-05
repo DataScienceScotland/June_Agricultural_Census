@@ -668,7 +668,8 @@ june_temp_23 <- june_geog %>% select(parish,
                                      cc_owned_area, 
                                      #forestry_only, 
                                      landless,
-                                     completedata,  
+                                    completedata,
+                                    submisType,
                                      saf_completed, 
                                      ) %>% 
   mutate(year = yr)
