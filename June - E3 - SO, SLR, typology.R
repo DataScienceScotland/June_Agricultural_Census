@@ -41,13 +41,13 @@ june_temp <-  read_table_from_db(server=server,
                                  schema=schema, 
                                  table_name="JAC23_temp")
 
-#prev yr 
-june_21 <- read_table_from_db(
-    server = server,
-    database = database,
-    schema = schema,
-    table_name = "jac_2021_update"
-  )
+# #prev yr 
+# june_21 <- read_table_from_db(
+#     server = server,
+#     database = database,
+#     schema = schema,
+#     table_name = "jac_2021_update"
+#   )
 
 
 #address file for LFAs (2023)
@@ -1117,45 +1117,47 @@ june_brn <- dplyr::left_join(june_brn, poultry_add, by = c("parish", "holding"))
 june_brn <- dplyr::left_join(june_brn, brn, by = c("parish", "holding"))
 
 
-# BRN Summary -------------------------------------------------------------
+# BRN Dataset-------------------------------------------------------------
 
 
 #BRN summary
-june_brn_summary <- june_brn %>% select(brn, item50,
-                                item170,
-                                item177,
-                                item182,
-                                item1714,
-                                item1715,
-                                item1716,
-                                item1717,
-                                item192,
-                                item193,
-                                item80,
-                                item81,
-                                item1710,
-                                item82,
-                                item83,
-                                #item87,
-                                #item2713, 
-                                item2707,
-                                item2556, 
-                                item2557,
-                                item2836 ,
-                                #item2036,
-                                #item2714,
-                                #item2708,
-                                #item2037,
-                                #item2715,
-                                #item2709,
-                                #item1711, 
-                                #item2716,
-                                #item2710,
-                                #item1943
-                                #item2717,
-                                #item2711,
-                                item94,
-                                sumso)
+june_brn_summary <- june_brn %>% 
+  filter(completedata==1 & brn >0) %>% 
+  select(brn, item50,
+         item170,
+         item177,
+         item182,
+         item1714,
+         item1715,
+         item1716,
+         item1717,
+         item192,
+         item193,
+         item80,
+         item81,
+         item1710,
+         item82,
+         item83,
+         #item87,
+         #item2713, 
+         item2707,
+         item2556, 
+         item2557,
+         item2836 ,
+         #item2036,
+         #item2714,
+         #item2708,
+         #item2037,
+         #item2715,
+         #item2709,
+         #item1711, 
+         #item2716,
+         #item2710,
+         #item1943
+         #item2717,
+         #item2711,
+         item94,
+         sumso)
 
 june_brn_summary <- june_brn_summary %>% group_by(brn) %>% dplyr::summarise(count = n(), sum_= across(everything(),  ~ sum(., na.rm = TRUE)))
 june_brn_summary$sum_ <- june_brn_summary$sum_ %>%  select(-count) 
@@ -1168,7 +1170,7 @@ june_brn_summary <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-s
 june_classification <- full_join(june_brn, june_brn_summary, by = "brn")
 
 
-june_classification <- june_classification %>% rowwise %>% 
+june_classification <- june_classification %>% group_by(parish, holding) %>% rowwise %>% 
   dplyr::mutate(num_holdings = count,
                 cowsunder1 = ifelse(completedata==1, sum(sum(CTS301,
                                                             CTS302, 
@@ -1245,9 +1247,12 @@ june_classification <- june_classification %>% rowwise %>%
                           othpoultry, 
                           na.rm=TRUE))
 
+#Deal with NA before domestic
+june_classification <- june_classification %>% mutate(large_poultry = ifelse(is.na(large_poultry), 0, as.numeric(large_poultry)))
+
 june_classification <- june_classification %>% rowwise %>% 
-  dplyr::mutate(domestic =case_when(completedata==1 &
-                                      (item12 < 0.5 & item50 < 0.5) & 
+  dplyr::mutate(domestic =ifelse(completedata==1 &
+                                      ((item12 < 0.5 | is.na(item12)) & (item50 < 0.5 | is.na(item50))) & 
                                       lsu <= 1 & 
                                       sum(item1714,
                                           item1715,
@@ -1268,17 +1273,18 @@ june_classification <- june_classification %>% rowwise %>%
                                       sum(item177,
                                           item178,
                                           item182,
-                                          item183, na.rm = TRUE) <= 0 & 
-                                      item94 <= 0 &
-                                      item170 <= 20 &
-                                      sum(item40, 
-                                          item2321, 
+                                          item183, na.rm = TRUE) <= 0 &
+                                      (item94 <= 0 | is.na(item94)) &
+                                      (item170 <= 20 | is.na(item170)) &
+                                      sum(item40,
+                                          item2321,
                                           na.rm=TRUE) <= 0 &
                                      !(land_data %in% c("saf", "both")) & 
                                       large_poultry != 1 &
-                                      num_holdings <= 1 ~1,
-                                    completedata !=1 ~ 0,
-                                    TRUE ~ 0))
+                                      (num_holdings <= 1 | is.na(num_holdings)), 1, 0))
+
+
+
 
 june_classification <- june_classification %>% rowwise %>% 
   dplyr::mutate(forestry_only = ifelse(completedata == 1 & domestic == 0 &
@@ -1286,6 +1292,7 @@ june_classification <- june_classification %>% rowwise %>%
                                          item48 > 0, 1, 0 ),
                 main_min = ifelse(completedata ==1 & domestic ==1 , "domestic", 
                                      ifelse(completedata==1 & forestry_only == 1,  "forestry", NA)))
+
 
 june_classification <- june_classification %>% rowwise %>% 
   dplyr::mutate(main_min = ifelse(completedata == 1 & !(main_min %in% c("domestic", "forestry")),
@@ -1377,6 +1384,8 @@ june_classification <- june_classification %>% rowwise %>%
                 
                 
   )
+
+june_classification <- june_classification %>%  mutate(main_min = ifelse(completedata !=1, NA, as.character(main_min)))
 
 
 # Save final dataset ------------------------------------------------------

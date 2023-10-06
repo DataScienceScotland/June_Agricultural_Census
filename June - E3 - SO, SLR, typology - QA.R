@@ -79,7 +79,7 @@ address_2019 <-  read_table_from_db(server=server,
 brn <-  read_table_from_db(server=server, 
                                     database=database, 
                                     schema=schema, 
-                                    table_name="address_email_24may22")
+                                    table_name="address_email_15apr20")
 
 
 #formats
@@ -966,7 +966,6 @@ june_slr <- june_slr %>% rowwise %>%
                   p5_slr,
                   p6_slr, na.rm=TRUE),
     slr2006_error = case_when(is.na(slr2006) ~ 1,
-                              TRUE ~ 0),
     slr = slr2006/1900,
     full_occ1 = case_when(slr2006 == 0 & item177>=0~1),
     part_occ1 = case_when(slr2006 == 0 & item178>=0~1),
@@ -1106,17 +1105,18 @@ poultry_add <- unique_poultry %>%
 
 june_21 <- june_21 %>% select(-sumso)
 
-june_21 <- june_21 %>% select(-contains(c("typ", "sgm", "robust")))
-
+june_21 <- june_21 %>% select(-contains(c("typ", "sgm", "robust", )))
+june_21 <- june_21 %>% select(-brn)
 
 june_brn <- dplyr::left_join(x = june_21, y= slr, by = c("parish", "holding"))
 june_brn <- dplyr::left_join(june_brn, poultry_add, by = c("parish", "holding"))
+#brns in SAS
 june_brn <- dplyr::left_join(june_brn, brn, by = c("parish", "holding"))
 
 # BRN Summary -------------------------------------------------------------
 #number_of_holdings in SAS
 #BRN summary
-june_brn_summary <- june_brn %>% select(brn, item50,
+june_brn_summary <- june_brn %>% filter(completedata==1 & brn >0) %>% select(brn, item50,
                                 item170,
                                 item177,
                                 item182,
@@ -1148,14 +1148,14 @@ names(june_brn_summary$sum_) <- paste0("sum_", names(june_brn_summary$sum_))
 
 june_brn_summary2 <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-sum_) %>% filter(!is.na(brn))
 
-june_brn_summary <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-sum_) 
-june_classification <- full_join(june_brn, june_brn_summary2, by = "brn")
+#june_brn_summary <- cbind(june_brn_summary, june_brn_summary$sum_) %>% select(-sum_) 
+june_classification <- full_join(june_brn, june_brn_summary2, by = "brn") %>% group_by(parish, holding)
 
 
 
 
 june_classification <- june_classification %>% rowwise %>% 
-  dplyr::mutate( num_holdings =  count,
+  dplyr::mutate(num_holdings =  count,
                 cowsunder1 = ifelse(completedata==1, sum(sum(cts301,
                                                             cts302, 
                                                             cts309,
@@ -1226,6 +1226,9 @@ june_classification <- june_classification %>% rowwise %>%
                           othpoultry, 
                           na.rm=TRUE))
 
+
+june_classification <- june_classification %>% mutate(large_poultry = ifelse(is.na(large_poultry), 0, as.numeric(large_poultry)))
+
 june_classification <- june_classification %>% rowwise %>% 
   dplyr::mutate(domestic =case_when(completedata==1 &
                                       (item12 < 0.5 & item50 < 0.5) & 
@@ -1267,6 +1270,12 @@ june_classification <- june_classification %>% rowwise %>%
                                          item48 > 0, 1, 0 ),
                 main_min = ifelse(completedata ==1 & domestic ==1 , "domestic", 
                                      ifelse(completedata==1 & forestry_only == 1,  "forestry", NA)))
+
+
+june_classification %>% filter(domestic==1)
+
+
+
 ###FIX main_minor 3/10/23
 # june_classification <- june_classification %>% rowwise %>% 
 #   dplyr::mutate(main_min = ifelse(completedata == 1 & !(main_min %in% c("domestic", "forestry")),
@@ -1518,7 +1527,7 @@ x <- june_classification %>% select(parish,
                                     #sum3_dom)
 
 
-
+x <- x %>% arrange(by_group = TRUE)
 #domestic/forestry check
 x %>% filter(parish == 182 & holding ==11) 
 
@@ -1526,15 +1535,37 @@ x %>% filter(parish == 182 & holding ==11)
 
 
 
-june_final_21 <- left_join(june_21, june_classification, by = c("parish", "holding"))
-june_final_21 <- left_join(june_final_21, slr, by = c("parish", "holding"))
+#june_final_21 <- left_join(june_21, june_classification, by = c("parish", "holding"))
+#june_final_21 <- left_join(june_final_21, slr, by = c("parish", "holding"))
 
 
 june_class_SAS <- read_excel(paste0(Code_directory, "/june_class_SAS.xlsx"))
 
-write.csv(june_classification, paste0(Code_directory, "/june_class_R2.csv"))
+#brn check
+sas <- june_class_SAS %>% select(parish,
+                                 holding,
+                                 brn,
+                                 num_holdings,
+                                survtype_new
+                                 
+                                 )
+x_num <- x %>%  select(parish,
+                       holding,
+                       brn,
+                       num_holdings,
+                       survtype_new
+                       
+)
+
+y <- setdiff(sas, x_num)
+
+
+#write.csv(june_classification, paste0(Code_directory, "/june_class_R2.csv"))
 
 #CHANGED NA TO ZERO
-r_june_class <- read.csv(paste0(Code_directory, "/june_class_R2.csv")) 
+##r_june_class <- read.csv(paste0(Code_directory, "/june_class_R2.csv")) 
+
+
+
 
 x <- setdiff(june_class_SAS, r_june_class)
