@@ -88,12 +88,6 @@ saf2015 <- read_table_from_db(server=server,
                                table_name="saf2015")
 
 
-newcodetrans <- read_table_from_db(server=server, 
-                                   database=database, 
-                                   schema=schema, 
-                                   table_name="newcodetrans")
-
-
 
 # Initial corrections ----------------------------------------------------------
 
@@ -491,7 +485,8 @@ overreportedothererror <- merge(overreportedllofids, areastilloverreported3, by 
 # 41 records (DD1:28)
 
 overreportedothererror <- overreportedothererror %>%
-  filter(claimtype == "OTHER")
+  filter(claimtype == "OTHER")%>% 
+  mutate(llomlc=mlc)
 
 
 
@@ -529,7 +524,7 @@ dperror <- dperror %>%
 # Create flag 8 (overreported other land error)
 
 overreportedothererror <- overreportedothererror %>%
-  select(brn, fid, line, claimtype, code, area) %>% 
+  select(brn, fid, line, claimtype, code, area, llomlc) %>% 
   mutate(flag8=1)
 
 # Create flag 9 (overreported EXCL land error)
@@ -704,12 +699,13 @@ saf_seascurr<-finalsaf_seas
 saf_prev <- read_table_from_db(server=server, 
                                database=database, 
                                schema=schema, 
-                               table_name="allsaf_B8_2022")  
+                               table_name="saf2022")  
 
 # Reading in from ADM creates a new variable with id. Remove if necessary.
 
 saf_prev<-saf_prev %>% 
-  select(-any_of("allsaf_B8_2022ID"))
+  select(-any_of("allsaf22ID"))
+
 
 # rename area in current seasonal data
 
@@ -744,7 +740,7 @@ saf_seascurr_fid <- saf_seascurr_fid %>%
   mutate(
     parish = as.numeric(parish),
     holding = as.numeric(holding)) %>% 
-  filter(!(is.na(parish) | is.na(holding) | is.na(fid)))
+  filter(!(is.na(parish) | is.na(holding) | is.na(fid))) # This isn't in SAS but necessary to make later code work
 
 
 
