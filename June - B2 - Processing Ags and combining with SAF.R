@@ -73,7 +73,7 @@ unmatched<-read_table_from_db(server=server,
                               schema=schema, 
                               table_name="unmatched_EXCL_SAF_B1")
 
-# Load fromdatashare
+# Load from datashare
 # all_saf<-loadRData(paste0(output_path, "allsaf_final.rda"))
 
 # Process Ags -------------------------------------------------------------
@@ -283,7 +283,8 @@ check_glasshouse <-
 
 #dealing with NAs - remove from sum to get value. Remove "na.rm = TRUE" to return NA (otherwise get zeros, imputation for genuinely missing values not zeros)
 full_JAC_SAF <-
-  full_JAC_SAF_corr %>% mutate(
+  full_JAC_SAF_corr %>% 
+  mutate(
     #item87 = sum(item2713, item2707, na.rm = TRUE),
     #item2036 = sum(item2714, item2708),
     
@@ -449,6 +450,7 @@ full_JAC_SAF <-
   full_JAC_SAF %>% dplyr::arrange(parish, holding, .by_group = TRUE)
 
 #clear unused dataframes
+
 rm(
   anti_JAC,
   both_SAF_JAC_inner_full,
@@ -557,8 +559,6 @@ FJS <- FJS %>%
 #   rename(Sum = 1)
 # returns_23_count <-
 #   returns_23_summary %>% group_by_all() %>% count()
-
-
 
 # EXCL Fix part 2 ---------------------------------------------------------
 
@@ -697,11 +697,16 @@ combined_data_2023<-combined_data_excl %>%
   mutate(
   item50=ifelse(saf_data!="none", sum(c(item46,item47,item48,item49), na.rm=TRUE), item50))
 
+combined_data_2023<-combined_data_2023 %>% 
+  mutate_at(c("item46", "item48", "item49", "item50"), round_half_up, 2)
+
 check<-combined_data_2023 %>% 
-  select(parish, holding, item46, item47, item48, item49, item48_15, item49_15, strata, wood9999, item9999,  wood_prop, item48_23, item49_23, flag, item50, survtype, land_data, saf_data)
+  select(parish, holding, item46, item47, item48, item49, item50, item48_15, item49_15, strata, wood9999, item9999,  wood_prop, item48_23, item49_23, flag, item50, survtype, land_data, saf_data)
 
 checkorig<-combined_with_strata %>% 
   select(parish, holding, item48, item49, item48_15, item49_15, strata, item9999,  wood_prop, item50, survtype, saf_data)
+
+
 
 
 # Add additional checks here from SAS project. 
@@ -757,6 +762,7 @@ save(combined_data_address, file = paste0(output_path, "/combined_data_2023_with
 
 combined_data_address_red<-combined_data_address %>% 
   select(!(item48_15:wood9999))
+
 
 save(combined_data_address_red, file = paste0(output_path, "/combined_data_2023.rda"))
 
