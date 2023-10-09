@@ -410,7 +410,9 @@ checkafter<-jac_disag %>%
 
 
 
-# Make totals -------------------------------------------------------------
+# Make totals based on E7 of SAS code -------------------------------------------------------------
+
+
 jac_disag<-clean_names(jac_disag)
 
 jac_disag<-jac_disag %>% 
@@ -438,7 +440,7 @@ jac_disag<-jac_disag %>%
          item27755=ifelse(land_data=="saf"|land_data=="both", (item2707+ item2863+ item2864+ item2865+ item2866+ item2708+ item2709+ item2710+ item2711),item27755))
 
 
-# Round everything here - all livestock and workforce items to whole numbers and land totals to 2 dp
+# Round everything here - all livestock and workforce items to whole numbers and land items to 2 dp
 
 jac_disag<-jac_disag %>% 
   mutate(across(any_of(c(all_sheep, all_pig, all_poultry, all_other_livestock, workforce)), round_half_up, 0))
