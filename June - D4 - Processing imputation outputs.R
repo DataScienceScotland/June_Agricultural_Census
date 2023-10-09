@@ -9,12 +9,14 @@
 rm(list = ls())
 
 
-library(imputeJAS)
-library(RtoSQLServer)
-library(janitor)
+library(readxl)
+library(tidyverse)
 library(stringr)
-library(dplyr)
-
+library(janitor)
+library(data.table)
+library(skimr)
+library(haven)
+library(RtoSQLServer)
 
 
 Code_directory <- ("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023")
@@ -26,70 +28,43 @@ schema <- "juneagriculturalsurvey2023alpha"
 source("Functions/Functions.R")
 source("item_numbers.R")
 
-# Load bootstrapEM imputation outputs------------------------------------------------------------------
-
-
-# They are currently a list, so need to be processed in D3 before saving in ADM. Will move this in the future.
-# For now, load from the datashare.
-
-load(paste0(Code_directory, "/jac_bootstrapEM_260923.rda"))
-
-load(paste0(Code_directory, "/jac_pigs_bootstrapEM_270923.rda"))
-
-# Process outputs ---------------------------------------------------------
-
-
-# Create one dataframe
-
-a<-outputs[1:4] %>% purrr::reduce(full_join, by=c('ID','IMP','YR'))
-
-b<-outputs[5:8] %>% purrr::reduce(full_join, by=c('ID','IMP','YR'))
-
-output_bootstrapEM<-rbind(a,b)
-
-str(output_bootstrapEM)
-
-
-rm(outputs)
-
-output_bootstrapEM<-clean_names(output_bootstrapEM)
-
-
-imputed_holdings<-output_bootstrapEM
-
-# Pigs
-
-outputspigs<-clean_names(outputspigs)
-
-imputed_pigs<-outputspigs
 
 # Load chainedEQ outputs --------------------------------------------------
 
 # Comment this back in if using chainedEQ outputs
 
-# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_one.rda"))
-# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_two.rda"))
-# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_three.rda"))
-# load(paste0(Code_directory, "/imputation_outputs_chainedEQ_200923_four.rda"))
-# 
-# 
-# 
-# outputsone<-do.call(rbind.data.frame, outputs_one)
-# outputstwo<-do.call(rbind.data.frame, outputs_two)
-# outputsthree<-do.call(rbind.data.frame, outputs_three)
-# outputsfour<-do.call(rbind.data.frame, outputs_four)
-# 
-# output_chainedEQ<-rbind(outputsone, outputstwo, outputsthree, outputsfour)
-# 
-# str(output_chainedEQ)
-# 
-# 
-# rm(outputs_one, outputs_two, outputs_three, outputs_four)
-# 
-# output_chainedEQ<-clean_names(output_chainedEQ)
-# 
-# 
-# imputed_holdings<-output_chainedEQ
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_one.rda"))
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_two.rda"))
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_three.rda"))
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_four.rda"))
+load(paste0(Code_directory, "/jac_pigs_chainedEQ_041023.rda"))
+#
+#
+outputsone<-do.call(rbind.data.frame, outputs_one)
+outputstwo<-do.call(rbind.data.frame, outputs_two)
+outputsthree<-do.call(rbind.data.frame, outputs_three)
+outputsfour<-do.call(rbind.data.frame, outputs_four)
+#
+output_chainedEQ<-rbind(outputsone, outputstwo, outputsthree, outputsfour)
+
+str(output_chainedEQ)
+#
+#
+rm(outputs_one, outputs_two, outputs_three, outputs_four)
+
+output_chainedEQ<-clean_names(output_chainedEQ)
+
+#
+imputed_holdings<-output_chainedEQ
+
+
+
+outputspigs<-do.call(rbind.data.frame, outputspigs)
+
+outputspigs<-clean_names(outputspigs)
+
+imputed_pigs<-outputspigs
+
 # Process outputs ---------------------------------------------------------
 
 
@@ -232,6 +207,8 @@ nlevels(as.factor(post_zero_rf_twenty$id))
 
 imputed_holdings<-imputed_holdings %>% select(-yr)
 
+
+
 post_imputation<-rows_update(post_zero_rf_twenty, imputed_holdings, by=c("id","imp"))
 
 
@@ -353,12 +330,12 @@ checksds<-post_imputation_final %>% select(id, ends_with("sd"))
 
 checkbefore<-post_zero_rf_full %>% 
   filter(id=="80_36"|id=="51_19"|id=="284_366")%>% 
-  select(id, item146)
+  select(id, item139)
 
 
 checkafter<-post_imputation_final %>% 
   filter(id=="80_36"|id=="51_19"|id=="284_366") %>% 
-  select(id, item146, item146_sd)
+  select(id, item139, item139_sd)
 
 
 # Formats and corrections
@@ -371,9 +348,10 @@ post_imputation_final<-post_imputation_final %>%
          saf_madeup=as.numeric(saf_madeup),
          madeup=as.numeric(madeup))
 
+
 post_imputation_final<-post_imputation_final %>% 
   rowwise() %>% 
-  mutate(item12 = sum(item20026,item11, na.rm=TRUE), # total area of holding
+  mutate(item12 = sum(item20026+item11, na.rm=TRUE), # total area of holding
          item2= ifelse(sum(item2827,item2828,item2879, na.rm=TRUE)>0, sum(item2827,item2828,item2879, na.rm=TRUE), item2), # seasonally rented in land
          item68 = ifelse(is.na(item68), sum(item52, item53, item55, item56, item2323, item59, item60, item61, item63, item64, item65, item66, na.rm=TRUE), item68), # total vegetables
          item35=ifelse(is.na(item35), item68, item35),
@@ -400,54 +378,6 @@ post_imputation_final<-post_imputation_final %>%
          
 
          
-
-
-# Rounding of livestock
-
-post_imputation_final<-post_imputation_final %>% 
-  mutate(across(any_of(c(all_sheep, all_pig, all_poultry, all_other_livestock)), round_half_up, 0))
-  
-
-check_rounding<-post_imputation_final %>% 
-  select(parish, holding, imptype, land_data, any_of(c(all_sheep, all_pig, all_poultry, all_other_livestock)))
-
-
-
-
-# Disaggregation ----------------------------------------------------------
-
-
-# Disaggregate summary items on non-SAF returns by the proportions in their last return
-
-
-
-land_items<-c("item27710", "item27715", "item27720", "item27725", "item27730", "item27735", "item27740", "item27750", "item27755", 
-              "item16", "item18", "item17", "item20", "item19", "item23", 
-              "item29", "item30", "item31", "item2059", "item32", "item34",
-              "item52", "item53", "item55", "item56", "item2323", "item59", "item60", "item61", "item63", "item64", "item65", "item66",
-              "item36", "item70", "item71", "item72", "item2832", "item75", 
-              "item2324", "item1709", "item80", "item81", "item1710", "item82", "item83",
-              "item2713", "item2858", "item2859", "item2860", "item2861", "item2714", "item2715", "item2716", "item2717", 
-              "item2707", "item2863", "item2864", "item2865", "item2866", "item2708", "item2709", "item2710", "item2711")
-
-livestock_items<-c("item27760", "item27775", "item27780", "item152", "item153", "item154", "item155", "item95", "item96", "item1712", "item1713", "item98")
-
-
-# Load previous years
-
-# previous_years <- read_table_from_db(server=server,
-#                                      database=database,
-#                                      schema=schema,
-#                                      table_name="jac_previous_data_ten_years")
-
-
-load(paste0(Code_directory, "/previous_years.rda"))
-
-previous_years <- previous_years %>% 
-  mutate(yr=year)
-# Check glasshouse
-
-
 # Create items which don't exist in the current dataset (i.e. not on SAF or Ags now)
 
 post_imputation_final<-post_imputation_final %>% 
@@ -470,266 +400,10 @@ post_imputation_final<-post_imputation_final %>%
          item1712=NA, 
          item1713=NA, 
          item98=NA
-    
-  )
+         
+  ) %>% 
+  mutate(across(starts_with('item')& !starts_with("item185") &!starts_with("item186"), as.numeric))
 
-land<-post_imputation_final %>% 
-  filter(!(land_data=="saf" | land_data =="both")) %>% 
-  select(id, land_data, imptype, yr, madeup, saf_madeup, ags_madeup, land_items)
-
-
-# Combine datasets
-
-previous_years_land<-previous_years %>% 
-  select(any_of(names(land)))
-
-previous_years_land<-subset(previous_years_land, id %in% land$id)
-
-land_full<-bind_rows(land,previous_years_land)
-
-land_full<-land_full %>% 
-  filter(!is.na(yr))
-
-
-# keep only holdings where saf_madeup<10 or ags_madeup<10 in 2021
-
-land_full<-land_full %>% 
-  group_by (id) %>% 
-  filter((any(saf_madeup<10 & yr==2021 |ags_madeup<10 & yr==2021)))
-
-
-# Overwrite with the last returned data for each holding
-
-
-land_full<- land_full[order(as.numeric(as.character(land_full$yr))), ]
-
-land_full<- land_full %>% 
-    group_by (id) %>% 
-    dplyr::mutate(across(c(item16, item18, item17, item20, item19, item23, 
-                                item29,item30,item31,item2059,item32,item34,
-                                item52,item53,item55,item56,item2323,item59,item60,item61,item63,item64,item65,item66,
-                                item36,item70,item71,item72,item2832,item75, 
-                                item2324,item1709,item80,item81,item1710,item82,item83,
-                                item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717, 
-                                item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711), 
-                         ~ifelse(is.na(.[yr==2023]) & yr==2023, zoo::na.locf(., na.rm = FALSE), .)))
-
-# Keep 2023 data
-
-land_2023<-land_full %>% 
-  filter(yr==2023) %>% 
-  ungroup()
-
-# Create totals for last returned
-
-land_final<-land_2023 %>% 
-  mutate(
-         barley_27710=sum(item16,item18, na.rm=TRUE),
-         oats_27715=sum(item17,item20, na.rm=TRUE),
-         osr_27720=sum(item19,item23, na.rm=TRUE),
-         stockfeed_27725=sum(item29,item30,item31,item2059,item32,item34,na.rm=TRUE),
-         veginopen_27730=sum(item52,item53,item55,item56,item2323,item59,item60,item61,item63,item64,item65,item66, na.rm=TRUE),
-         fruitinopen_27735=sum(item36,item70,item71,item72,item2832,item75, na.rm=TRUE),
-         nursery_27740=sum(item2324,item1709,item80,item81,item1710,item82,item83, na.rm=TRUE),
-         opensoil_27750=sum(item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717, na.rm=TRUE),
-         solidfloor_27755=sum(item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711, na.rm = TRUE)) %>% 
-  mutate(
-          prop_16=item16/barley_27710,
-          prop_18=item18/barley_27710,
-          prop_17=item17/oats_27715,
-          prop_20=item20/oats_27715,
-          prop_19=item19/osr_27720,
-          prop_23=item23/osr_27720,
-          prop_29=item29/stockfeed_27725,
-          prop_30=item30/stockfeed_27725,
-          prop_31=item31/stockfeed_27725,
-          prop_2059=item2059/stockfeed_27725,
-          prop_32=item32/stockfeed_27725,
-          prop_34=item34/stockfeed_27725,
-          prop_52=item52/veginopen_27730,
-          prop_53=item53/veginopen_27730,
-          prop_55=item55/veginopen_27730,
-          prop_56=item56/veginopen_27730,
-          prop_2323=item2323/veginopen_27730,
-          prop_59=item59/veginopen_27730,
-          prop_60=item60/veginopen_27730,
-          prop_61=item61/veginopen_27730,
-          prop_63=item63/veginopen_27730,
-          prop_64=item64/veginopen_27730,
-          prop_65=item65/veginopen_27730,
-          prop_66=item66/veginopen_27730,
-          prop_36=item36/fruitinopen_27735,
-          prop_70=item70/fruitinopen_27735,
-          prop_71=item71/fruitinopen_27735,
-          prop_72=item72/fruitinopen_27735,
-          prop_2832=item2832/fruitinopen_27735,
-          prop_75=item75/fruitinopen_27735,
-          prop_2324=item2324/nursery_27740,
-          prop_1709=item1709/nursery_27740,
-          prop_80=item80/nursery_27740,
-          prop_81=item81/nursery_27740,
-          prop_1710=item1710/nursery_27740,
-          prop_82=item82/nursery_27740,
-          prop_83=item83/nursery_27740,
-          prop_2713=item2713/opensoil_27750,
-          prop_2858=item2858/opensoil_27750,
-          prop_2859=item2859/opensoil_27750,
-          prop_2860=item2860/opensoil_27750,
-          prop_2861=item2861/opensoil_27750,
-          prop_2714=item2714/opensoil_27750,
-          prop_2715=item2715/opensoil_27750,
-          prop_2716=item2716/opensoil_27750,
-          prop_2717=item2717/opensoil_27750,
-          prop_2707=item2707/solidfloor_27755,
-          prop_2863=item2863/solidfloor_27755,
-          prop_2864=item2864/solidfloor_27755,
-          prop_2865=item2865/solidfloor_27755,
-          prop_2866=item2866/solidfloor_27755,
-          prop_2708=item2708/solidfloor_27755,
-          prop_2709=item2709/solidfloor_27755,
-          prop_2710=item2710/solidfloor_27755,
-          prop_2711=item2711/solidfloor_27755) %>% 
-  mutate_all(function(x) ifelse(is.nan(x), 0, x)) %>% 
-  mutate(
-    item16=prop_16*item27710,
-    item18=prop_18*item27710,
-    item17=prop_17*item27715,
-    item20=prop_20*item27715,
-    item19=prop_19*item27720,
-    item23=prop_23*item27720,
-    item29=prop_29*item27725,
-    item30=prop_30*item27725,
-    item31=prop_31*item27725,
-    item2059=prop_2059*item27725,
-    item32=prop_32*item27725,
-    item34=prop_34*item27725,
-    item52=prop_52*item27730,
-    item53=prop_53*item27730,
-    item55=prop_55*item27730,
-    item56=prop_56*item27730,
-    item2323=prop_2323*item27730,
-    item59=prop_59*item27730,
-    item60=prop_60*item27730,
-    item61=prop_61*item27730,
-    item63=prop_63*item27730,
-    item64=prop_64*item27730,
-    item65=prop_65*item27730,
-    item66=prop_66*item27730,
-    item36=prop_36*item27735,
-    item70=prop_70*item27735,
-    item71=prop_71*item27735,
-    item72=prop_72*item27735,
-    item2832=prop_2832*item27735,
-    item75=prop_75*item27735,
-    item2324=prop_2324*item27740,
-    item1709=prop_1709*item27740,
-    item80=prop_80*item27740,
-    item81=prop_81*item27740,
-    item1710=prop_1710*item27740,
-    item82=prop_82*item27740,
-    item83=prop_83*item27740,
-    item2713=prop_2713*item27750,
-    item2858=prop_2858*item27750,
-    item2859=prop_2859*item27750,
-    item2860=prop_2860*item27750,
-    item2861=prop_2861*item27750,
-    item2714=prop_2714*item27750,
-    item2715=prop_2715*item27750,
-    item2716=prop_2716*item27750,
-    item2717=prop_2717*item27750,
-    item2707=prop_2707*item27755,
-    item2863=prop_2863*item27755,
-    item2864=prop_2864*item27755,
-    item2865=prop_2865*item27755,
-    item2866=prop_2866*item27755,
-    item2708=prop_2708*item27755,
-    item2709=prop_2709*item27755,
-    item2710=prop_2710*item27755,
-    item2711=prop_2711*item27755
-  )
-
-
-
-# Livestock items 
-
-
-livestock<-post_imputation_final %>% 
-  select(id, land_data, imptype, yr, madeup, saf_madeup, ags_madeup, any_of(livestock_items))
-
-# Combine datasets
-
-previous_years__livestock<-previous_years %>% 
-  select(any_of(names(livestock)))
-
-previous_years_livestock<-subset(previous_years__livestock, id %in% livestock$id)
-
-livestock_full<-bind_rows(livestock, previous_years_livestock)
-
-# keep only holdings where ags_madeup<10 in 2021
-
-livestock_full<-livestock_full %>% 
-  group_by (id) %>% 
-  filter((any(ags_madeup<10 & yr==2021)))
-
-
-# overwrite with previous return
-
-livestock_full<- livestock_full[order(as.numeric(as.character(livestock_full$yr))), ]
-
-livestock_full <- livestock_full %>% 
-group_by (id) %>% 
-  dplyr::mutate(across(c(item152, item153, item154, item155, item95, item96, item1712,item1713,item98), 
-                       ~ifelse(is.na(.[yr==2023]) & yr==2023, zoo::na.locf(., na.rm = FALSE), .))) 
-
-
-# Keep 2023 data
-
-livestock_2023<-livestock_full %>% 
-  filter(yr==2023)
-
-# Create totals
-
-livestock_2023<-livestock_full %>% 
-  mutate(horses_27775=sum(item95,item96, na.rm=TRUE),
-         goats_27780=sum(item1712,item1713,item98, na.rm=TRUE),
-         fat_pigs27760=sum(item152, item153, item154, item155)) %>% 
-  mutate(prop_95=item95/horses_27775,
-         prop_96=item96/horses_27775,
-         prop_1712=item1712/goats_27780,
-         prop_1713=item1713/goats_27780,
-         prop_98=item98/goats_27780,
-         prop_152=item152/fat_pigs27760,
-         prop_153=item153/fat_pigs27760,
-         prop_154=item154/fat_pigs27760,
-         prop_155=item155/fat_pigs27760) %>% 
-  mutate_all(function(x) ifelse(is.nan(x), 0, x)) %>% 
-  mutate(item95=prop_95*item27775,
-         item96=prop_96*item27775,
-         item1712=prop_1712*item27780,
-         item1713=prop_1713*item27780,
-         item98=prop_98*item27780,
-         item152=prop_152*item27760,
-         item153=prop_153*item27760,
-         item154=prop_154*item27760,
-         item155=prop_155*item27760)
-  
-
-# Overwrite post_imputation dataset
-
-post_imputation<-rows_update(post_imputation_final, land_2023, by="id")
-
-
-post_imputation<-rows_update(post_imputation, livestock_2023, by="id")
-
-post_imputation_final<-post_imputation_final %>% 
-  mutate(across(any_of(c(land_items, livestock_items)), round_half_up, 2))
-
-checkbefore<-post_imputation_final %>% 
-  select(parish, holding, imptype, land_data, any_of(c(land_items, livestock_items)))
-
-checkafter<-post_imputation_final %>% 
-  select(parish, holding, imptype, land_data, any_of(c(land_items, livestock_items)))
-  
 # Save  -------------------------------------------------------------------
 
 

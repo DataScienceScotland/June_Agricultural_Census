@@ -1,7 +1,7 @@
 # This script takes in the pre-imputation dataset rolled forward dataset and performs multiple imputation for imputed items. 
 # There are two D3 scripts. This one is for the function chaineEQ. The other is for the less time-consuming function bootstrapEM. Only one will be run in the final cut.
 # Created by Lucy Nevard June 2023. 
-# Modified by Lucy Nevard 27.09.23
+# Modified by Lucy Nevard 04.10.23
 
 
 # Before import -----------------------------------------------------------
@@ -35,6 +35,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 
 
 source("Functions/Functions.R")
+source("item_numbers.R")
 
 # Import ------------------------------------------------------------------
 
@@ -55,13 +56,6 @@ load(paste0(Code_directory, "/pre_imputation_rolled_forward.rda"))
 
 # Multiple imputation -----------------------------------------------------
 
-# These are the imputed item. This list may be updated if decided by the Census team. 
-
-imputed_items<-c("item14","item24","item94","item139","item140","item141","item143","item144","item2038","item2039",
-                 "item2320","item2321","item2322","item2469","item2470","item2472","item2473","item2474","item2862","item2868",
-                 "item27710","item27715","item27720","item27725","item27730","item27735","item27740","item27750",
-                 "item27755","item27775","item27780") 
-
 
 # Keep only imputed items in the dataset
 
@@ -71,7 +65,6 @@ pre_imputation_reduced<-pre_imputation_rolled_forward %>%
 # Check 2023 data to see if it looks sensible
 
 check2023full<-pre_imputation_reduced %>% filter(yr=="2023")
-
 
 
 pre_imputation_reduced<-as.data.frame(pre_imputation_reduced)
@@ -313,7 +306,7 @@ print(new)
 outputs_one<-lapply(
   list_jacs_imputed_chained_one, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_one, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_280923_one.rda"))
+save(outputs_one, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_one.rda"))
 
 rm(list_jacs_imputed_chained_one,outputs_one)
 gc()
@@ -328,7 +321,7 @@ print(new)
 outputs_two<-lapply(
   list_jacs_imputed_chained_two, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_two, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_280923_two.rda"))
+save(outputs_two, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_two.rda"))
 
 
 rm(list_jacs_imputed_chained_two,outputs_two)
@@ -344,7 +337,7 @@ print(new)
 outputs_three<-lapply(
   list_jacs_imputed_chained_three, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_three, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_280923_three.rda"))
+save(outputs_three, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_three.rda"))
 
 
 rm(list_jacs_imputed_chained_three,outputs_three)
@@ -361,7 +354,7 @@ print(new)
 outputs_four<-lapply(
   list_jacs_imputed_chained_four, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_four, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_280923_four.rda"))
+save(outputs_four, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_four.rda"))
 
 rm(list_jacs_imputed_chained_four,outputs_four)
 gc()
@@ -376,7 +369,7 @@ new <- Sys.time() - old
 print(new)
 
 
-outputs_pigs<-lapply(
+outputspigs<-lapply(
   pigs_jacs_imputed_chained,function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_pigs, file = paste0(Code_directory, "/jac_pigs_chaindEQ_270923.rda"))
+save(outputspigs, file = paste0(Code_directory, "/jac_pigs_chainedEQ_041023.rda"))

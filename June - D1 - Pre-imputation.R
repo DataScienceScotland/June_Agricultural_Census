@@ -12,7 +12,6 @@
 rm(list = ls())
 
 
-library(imputeJAS)
 library(RtoSQLServer)
 library(dplyr)
 library(janitor)
@@ -23,8 +22,8 @@ library(data.table)
 
 # Load functions
 
-# source("Functions/Functions.R")
-# source("item_numbers.R")
+source("Functions/Functions.R")
+source("item_numbers.R")
 
 # Directories
 
@@ -43,13 +42,15 @@ schema <- "juneagriculturalsurvey2023alpha"
 # previous_years <- read_table_from_db(server=server,
 #                                      database=database,
 #                                      schema=schema,
-#                                      table_name="jac_previous_data_ten_years")
+#                                      table_name="previous_years")
 
 
 load(paste0(Code_directory, "/previous_years.rda"))
 
 
 previous_years_full<-previous_years
+
+
 
 # Load combined_data_2023.
 
@@ -63,9 +64,9 @@ combined_data_2023 <- read_table_from_db(server=server,
                                 table_name="combined_data_2023_corrected") 
 
 
-data_2023 <- combined_data_2023 %>% 
-  dplyr::mutate(in2023="1") 
 
+data_2023 <- combined_data_2023 %>% 
+  dplyr::mutate(in2023="1")
 
 # Load population frame
 
@@ -206,14 +207,14 @@ pre_imputation_2023<-pre_imputation_2023_full %>%
 
 pre_imputation_2023$id<-paste0(pre_imputation_2023$parish,"_",pre_imputation_2023$holding)
 
-# Keep only historic holdings which are in the current dataset
-
-previous_years<-subset(previous_years, id %in% pre_imputation_2023$id)
-
 #take out text items as they're causing issues with binding
 
 pre_imputation_2023<-pre_imputation_2023 %>% 
   select(-item185, -item186)
+
+# Keep only historic holdings which are in the current dataset
+
+previous_years<-subset(previous_years, id %in% pre_imputation_2023$id)
 
 
 # Keep only historic items which are in the current dataset
