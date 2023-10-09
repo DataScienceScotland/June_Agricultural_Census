@@ -1,4 +1,4 @@
-#Script to produce CTS301-CTS312 using ScotEID data, imported in A1. 
+
 # Before import -----------------------------------------------------------
 
 
@@ -48,11 +48,11 @@ cattle <- read_table_from_db(server=server,
                                table_name="scoteid_A_2023")
 
 
-#change to post imputation dataset
-June_data <- read_table_from_db(server=server, 
-                                     database=database, 
-                                     schema=schema, 
-                                     table_name="post_imputation")
+# #change to post imputation dataset
+# June_data <- read_table_from_db(server=server, 
+#                                      database=database, 
+#                                      schema=schema, 
+#                                      table_name="combined_data_2023_corrected")
 
 
 # Process variables -------------------------------------------------------
@@ -64,8 +64,8 @@ cattle$holding <- as.numeric(substr(cattle$cph, 8,11))
 #remove birth_cph and cph to be able to group by parish and holding 
 cattle <- cattle %>% select(-c(birth_cph,
                                cph,
-                               current_wbm_cph),
-                            -any_of("scoteid_A_2023ID"))
+                               current_wbm_cph,
+                               scoteid_A_2023ID))
 ## NOTE Parish and Holding will only retain leading zeroes if remaining as strings, if format is changed to numeric then leading zeroes will be dropped
  
 
@@ -95,27 +95,97 @@ cattle$age_range <- recode_factor(cattle$age_range,
 cattle<- cattle %>%  mutate(cts_age_range = case_when(age_range %in% c("0-6", "6-12") ~ "u1",
                                                      age_range %in% c("12-18", "18-24")  ~ "12",
                                                      age_range %in% c("24-30", "30-36", "36-48", "48-60", "60-72", "72-84", ">84")~ "2",
-                                                   TRUE ~"2"))
+                                                   TRUE ~ "Unknown"))
 
-
-
-# Assign sex and age for unknowns -----------------------------------------
+# Breed explorer ----------------------------------------------------------
 # 
-# Assign sexless as male or female (depending on progeny)
-cattle<- cattle %>%  mutate(sex = ifelse(!(sex %in% c("Male", "Female")), 
-                                         ifelse(has_progeny == 0, "Male",
-                                                ifelse(has_progeny == 1, "Female", as.character(sex))),
-                                                as.character(sex)))
-
-
-
-#Assign non dairy/ beef as dual 
-cattle<- cattle %>%  mutate(produce = ifelse(!(produce %in% c("Beef", "Dairy", "Dual")), 
-                                             "Dual", as.character(produce)))
-
+# #create dataframes for each male produce type and then breed
+# male_dairy <- filter(cattle, produce == "Dairy" & sex =="Male")
+# male_beef <- filter(cattle, produce == "Beef" & sex =="Male")
+# male_dairy_breeds <-male_dairy %>% group_by(breed)%>%tally()
+# male_beef_breeds <- male_beef %>% group_by(breed) %>% tally()
+# male_dual <- filter(cattle, produce == "Dual" & sex == "Male")
+# male_dual_breeds <-male_dual %>% group_by(breed)%>%tally()
+# 
+# 
+# #check for uniqueness
+# dairy_dual_breed_match <- as.factor(male_dairy$breed %in% male_dual$breed)
+# summary(dairy_dual_breed_match)
+# beef_dual_breed_match <- as.factor(male_beef$breed %in% male_dual$breed)
+# summary(beef_dual_breed_match)
+# 
+# #create dataframes for each female produce type and progeny status
+# female_dairy <- filter(cattle, produce == "Dairy" & sex == "Female")
+# female_dairy_no_off <- filter(cattle, produce == "Dairy" & sex =="Female" & has_progeny == 0 )
+# female_dairy_with_off <- filter(cattle, produce == "Dairy" & sex =="Female" & has_progeny == 1 )
+# female_beef <- filter(cattle, produce == "Beef"  & sex == "Female" )
+# female_beef_no_off <- filter(cattle, produce == "Beef" & sex =="Female" & has_progeny == 0)
+# female_beef_with_off <- filter(cattle, produce == "Beef" & sex =="Female" & has_progeny == 1 )
+# female_dual <- filter(cattle, produce == "Dual" & sex == "Female")
+# female_dual_no_off <- filter(cattle, produce == "Dual" & sex =="Female" & has_progeny == 0 )
+# female_dual_with_off <- filter(cattle, produce == "Dual" & sex =="Female" & has_progeny == 1)
+# 
+# #check if offspring splits add to whole
+# nrow(female_dairy_no_off) + nrow(female_dairy_with_off) == nrow(female_dairy)
+# nrow(female_beef_no_off) + nrow(female_beef_with_off) == nrow(female_beef)
+# nrow(female_dual_no_off) + nrow(female_dual_with_off) == nrow(female_dual)
+# 
+# #create dataframes for each female breed type
+# female_dairy_breeds <-female_dairy %>% group_by(breed)%>%tally()
+# female_beef_breeds <- female_beef %>% group_by(breed) %>% tally()
+# female_dual_breeds <-female_dual %>% group_by(breed)%>%tally()
+# 
+# #check for uniqueness
+# f_dairy_beef_breed_match <- as.factor(female_beef$breed %in% female_dairy$breed)
+# summary(f_dairy_beef_breed_match)
+# f_beef_dual_breed_match <- as.factor(female_beef$breed %in% female_dual$breed)
+# summary(f_beef_dual_breed_match)
+# 
+# #dataframe for "other" produce type
+# other <- filter(cattle, produce != "Beef" & produce  != "Dairy" & produce != "Dual") %>% 
+#   group_by(breed) %>% tally()
+# 
+# #dataframe join male and female breeds together for each produce type
+# dairy_breeds<-full_join(female_dairy_breeds, male_dairy_breeds, by = "breed") 
+# dairy_breeds <- breed_add(dairy_breeds)
+# 
+# beef_breeds <- full_join(female_beef_breeds, male_beef_breeds, by = "breed") 
+# beef_breeds <- breed_add(beef_breeds)
+# 
+# dual_breeds <- full_join(female_dual_breeds, male_dual_breeds,  by = "breed")
+# dual_breeds <- breed_add(dual_breeds)
+# 
+# 
+# # Produce explorer --------------------------------------------------------
+# 
+# unique(cattle_original$produce
+#       )
+# no_beef_dairy_f <- cattle_original %>% filter(produce != "Beef"& produce!= "Dairy" & produce !="Dual")
+# other_produce <- sum(no_beef_dairy_f$cattle)
 
 # Create CTS category variable --------------------------------------------
 cattle_original <- cattle
+
+# cattle <-cattle%>% 
+#   mutate(cts_category= (case_when (sex == "Female" & produce == "Beef" & cts_age_range == "u1" ~ "u1fbeef",
+#                                   sex == "Female" & breed %in% female_dairy_breeds$breed & cts_age_range == "u1" ~ "u1fdairy",
+#                                   sex == "Female" & breed %in% female_dual_breeds$breed & cts_age_range == "u1" ~ "u1fdual",
+#                                   sex == "Female" & produce == "Beef",
+#                                   sex == "Female" & breed %in% female_dairy_breeds$breed & cts_age_range == "12" ~ "fdairy12",
+#                                   sex == "Female" & breed %in% female_dual_breeds$breed & cts_age_range == "12" ~ "fdual12",
+#                                   sex == "Female" & breed %in% female_beef_breeds$breed & cts_age_range == "2" & has_progeny == 0 ~ "fbeefnooff2",
+#                                   sex == "Female" & breed %in% female_beef_breeds$breed & cts_age_range == "2" & has_progeny == 1 ~ "fbeefwithoff2",
+#                                   sex == "Female" & breed %in% female_dairy_breeds$breed & cts_age_range == "2" & has_progeny == 0 ~ "fdairynooff2",
+#                                   sex == "Female" & breed %in% female_dairy_breeds$breed & cts_age_range == "2" & has_progeny == 1 ~ "fdairywithoff2",
+#                                   sex == "Female" & breed %in% female_dual_breeds$breed & cts_age_range == "2" & has_progeny == 0 ~ "fdualnooff2",
+#                                   sex == "Female" & breed %in% female_dual_breeds$breed & cts_age_range == "2" & has_progeny == 1 ~ "fdualwithoff2",
+#                                   sex == "Male" & cts_age_range == "u1" ~ "u1m",
+#                                   sex == "Male" & cts_age_range == "12" ~ "m12",
+#                                   sex == "Male" & cts_age_range == "2" ~ "m2",
+#                                   TRUE ~ "Unknown") ))%>%
+#   select(-c(breed, sex, produce, cts_age_range, has_progeny, age_range)) %>%
+#   group_by(parish, holding, cts_age_range)
+
 
 cattle <-cattle_original%>% 
   mutate(cts_category= (case_when (sex == "Female" & produce == "Beef" & cts_age_range == "u1" ~ "u1fbeef",
@@ -134,12 +204,12 @@ cattle <-cattle_original%>%
                                    sex == "Male" & cts_age_range == "12" ~ "m12",
                                    sex == "Male" & cts_age_range == "2" ~ "m2",
                                    TRUE ~ "Unknown") ))%>%
- select(-c(breed, sex, produce, cts_age_range, has_progeny, age_range)) %>%
+  select(-c(breed, sex, produce, cts_age_range, has_progeny, age_range)) %>%
   group_by(parish, holding, cts_category)
-# 
-# 
-#check
-cattle %>% filter(cts_category == "Unknown")
+
+
+
+
 # Totals check ------------------------------------------------------------
 #Before portioning and manipulation
 
@@ -210,8 +280,7 @@ summary(unique(cattle)==cattle)
 
 
 #remove unknowns and blanks
-
-#cattle <- cattle %>% select(-Unknown)
+cattle <- cattle %>% select(-Unknown)
 
 #sum without unknown
 cattle$cattle <- rowSums(cattle[names(cattle) %in% cts_category])
@@ -527,10 +596,10 @@ cts_time_series$ages <- c("Female beef cattle under 1","Female dairy cattle unde
                           "Male cattle under 1","Aged 1-2","Aged 2 years and over","Total cattle")
 
 # # Merge with JAC data -----------------------------------------------------
-#  June_CTS <- full_join(June_data, cts, by = c("parish", "holding"))
-# # # #Save Outputs----------------------------------------------------------------------------------------------
-# # 
-# # #JuneCTS
+# June_CTS <- full_join(June_data, cts, by = c("parish", "holding"))
+# # #Save Outputs----------------------------------------------------------------------------------------------
+# 
+# #JuneCTS
 # write_dataframe_to_db(
 #   server = server,
 #   database = database,
@@ -541,4 +610,4 @@ cts_time_series$ages <- c("Female beef cattle under 1","Female dairy cattle unde
 #   versioned_table = FALSE,
 #   batch_size = 10000
 # )
-
+# 
