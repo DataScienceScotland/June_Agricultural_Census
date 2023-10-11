@@ -71,8 +71,15 @@ non_checked_holdings <-
 #create holdings-ignored form to append to work item spreadsheet
 #holdings_not_cleared_form <- data.frame(Parish = "", Holding = "", Errors_ignored = "",	Rationale ="", Date = "")
 
-work_item_list <- list("work_items" = non_checked_holdings)
+#work_item_list <- list("work_items" = non_checked_holdings,
+                       #"error_codes" = all_desc)
 
 #write new xlsx with checked holdings removed
-write_xlsx(work_item_list,
+#write_xlsx(work_item_list,
+          #paste(output_path, Sys.Date(), "work_item_list_dups_removed.xlsx"))
+          #
+
+#simple output for Ops
+simple_list <- non_checked_holdings %>% select(parish, holding)
+write_xlsx(simple_list,
            paste(output_path, Sys.Date(), "work_item_list_dups_removed.xlsx"))
