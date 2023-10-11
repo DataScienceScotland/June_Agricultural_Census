@@ -475,8 +475,8 @@ jac_disag<-jac_disag %>%
          cala=item60,
          turswe=item56,
          carrots=item63,
-         tveg=sum(item68,item36,item37, na.rm=TRUE) - sum(item52,item60,item56,item63, na.rm=TRUE),  # not sure this makes sense, produces some negative numbers...
-         veg=tveg,
+         #tveg=sum(item68,item36,item37, na.rm=TRUE) - sum(item52,item60,item56,item63, na.rm=TRUE),  # not sure this makes sense, produces some negative numbers...
+         #veg=tveg,
          tothcer=sum(item14,item15,item17,item20, na.rm=TRUE), # no item22
          othcer=tothcer)
 
