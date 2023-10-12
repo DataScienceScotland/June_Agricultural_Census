@@ -13,7 +13,7 @@ library(RtoSQLServer)
 library(readxl)
 
 
-source("June - E1 - ScotEID.R")
+source("Background Scripts/June - E1 - ScotEID.R")
 
 yr <- 2023
 yr1 <- yr - 1
@@ -86,7 +86,7 @@ all_items <- c(all_holding_areas, all_seasonal, all_seasonal_saf,
                all_other_livestock, "item171", occupier_12, workforce, "item200", other_labour, "item2980") 
 
 #Import-------------------------------------------------------------
-# Cattle data from  
+
 
 
 #Post imputation June data

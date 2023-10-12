@@ -142,8 +142,6 @@ error_desc_df <- function(x){
     pivot_longer(everything(), names_to ="error_name", values_to = "error_description")
   }
 
-
-x <- error_desc(main_validation_list)
 #remove total errors per case and ID col before joining
 remove_total_id <- function(x) { x <-  x %>% select(-total_errors_per_case, -contains("ID", ignore.case = FALSE))  }
 
