@@ -350,8 +350,8 @@ post_imputation_final<-post_imputation_final %>%
 
 
 post_imputation_final<-post_imputation_final %>% 
-  rowwise() %>% 
-  mutate(item12 = sum(item20026+item11, na.rm=TRUE), # total area of holding
+  dplyr::rowwise() %>% 
+  dplyr::mutate(item12 = sum(item20026+item11, na.rm=TRUE), # total area of holding
          item2= ifelse(sum(item2827,item2828,item2879, na.rm=TRUE)>0, sum(item2827,item2828,item2879, na.rm=TRUE), item2), # seasonally rented in land
          item68 = ifelse(is.na(item68), sum(item52, item53, item55, item56, item2323, item59, item60, item61, item63, item64, item65, item66, na.rm=TRUE), item68), # total vegetables
          item35=ifelse(is.na(item35), item68, item35),

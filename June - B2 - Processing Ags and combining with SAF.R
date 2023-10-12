@@ -54,11 +54,11 @@ all_ags <- all_ags %>%
 
 # Load SAF data previous modules- cleaned, combined formatted with census item numbers
 # Load from ADM
-
+  
 all_saf <- read_table_from_db(server=server, 
-                               database=database, 
-                               schema=schema, 
-                               table_name="allsaf_final_2023")
+                                 database=database, 
+                                 schema=schema, 
+                                 table_name="allsaf_final_2023")
 all_saf <- all_saf %>% 
   select(-any_of("allsaf_final_2023ID"))
 

@@ -19,8 +19,6 @@ library(readxl)
 
 
 
-
-
 #<-Datashare<-file path for import and export
 Code_directory<-("//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Codeconversion_2023/2023")
 sas_agstemp_path <-   "//s0177a/sasdata1/ags/census/agstemp/"

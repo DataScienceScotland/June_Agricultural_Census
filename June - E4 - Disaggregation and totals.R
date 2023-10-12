@@ -1,7 +1,7 @@
 # Disaggregation and E7 of SAS code
 
 ##Written by Lucy Nevard 04/10/23
-##Modified by Lucy Nevard 06/10/23
+##Modified by Lucy Nevard 10/10/23
 
 
 
@@ -43,6 +43,33 @@ jac$id<-paste0(jac$parish,"_",jac$holding)
 
 jac$yr<-2023
 
+
+
+# Correction just for this run - 10.10.23 - delete on any subsequent run!
+
+correctunit<-jac %>%filter(land_data=="ags"|land_data=="both") %>% 
+  dplyr::mutate(item27750=item27750/10000,
+         item27755=item27755/10000,
+         item85=item85/10000,
+         item86=item86/10000) 
+
+check<-correctunit %>% 
+  select(item27750, item27755, item85, item86, land_data)
+
+jac<-rows_update(jac, correctunit, by="id")
+
+
+jac<-jac %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(item85=ifelse(imptype=="full", sum(item27750,item2862, na.rm=TRUE), item85),
+                item86=ifelse(imptype=="full", sum(item27755,item2867, na.rm=TRUE), item86),
+                item38 = sum(item41,item84,item85,item86, na.rm = TRUE),
+                item40 = sum(item14, item15, item16, item18, item17, item20, item3156, item19, 
+                             item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
+                             item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38, na.rm=TRUE))
+
+check<-jac %>% 
+  select(item27750, item27755, item85, item86, item38, item40)
 
 
 # Disaggregation ----------------------------------------------------------
@@ -288,7 +315,8 @@ land_split<-land_2023 %>%
     item2709=prop_2709*item27755,
     item2710=prop_2710*item27755,
     item2711=prop_2711*item27755
-  )
+  ) %>% 
+  ungroup()
 
 
 land_final <- land_split %>% 
@@ -301,6 +329,11 @@ check2<-land_final %>%
 checkholdingspost<-land_final %>% 
   select(id, item27710, item16, item18) %>% 
   filter(id=="666_78"|id=="816_58" |id=="417_8")
+
+
+non_disag<-land_final %>% 
+  filter(item27710>0 &(item16+item18==0))
+  
 
 # Livestock items 
 
@@ -386,7 +419,9 @@ livestock_final<-livestock_2023 %>%
          item152=prop_152*item27760,
          item153=prop_153*item27760,
          item154=prop_154*item27760,
-         item155=prop_155*item27760)
+         item155=prop_155*item27760) %>% 
+  ungroup()
+
 
 livestock_final<-livestock_final %>% 
   select(id, livestock_items)
@@ -395,6 +430,12 @@ livestock_final<-livestock_final %>%
 
 jac$id<-paste0(jac$parish,"_",jac$holding)
 
+
+land_final<-dplyr::ungroup(land_final)
+land_final<-as_data_frame(land_final)
+
+jac<-jac %>% 
+  dplyr::mutate(across(starts_with('item')& !starts_with("item185") &!starts_with("item186"), as.numeric))
 
 jac_disag<-rows_update(jac, land_final, by="id")
 
@@ -408,12 +449,13 @@ checkafter<-jac_disag %>%
   select(parish, holding, imptype, land_data, any_of(c(land_items, livestock_items)))
 
 
+# Make summary items same as individual items
 
-
-# Make totals based on E7 of SAS code -------------------------------------------------------------
 
 
 jac_disag<-clean_names(jac_disag)
+
+str(jac_disag)
 
 jac_disag<-jac_disag %>% 
   dplyr::mutate(item27710=ifelse(item27710==0&(item16+item18)>0, (item16+item18), item27710),
@@ -440,19 +482,113 @@ jac_disag<-jac_disag %>%
          item27755=ifelse(land_data=="saf"|land_data=="both", (item2707+ item2863+ item2864+ item2865+ item2866+ item2708+ item2709+ item2710+ item2711),item27755))
 
 
+
+
 # Round everything here - all livestock and workforce items to whole numbers and land items to 2 dp
 
 jac_disag<-jac_disag %>% 
-  mutate(across(any_of(c(all_sheep, all_pig, all_poultry, all_other_livestock, workforce)), round_half_up, 0))
+  dplyr::mutate(across(any_of(c(all_sheep, all_pig, all_poultry, all_other_livestock, workforce)), round_half_up, 0))
 
 jac_disag<-jac_disag %>% 
-  mutate(across(any_of(c("item20026","item11","item12","item50", land_items, all_crops, all_grass, all_other_land)), round_half_up, 2))
+  dplyr::mutate(across(any_of(c("item20026","item11","item12","item50", land_items, all_crops, all_grass, all_other_land)), round_half_up, 2))
 
+
+
+jac_disagbeforecorrections<-jac_disag # save this file
+
+
+# non_disagbarley<-jac_disag %>% 
+#   select(id, item27710, imptype, item16, item18) %>% 
+#   filter(item27710>0 & (sum(item16,item18, na.rm=TRUE)==0 |is.na(item16)&is.na(item18)))
+
+
+jac_disag<-ungroup(jac_disag)
+# 
+# jac_disag<-jac_disag %>% 
+#   dplyr::mutate(prop_item16=sum(item16, na.rm=TRUE)/sum(item27710, na.rm=TRUE),
+#                 prop_item18=sum(item18, na.rm=TRUE)/sum(item27710, na.rm=TRUE),
+#                 prop_item17=sum(item17, na.rm=TRUE)/sum(item27710, na.rm=TRUE
+#                 
+#                                                         # complete these for all summary items
+               
+                
+
+
+
+# Make totals based on E7 of SAS code -------------------------------------------------------------
+
+
+# correct two holdings - clearly decimal place errors
+
+
+checkfruitandothercrops<-jac_disag %>% 
+  select(parish, holding, land_data, item75, item2714,item2708, item2713, item2707, item34, item2059, item38, item41, item84, item85, item86)
+
+
+checkholdingsfruit<-previous_years %>% 
+  select(parish, holding,yr,item75,item2713,item2707, item2036, item2714) %>% 
+  filter(parish==674 & holding ==44 | parish==674 & holding==17 |parish==94 &holding==47 |parish==472&holding==121)  
+
+checkholdingsothercrops<-previous_years %>% 
+  select(parish, holding,yr,item75,item2713,item2707, item2036, item2714) %>% 
+  filter(parish==674 & holding ==44 | parish==674 & holding==17 |parish==94 &holding==47 |parish==472&holding==121)  
+
+
+
+jac_disag<-jac_disag %>% 
+  dplyr::mutate(
+    item2714=ifelse(parish==674 & holding ==44, 3.4, item2714),
+    item2714=ifelse(parish==674 & holding==17, 0.4, item2714),
+    item2707=ifelse(parish==472 & holding==121, 0.021, item2707),
+    item2036=ifelse(parish==94 & holding==47, 0.204, item2714)
+  )
+
+occandocc2<-c("item177", "item178", "item179", "item182", "item183", "item184","item2566", "item2567","item2877", "item2878", "item3056", "item3057")
+
+jac_disag<-jac_disag %>% 
+  dplyr::mutate(across(any_of(occandocc2), ~ifelse (.>0, 1, .)))
+
+
+
+checkitem50<-jac_disag %>%
+  select(parish, holding, imptype, item85, item86, item38, item41, item84, item40,item14, item15, item16, item18, item17, item20, item3156, item19, 
+         item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
+         item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38, 
+         item46, item47, item48, item49, item50,item2321, item2322)
+
+jac_disag<-jac_disag %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(
+    item46 = sum(item2321, item2322, item40, na.rm=TRUE),
+    item50 = sum(item46, item47, item48, item49, na.rm=TRUE))
+
+
+checkglasshouse<-jac_disag %>% 
+  select(parish, holding, imptype, land_data, item85, item86, 
+         item27750,item2862, item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717,
+         item27755, item2867,item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711) %>% 
+  filter(item85+item86==0&(land_data=="both"|land_data=="saf")) %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(
+         item85=sum(item2862, item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717,na.rm=TRUE),
+         item86=sum(item2867,item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711,na.rm=TRUE),
+         item27750=sum(item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717,na.rm=TRUE),
+         item27755=sum(item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711,na.rm=TRUE))
+
+jac_disag<-rows_update(jac_disag, checkglasshouse, by=c("parish","holding"))
+
+
+
+checkglasshouse<-jac_disag %>% 
+  select(parish, holding, imptype, land_data, item85, item86, 
+         item27750,item2862, item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717,
+         item27755, item2867,item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711)
+                
 # make items 
 
 jac_disag<-jac_disag %>% 
-  rowwise() %>% 
-  mutate(item87=sum(item2713,item2707, na.rm=TRUE), #bear in mind 2713 isn't on SAF so will be an underestimate (made from disaggregating ags-only and imputed data)
+  dplyr::rowwise() %>% 
+  dplyr::mutate(item87=sum(item2713,item2707, na.rm=TRUE), #bear in mind 2713 isn't on SAF so could be an underestimate (made from disaggregating ags-only and imputed data)
          item39=sum(item2469,item2470, na.rm=TRUE),
          item6000=sum(item2861, item2866, na.rm=TRUE),
          item2036=sum(item2714, item2708,na.rm=TRUE),
@@ -462,7 +598,7 @@ jac_disag<-jac_disag %>%
          lambs=item144,
          ewes=item139,
          pigs20=item27770,
-         pigs50=sum(item155,item27765, na.rm=TRUE), # item155 is disaggregated from 27760 but weaners are a separate category 27765... is this fine?
+         pigs50=sum(item155,item27765, na.rm=TRUE), # item155 is disaggregated from 27760 but weaners are a separate category 27765
          pigs80=item154,
          tpigsbig=sum(item153,item152, na.rm=TRUE),
          pigsbig=tpigsbig,
@@ -482,8 +618,8 @@ jac_disag<-jac_disag %>%
 
 
 jac_disag<-jac_disag %>% 
-  rowwise() %>% 
-  mutate(
+  dplyr::rowwise() %>% 
+  dplyr::mutate(
     otherfr_open=sum(item75,item72, na.rm=TRUE), # note from SAS: include blackcurrants in open (blackcurrants under cover are disclosive)
     otherfr_covered=sum(item2036,item6000, na.rm=TRUE),
     strawb = sum(item2556,item70, na.rm=TRUE),
@@ -522,8 +658,8 @@ jac_disag<-jac_disag %>%
     grass=sum(item2321,item2322, na.rm=TRUE),
     potatoes=sum(item24,item2320, na.rm=TRUE),
     toats=item27715,
-    tglasshouse = sum(item85,item86),
-    cereal=sum(item14,item15,item27710, item27715, item3156, na.rm=TRUE),
+    tglasshouse = sum(item85,item86, na.rm=TRUE),
+    cereal=sum(item14,item15,item16, item18, item17, item20, item3156, na.rm=TRUE),
     osr=item27720,
     oilseeds=sum(item27720, item21, na.rm=TRUE),
     combine=sum(item14,item15,item27710, item27715, item27720,
@@ -542,7 +678,7 @@ jac_disag<-jac_disag %>%
     occ=sum(item177,item178,item179, na.rm=TRUE),
     sp=sum(item182,item183,item184, na.rm=TRUE),
     occsp=sum(item177,item178,item179,item182,item183,item184, na.rm=TRUE),
-    workforce=sum(item200,sp, na.rm=TRUE),
+    workforce=sum(item200,occ, sp, na.rm=TRUE),
     camelids=sum(item2472, item2473, item2474, na.rm=TRUE),
     bcat=sum(cts303,cts305,cts307, na.rm=TRUE),
     dcat=sum(cts304,cts306,cts308, na.rm=TRUE),
@@ -552,7 +688,7 @@ jac_disag<-jac_disag %>%
 
 
 
-land_use_items<-c(land_items,all_crops, "item24","item2320","item41","item38","item39","item2469","item2470","item40",all_grass,"item46",all_other_land,
+land_use_items<-c(land_items,all_crops, "cga", "item24","item2320","item41","item38","item39", "item2469","item2470","item40",all_grass,"item46",all_other_land,
                   "item70", "item71", "item72", "item2832","item76","item85","item86","item2556","item2557","item2836","item6000","item2036","item2037","item1711","item1943","item6001")
 area_workforce_items<-c("item20026","item11","item12","item50",workforce,other_labour,"item177","item178", "item179", "item2566","item182","item183","item184", "item2567")
 
@@ -607,7 +743,299 @@ checktotals<-jac_totals %>%
 # Glasshouse items – some items are not on SAF 
 # Didn’t make total of item2319 aromatic plants because it’s not on the dataset
 
+# Make dataframe corresponding to tables
 
+tables_nice<-jac_totals %>% 
+  select(starts_with("total")) %>% 
+  filter(row_number()==1) %>% 
+  mutate(
+    wheat=total14,
+    triticale=total15,
+    winterbarley=total16, 
+    springbarley=total18,
+    winteroats=total17,
+    springoats=total20,
+    rye=total3156,
+    cereal=totalcereal,
+    winterosr=total19,
+    springosr=total23,
+    linseed=total21,
+    oilseeds=totaloilseeds,
+    proteinpeas=total28,
+    fieldbeans=total27,
+    combine=totalcombine,
+    seedpotato=total24,
+    warepotato=total2320,
+    allpotato=totalpotatoes,
+    turnipswede=total29,
+    kalecabbage=total30,
+    maize=total2059,
+    rape=total31,
+    fodderbeet=total32,
+    lupins=total2034,
+    othercropsstockfeed=total34,
+    fodder=totalfodder,
+    veghuman=total27730,
+    orchardfruit=total36,
+    softfruit=totalfruit,
+    othercrops=totalothcrops3, 
+    fallowunder5=total2469,
+    fallowover5=total2470,
+    allfallow=total39,
+    cropsfallowsetaside=total40,
+    grassunder5=total2321,
+    grassover5=total2322,
+    allgrass=totalgrass,
+    cropsgrass=total46,
+    roughgrazing=total47,
+    otherincwoodland=total49+total48,
+    agriculturalarea=total50,
+    commongrazing=totalcga,  # this isn't in SAS so I made it using the only common grazing variable
+    peascanning=total52,
+    beanscanning=total53,
+    turnipswedehuman=total56,
+    calabrese=total60,
+    cauliflowerbroccoli=total61,
+    carrots=total63,
+    otherveg=totalothveg,
+    bulbsflowers=total27740,
+    strawberries=total70,
+    raspberries=total71,
+    blueberries=total2832,
+    otherfruitopen=totalotherfr_open,
+    totalsoftfruitopen=total76,
+    tomatoesundercover=total87,
+    strawbundercover=total2556,
+    raspbundercover=total2557,
+    bluebundercover=total2836,
+    otherfruitundercover=totalotherfr_covered,
+    vegundercover=total2037,
+    beddingpotundercover=total1711,
+    hardyundercover=total1943,
+    unusedundercover=total6001,
+    alltomato=totaltomato,
+    allstrawb=totalstrawb,
+    allraspb=totalraspb,
+    allblackc=totalblackc,
+    allblueb=totalblueb,
+    allotherfruit=totalotherfr,
+    allsoftfruit=totalfruit,
+    plastic=total85,
+    glass=total86,
+    allglasshouse=totaltglasshouse,
+    femaledairy1to2=total304,
+    femaledairy2off=total306,
+    femaledairy2nooff=total308,
+    alldairy=totaldcat,
+    femalebeef1to2=total303,
+    femalebeef2off=total305,
+    femalebee2nooff=total307,
+    allbeef=totalbcat,
+    male1to2=total310,
+    male2=total311,
+    allmale=totalmcat,
+    femaledairyunder1=total302,
+    femalebeefunder1=total301,
+    maleunder1=total309,
+    allcalves=totalcalves,
+    allcattle=total312,
+    ewes=total139,
+    rams=total140,
+    othersheep1=total141,
+    othersheep=total143,
+    allothersheep=totalothsheep,
+    lambs=total144,
+    allsheep=total145,
+    sowsinpig=total146,
+    gltsinpig=total147,
+    othersows=total148,
+    allbreedingpigs=totalbreepigs,
+    barrensows=total149,
+    gilts50=total150,
+    boars=total151,
+    pigs80=totalpigsbig,
+    pigs50to80=total154,
+    pigsunder50=totalpigs50+totalpigs20,
+    allotherpigs=totalothpigs,
+    allpigs=total157,
+    pulletshenslaying=totallayers,
+    pulletsrearedlaying=total161, 
+    allfowlseggs=totaleggfowl,
+    breedinghens=totalbreeders,
+    cocks=total163,
+    allbreedingfowl=totalbreefowl,
+    broilers=total164,
+    turkeys=total1708,
+    otherpoultry=totalothpoul,
+    allpoultry=total170,
+    deer=total94, 
+    horses=totalhorses,
+    donkeys=total2868,
+    goats=totalgoats,
+    camelids=totalcamelids,
+    beehives=total2826,
+    occ1occ2ft=total177+total182,
+    occ1occ2ht=total178+total183,
+    occ1occ2lht=total179+total184,
+    allwork=totaloccsp,
+    nowork=total2566+total2567,
+    ftmaleshired=total1715,
+    ftmalesfamily=total1716,
+    ftmalespartners=total1714,
+    allftmales=totalftmale,
+    ftfemaleshired=total192,
+    ftfemalesfamily=total193,
+    ftfemalespartners=total1717,
+    allftfemales=totalftfemale,
+    allft=totalftregular,
+    ptmaleshired=total194,
+    ptmalesfamily=total195, 
+    ptmalespartners=total1718,
+    allptmales=totalptmale,
+    ptfemaleshired=total196,
+    ptfemalesfamily=total197, 
+    ptfemalespartners=total1719,
+    allptfemales=totalptfemale,
+    allpt=totalptregular,
+    allregstaff=totalregstaff,
+    malescasual=total198,
+    femalescasual=total199,
+    allcasual=totalcasual,
+    workforce=totalworkforce,
+    european=total2536,
+    noneuropean=total2511,
+    rented=total20026,
+    owned=total11,
+    areaoccupied=total12
+   
+ 
+  ) %>% 
+  select(-starts_with("total"))
+
+checkbroiler<-jac_totals %>% 
+  select(parish, holding, item164) %>% 
+  select(parish, holding, item164) %>% 
+  mutate(totalbroiler=sum(item164, na.rm=TRUE))
+
+
+checkbroiler2021<-previous_years %>% 
+  filter(yr==2021 & ags_madeup==0) %>% 
+  select(parish, holding, item164, ags_madeup) %>% 
+  mutate(totalbroiler=sum(item164, na.rm=TRUE))
+
+
+checkbroiler2021<-previous_years %>% 
+  filter(yr==2021 & ags_madeup>0) %>% 
+  select(parish, holding, item164, ags_madeup) %>% 
+mutate(totalbroiler=sum(item164, na.rm=TRUE))
+
+
+checkoccsp<-jac_totals %>% 
+  select(parish, holding, land_data, item177, item178, item179, item182, item183, item184, item194, item195)
+
+checkoccspextract<-df_nonSAF %>% 
+  select(parish, holding, item177, item178, item179, item182, item183, item184, item194, item195)
+
+checkcg<-previous_years %>% 
+  filter(yr==2021) %>% 
+  select(parish, holding, land_data, cgarea)
+
+checkoccsprealprev<-previous_years %>% 
+  filter(yr==2021) %>% 
+  select(parish, holding, ags_madeup, survtype, item177, item178, item179, item182, item183, item184, item2566, item2567) %>% 
+  filter(ags_madeup==0) %>% 
+  dplyr::mutate(across(any_of(occandocc2), ~ifelse (.>0, 1, .))) %>% 
+  rowwise() %>% 
+  mutate(occsp=sum(item177, item178, item179, item182, item183, item184, na.rm=TRUE)) %>% 
+  mutate(nowork=sum(item2566, item2567, na.rm=TRUE))
+
+sum(checkoccsprealprev$occsp, na.rm=TRUE)
+sum(checkoccsprealprev$nowork, na.rm=TRUE)
+
+
+
+checkoccsprfprev<-previous_years %>% 
+  filter(yr==2021) %>% 
+  select(parish, holding, ags_madeup, survtype, item177, item178, item179, item182, item183, item184, item2566, item2567) %>% 
+  filter(ags_madeup>0) %>% 
+  dplyr::mutate(across(any_of(occandocc2), ~ifelse (.>0, 1, .))) %>% 
+  rowwise() %>% 
+  mutate(occsp=sum(item177, item178, item179, item182, item183, item184, na.rm=TRUE)) %>% 
+  mutate(nowork=sum(item2566, item2567, na.rm=TRUE))
+
+sum(checkoccsprfprev$occsp, na.rm=TRUE)
+sum(checkoccsprfprev$nowork, na.rm=TRUE)
+
+
+checkoccspreal<-jac_disag %>% 
+  filter(survtype=="Non-SAF") %>% 
+  select(parish, holding, ags_madeup, survtype, item177, item178, item179, item182, item183, item184, item2566, item2567) %>% 
+  rowwise() %>% 
+  mutate(occsp=sum(item177, item178, item179, item182, item183, item184, na.rm=TRUE)) %>% 
+  mutate(nowork=sum(item2566, item2567, na.rm=TRUE))
+
+sum(checkoccspreal$occsp, na.rm=TRUE)
+sum(checkoccspreal$nowork, na.rm=TRUE)
+
+
+checkoccsprf<-jac_disag %>% 
+  filter(survtype!="Non-SAF") %>% 
+  select(parish, holding, ags_madeup, survtype, item177, item178, item179, item182, item183, item184, item2566, item2567) %>% 
+  rowwise() %>% 
+  mutate(occsp=sum(item177, item178, item179, item182, item183, item184, na.rm=TRUE)) %>% 
+  mutate(nowork=sum(item2566, item2567, na.rm=TRUE))
+
+sum(checkoccsprf$occsp, na.rm=TRUE)
+sum(checkoccsprf$nowork, na.rm=TRUE)
+
+
+
+# check migrant labour
+
+
+migrants<-jac_totals %>% 
+  select(parish, holding, survtype, land_data, imptype, item2511, item2536)
+
+item50final<-jac_totals %>% 
+  select(parish, holding, survtype, land_data, imptype, item46, item50)
+
+item50<-whole_population %>% 
+  select(parish, holding, survtype, land_data, imptype, item46, item47, item48, item49, item50)
+
+
+holdingsitem50<-df_nonSAF %>% 
+  filter((parish==94&holding==49)|(parish==662&holding==44)|(parish==673&holding==10)|(parish==669&holding==4)|(parish==674&holding==44))
+
+
+# check workforce
+
+workers<-jac_totals %>% 
+  filter(imptype=="none") %>% 
+select(parish, holding,imptype,submis_type, "item1714", "item1715", "item1716", "item1717", "item192", "item193", "item1718", "item194", "item195", "item1719", "item196", "item197", "item198", "item199", "item200")
+
+
+sum(workers$item1717, na.rm=TRUE)
+
+checkturkeys<-jac_totals %>% 
+  select(parish, holding, imptype, item1708, item2038, item2039, item167)
+
+
+checkturkeysprev<-previous_years %>% 
+  filter(yr==2021 &ags_madeup==0) %>% 
+  select(parish, holding, imptype, item1708, item2038, item2039, item167)
+
+sum(checkturkeysprev$item1708, na.rm=TRUE)
+
+checkitem40<-jac_disag %>% 
+  select(parish, holding, item40,item14, item15, item16, item18, item17, item20, item3156, item19, 
+         item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
+         item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38)
+
+tables<- tables_nice %>% pivot_longer(everything(), names_to = "categories", values_to = "number")
+
+
+
+write.csv(tables,"//s0177a/datashare/seerad/ags/census/branch1/NewStructure/Surveys/June/Main/June23/tables_latest_11.10.23.csv" )
 
 # Save data
 
@@ -621,7 +1049,6 @@ write_dataframe_to_db(
   versioned_table = FALSE,
   batch_size = 10000
 )  
-
 
 
 

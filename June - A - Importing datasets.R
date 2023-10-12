@@ -101,22 +101,22 @@ schema <- "juneagriculturalsurvey2023alpha"
 
 # # Bring in 2022 SAF dataset
 # 
- saf2022<-read_sas("//s0177a/sasdata1/ags/census/agstemp/allsaf22.sas7bdat")
-# 
-# 
- write_dataframe_to_db(server=server,
-                      database=database,
-                      schema=schema,
-                      table_name="saf2022",
-                      dataframe=saf2022,
-                      append_to_existing = FALSE,
-                      versioned_table=FALSE,
-                      batch_size = 10000)
+#  saf2022<-read_sas("//s0177a/sasdata1/ags/census/agstemp/allsaf22.sas7bdat")
+# # 
+# # 
+#  write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="saf2022",
+#                       dataframe=saf2022,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
 
 # Import Ags data (downloaded from Ags)
 
 
-df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_031023.csv"),
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_091023.csv"),
                     fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # # # Tidy Ags data ----------------------------------------------------------------
@@ -160,137 +160,137 @@ write_dataframe_to_db(server=server,
 
 # Import SAF data ---------------------------------------------------------
 
-
-# # Import SAF datasets separately. Filename will be different for the data drops in June and September.
+# 
+# # # Import SAF datasets separately. Filename will be different for the data drops in June and September.
+# # #
+# df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output_aug_23.xlsx"), sep.names = "_")
 # #
-df_permanent <- read.xlsx(paste0(SAF_directory, "/permanent_output_aug_23.xlsx"), sep.names = "_")
-#
-df_seasonal <- read.xlsx(paste0(SAF_directory, "/seasonal_output_aug_23.xlsx"),sep.names = "_")
-
-# Scheme data is not included in SAF data at this point but useful to have later.
-
-df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_claim_output_aug_23.xlsx"),sep.names = "_")
-
-
-
-# # # Tidy SAF data ----------------------------------------------------------------
+# df_seasonal <- read.xlsx(paste0(SAF_directory, "/seasonal_output_aug_23.xlsx"),sep.names = "_")
+# 
+# # Scheme data is not included in SAF data at this point but useful to have later.
+# 
+# df_scheme <- read.xlsx(paste0(SAF_directory, "/scheme_claim_output_aug_23.xlsx"),sep.names = "_")
+# 
+# 
+# 
+# # # # Tidy SAF data ----------------------------------------------------------------
+# # #
+# # # #
+# # # Work with permanent and seasonal in a list
+# #
+# list_perm_seas <- list(df_permanent, df_seasonal)
+# 
+# 
+# # Clean names
+# 
+# list_perm_seas <- lapply(list_perm_seas, clean_names)
+# 
+# # Create line variable for list to index by LPID for permanent and seasonal. Number gives instance of each LPID.
+# 
+# list_perm_seas <- lapply(list_perm_seas, LPID_index)
+# 
+# 
+# #
+# # # Rename and create new variables for permanent and seasonal. Land_Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
+# #
+# #
+# list_perm_seas <- lapply(list_perm_seas, rename_perm_seas_vars)
+# 
+# 
+# list_perm_seas <- lapply(list_perm_seas, new_perm_seas_vars)
+# 
+# # Create parish and holding from slc (permanent data) and mlc (seasonal data)
+# 
+# list_perm_seas[[1]]<-parishholdingperm(list_perm_seas[[1]])
+# list_perm_seas[[2]]<-parishholdingseas(list_perm_seas[[2]])
+# 
+# 
+# 
+# # # Clean names and create line variable for scheme data
+# #
+# df_scheme<-clean_names(df_scheme)
+# 
+# df_scheme <- LPID_index(df_scheme)
+# 
+# 
+# # rename and create new variables in scheme.
+# 
+# df_scheme <- rename_scheme_vars(df_scheme)
+# 
+# df_scheme <- new_scheme_vars(df_scheme)
 # #
 # # #
-# # Work with permanent and seasonal in a list
-#
-list_perm_seas <- list(df_permanent, df_seasonal)
-
-
-# Clean names
-
-list_perm_seas <- lapply(list_perm_seas, clean_names)
-
-# Create line variable for list to index by LPID for permanent and seasonal. Number gives instance of each LPID.
-
-list_perm_seas <- lapply(list_perm_seas, LPID_index)
-
-
-#
-# # Rename and create new variables for permanent and seasonal. Land_Use is also renamed here for ease, as are landusearea and bpsclaimedarea.
-#
-#
-list_perm_seas <- lapply(list_perm_seas, rename_perm_seas_vars)
-
-
-list_perm_seas <- lapply(list_perm_seas, new_perm_seas_vars)
-
-# Create parish and holding from slc (permanent data) and mlc (seasonal data)
-
-list_perm_seas[[1]]<-parishholdingperm(list_perm_seas[[1]])
-list_perm_seas[[2]]<-parishholdingseas(list_perm_seas[[2]])
-
-
-
-# # Clean names and create line variable for scheme data
-#
-df_scheme<-clean_names(df_scheme)
-
-df_scheme <- LPID_index(df_scheme)
-
-
-# rename and create new variables in scheme.
-
-df_scheme <- rename_scheme_vars(df_scheme)
-
-df_scheme <- new_scheme_vars(df_scheme)
-#
+# # #
+# # #
+# # # # Create dfs for missing obs ----------------------------------------------
+# # #
+# # # # Create dfs for missing records in permanent and seasonal.
 # #
 # #
+# missingperm_seas <- lapply(list_perm_seas, missing_obs)
+# 
+# 
+# # Missing field area in permanent and seasonal.
+# 
+# missfieldareaperm_seas <- lapply(list_perm_seas, missing_field_area)
+# 
+# 
+# # Missing eligible area in permanent and seasonal.
+# 
+# misseligibleareaperm_seas <- lapply(list_perm_seas, missing_eligible_area)
+# 
+# 
 # #
-# # # Create dfs for missing obs ----------------------------------------------
+# # # final list of permanent and seasonal removing blank records.
 # #
-# # # Create dfs for missing records in permanent and seasonal.
-#
-#
-missingperm_seas <- lapply(list_perm_seas, missing_obs)
-
-
-# Missing field area in permanent and seasonal.
-
-missfieldareaperm_seas <- lapply(list_perm_seas, missing_field_area)
-
-
-# Missing eligible area in permanent and seasonal.
-
-misseligibleareaperm_seas <- lapply(list_perm_seas, missing_eligible_area)
-
-
-#
-# # final list of permanent and seasonal removing blank records.
-#
-list_perm_seas <- lapply(list_perm_seas, cleaned_datasets)
-
-# final scheme df removing blank records.
-
-
-df_scheme <- cleaned_datasets(df_scheme)
-#
+# list_perm_seas <- lapply(list_perm_seas, cleaned_datasets)
+# 
+# # final scheme df removing blank records.
+# 
+# 
+# df_scheme <- cleaned_datasets(df_scheme)
 # #
-# #
-# # Save to datashare
-# #
-# #
-save(list_perm_seas, file = paste0(Code_directory, "/saflist_permseas_A_2023.rda"))
-
-save(df_scheme, file = paste0(Code_directory, "/saf_scheme_A_2023.rda"))
-
-
-# Save to ADM
-
-
-write_dataframe_to_db(server=server,
-                      database=database,
-                      schema=schema,
-                      table_name="saf_perm_A_2023",
-                      dataframe=list_perm_seas[[1]],
-                      append_to_existing = FALSE,
-                      versioned_table=FALSE,
-                      batch_size = 10000)
-
-
-
-write_dataframe_to_db(server=server,
-                      database=database,
-                      schema=schema,
-                      table_name="saf_seas_A_2023",
-                      dataframe=list_perm_seas[[2]],
-                      append_to_existing = FALSE,
-                      versioned_table=FALSE,
-                      batch_size = 10000)
-
-write_dataframe_to_db(server=server,
-                      database=database,
-                      schema=schema,
-                      table_name="saf_scheme_A_2023",
-                      dataframe=df_scheme,
-                      append_to_existing = FALSE,
-                      versioned_table=FALSE,
-                      batch_size = 10000)
+# # #
+# # #
+# # # Save to datashare
+# # #
+# # #
+# save(list_perm_seas, file = paste0(Code_directory, "/saflist_permseas_A_2023.rda"))
+# 
+# save(df_scheme, file = paste0(Code_directory, "/saf_scheme_A_2023.rda"))
+# 
+# 
+# # Save to ADM
+# 
+# 
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="saf_perm_A_2023",
+#                       dataframe=list_perm_seas[[1]],
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
+# 
+# 
+# 
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="saf_seas_A_2023",
+#                       dataframe=list_perm_seas[[2]],
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
+# 
+# write_dataframe_to_db(server=server,
+#                       database=database,
+#                       schema=schema,
+#                       table_name="saf_scheme_A_2023",
+#                       dataframe=df_scheme,
+#                       append_to_existing = FALSE,
+#                       versioned_table=FALSE,
+#                       batch_size = 10000)
 #
 #
 #

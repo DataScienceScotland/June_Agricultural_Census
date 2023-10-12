@@ -612,8 +612,8 @@ livestock <- june_geog %>% select(parish,
 
 cattle <- june_geog %>%
   filter(completedata !=1 & CTS312>0) %>% 
-  select(starts_with("CTS")) %>% 
-  mutate(year =paste0("20", yr))
+  dplyr::select(starts_with("CTS")) %>% 
+  dplyr::mutate(year =paste0("20", yr))
 
 
 cattle_prev <- dplyr::rename_with(prev_yr, toupper) %>% 
