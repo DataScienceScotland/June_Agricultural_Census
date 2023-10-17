@@ -176,7 +176,7 @@ addressfile <- addressfile %>%  dplyr::rename(parish = "Parish",
          holding = "Holding")
    
 #mutate common grazing area = total area  for holding classification ID =3
-common_graze <-  addressfile %>% mutate(cga =case_when(Holding_Classification_Id==3 ~ as.numeric(TotArea)) ) %>% 
+common_graze <-  addressfile %>% mutate(cgarea =case_when(Holding_Classification_Id==3 ~ as.numeric(TotArea)) ) %>% 
   filter(Holding_Classification_Id == 3) %>% select(-Holding_Classification_Id, -TotArea)
 
 #add to june dataset
@@ -423,13 +423,13 @@ june_geog <- june_geog %>%
                               unitary_authority == 235 ~ 3,
                               unitary_authority == 270 ~ 4,
                               unitary_authority %in% c(100, 110, 300)~5,
-                              unitary_authority %in% c(120, 180, 40) ~ 6,
+                              unitary_authority %in% c(120, 180, 340) ~ 6,
                               unitary_authority == 250 ~ 7,
                               unitary_authority %in% c(210, 230, 290, 400) ~8,
                               unitary_authority == 355 ~ 9,
                               unitary_authority %in% c(150, 240, 390) ~ 10,
                               unitary_authority ==130 ~ 11,
-                              unitary_authority %in% c(200, 220, 260, 280, 320, 250, 380, 395) ~ 12,
+                              unitary_authority %in% c(200, 220, 260, 280, 320, 350, 380, 395) ~ 12,
                               unitary_authority %in% c(190, 310, 370) ~ 13,
                               unitary_authority == 170 ~ 14)
                               )
