@@ -32,14 +32,14 @@ schema <- "juneagriculturalsurvey2023alpha"
 
 # pre_imputation is a large dataset and is time-consuming to read in from ADM - read in from the datashare instead if needed. 
 
-pre_imputation<- read_table_from_db(server=server,
-                                     database=database,
-                                     schema=schema,
-                                     table_name="pre_imputation")
+# pre_imputation<- read_table_from_db(server=server,
+#                                      database=database,
+#                                      schema=schema,
+#                                      table_name="pre_imputation")
 
 # Load pre_imputation dataset
 
-#load(paste0(Code_directory, "/pre_imputation.rda"))
+load(paste0(Code_directory, "/pre_imputation.rda"))
 
 # # Rolling forward for non-response --------------------------------------
 
