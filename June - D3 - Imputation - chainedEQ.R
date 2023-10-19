@@ -186,18 +186,14 @@ rownames(list_subsetsfour[[3]])
 
 # Pig imputation ----------------------------------------------------------
 
-# Keep only when SAF not filled in, imptype=full
-
-pre_imputation_pig<-pre_imputation_rolled_forward %>% 
-  group_by(id) %>% 
-  filter(any(imptype=="full"&yr==2023))
+# Keep imptype full or ags
 
 
 # Keep only imputed items in the dataset
 pig_imputed_items<-c("item146", "item147","item148", "item149","item150", "item151", "item27760","item27770")
 
 
-pre_imputation_pig<-pre_imputation_pig %>% 
+pre_imputation_pig<-pre_imputation_rolled_forward %>% 
   select(c("yr","id","parish","holding", "ags_madeup", "saf_madeup"),all_of(pig_imputed_items))
 
 pre_imputation_pig<-as.data.frame(pre_imputation_pig)
@@ -252,9 +248,7 @@ pig_subsets<-list(
   pre_imputation_pig_final %>%
     filter(str_starts(id, '7')),
   pre_imputation_pig_final %>%
-    filter(str_starts(id, '8')),
-  pre_imputation_pig_final %>%
-    filter(str_starts(id, '9'))
+    filter(str_starts(id, '8')|str_starts(id, '9'))
 )
   
 
@@ -306,7 +300,7 @@ print(new)
 outputs_one<-lapply(
   list_jacs_imputed_chained_one, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_one, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_one.rda"))
+save(outputs_one, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_one.rda"))
 
 rm(list_jacs_imputed_chained_one,outputs_one)
 gc()
@@ -321,7 +315,7 @@ print(new)
 outputs_two<-lapply(
   list_jacs_imputed_chained_two, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_two, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_two.rda"))
+save(outputs_two, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_two.rda"))
 
 
 rm(list_jacs_imputed_chained_two,outputs_two)
@@ -337,7 +331,7 @@ print(new)
 outputs_three<-lapply(
   list_jacs_imputed_chained_three, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_three, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_three.rda"))
+save(outputs_three, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_three.rda"))
 
 
 rm(list_jacs_imputed_chained_three,outputs_three)
@@ -354,7 +348,7 @@ print(new)
 outputs_four<-lapply(
   list_jacs_imputed_chained_four, function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputs_four, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_four.rda"))
+save(outputs_four, file = paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_four.rda"))
 
 rm(list_jacs_imputed_chained_four,outputs_four)
 gc()
@@ -363,13 +357,13 @@ gc()
 
 # Run pig imputation
 
-old <- Sys.time()
+old5 <- Sys.time()
 pigs_jacs_imputed_chained<-pbapply::pblapply(pig_subsets, function (x) impute(x, method="pmm", ts = "YR", noms = "ID", m = 20))
-new <- Sys.time() - old 
+new5 <- Sys.time() - old5 
 print(new)
 
 
 outputspigs<-lapply(
   pigs_jacs_imputed_chained,function (x) filter(x$results, YR == max(unique(YR), na.rm=TRUE)))
 
-save(outputspigs, file = paste0(Code_directory, "/jac_pigs_chainedEQ_041023.rda"))
+save(outputspigs, file = paste0(Code_directory, "/jac_pigs_chainedEQ_131023.rda"))
