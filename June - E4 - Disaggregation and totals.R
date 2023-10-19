@@ -45,31 +45,7 @@ jac$yr<-2023
 
 
 
-# Correction just for this run - 10.10.23 - delete on any subsequent run!
 
-correctunit<-jac %>%filter(land_data=="ags"|land_data=="both") %>% 
-  dplyr::mutate(item27750=item27750/10000,
-         item27755=item27755/10000,
-         item85=item85/10000,
-         item86=item86/10000) 
-
-check<-correctunit %>% 
-  select(item27750, item27755, item85, item86, land_data)
-
-jac<-rows_update(jac, correctunit, by="id")
-
-
-jac<-jac %>% 
-  dplyr::rowwise() %>% 
-  dplyr::mutate(item85=ifelse(imptype=="full", sum(item27750,item2862, na.rm=TRUE), item85),
-                item86=ifelse(imptype=="full", sum(item27755,item2867, na.rm=TRUE), item86),
-                item38 = sum(item41,item84,item85,item86, na.rm = TRUE),
-                item40 = sum(item14, item15, item16, item18, item17, item20, item3156, item19, 
-                             item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
-                             item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38, na.rm=TRUE))
-
-check<-jac %>% 
-  select(item27750, item27755, item85, item86, item38, item40)
 
 
 # Disaggregation ----------------------------------------------------------
