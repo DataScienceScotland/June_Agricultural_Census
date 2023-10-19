@@ -33,11 +33,11 @@ source("item_numbers.R")
 
 # Comment this back in if using chainedEQ outputs
 
-load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_one.rda"))
-load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_two.rda"))
-load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_three.rda"))
-load(paste0(Code_directory, "/imputation_outputs_chainedEQ_041023_four.rda"))
-load(paste0(Code_directory, "/jac_pigs_chainedEQ_041023.rda"))
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_one.rda"))
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_two.rda"))
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_three.rda"))
+load(paste0(Code_directory, "/imputation_outputs_chainedEQ_121023_four.rda"))
+load(paste0(Code_directory, "/jac_pigs_chainedEQ_131023.rda"))
 #
 #
 outputsone<-do.call(rbind.data.frame, outputs_one)
@@ -324,7 +324,7 @@ post_imputation_final<-rows_update(post_imputation_final, pigs_meansonly, by="id
 pigs_sdsonly<-pigs_means %>% 
   select(id, ends_with("sd"))
 
-post_imputation_finaltest<-merge(post_imputation_final, pigs_sdsonly, by="id")
+post_imputation_final<-merge(post_imputation_final, pigs_sdsonly, by="id")
 
 checksds<-post_imputation_final %>% select(id, ends_with("sd"))
 
@@ -348,6 +348,11 @@ post_imputation_final<-post_imputation_final %>%
          saf_madeup=as.numeric(saf_madeup),
          madeup=as.numeric(madeup))
 
+
+
+
+
+# Remake specific variables
 
 post_imputation_final<-post_imputation_final %>% 
   dplyr::rowwise() %>% 
@@ -399,10 +404,22 @@ post_imputation_final<-post_imputation_final %>%
          item96=NA, 
          item1712=NA, 
          item1713=NA, 
-         item98=NA
+         item98=NA, 
+         item87=NA,
          
   ) %>% 
   mutate(across(starts_with('item')& !starts_with("item185") &!starts_with("item186"), as.numeric))
+
+
+post_imputation_final<-post_imputation_final %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(item87=sum(item2713,item2707, na.rm=TRUE), #bear in mind 2713 isn't on SAF so could be an underestimate (made from disaggregating ags-only and imputed data)
+                item39=sum(item2469,item2470, na.rm=TRUE),
+                item6000=sum(item2861, item2866, na.rm=TRUE),
+                item2036=sum(item2714, item2708,na.rm=TRUE),
+                item2037=sum(item2715, item2709, na.rm=TRUE),
+                item1711=sum(item2716, item2710, na.rm=TRUE),
+                item1943=sum(item2717, item2711, na.rm=TRUE))
 
 # Save  -------------------------------------------------------------------
 
