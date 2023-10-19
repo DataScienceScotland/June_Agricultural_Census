@@ -66,6 +66,28 @@ names(jac) <- gsub("CTS", "cts", names(jac))
 load(paste0(Code_directory, "/previous_years.rda"))
 
 
+
+# Correction just for this run - 10.10.23 - delete on any subsequent run!
+
+
+
+check<-jac %>% 
+  select(id, imptype, item27750, item27755, item85, item86, item38, item40, land_data)
+
+
+
+jac<-jac %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(item85=ifelse(imptype=="full", sum(item27750,item2862, na.rm=TRUE), item85),
+                item86=ifelse(imptype=="full", sum(item27755,item2867, na.rm=TRUE), item86),
+                item38 = sum(item41,item84,item85,item86, na.rm = TRUE),
+                item40 = sum(item14, item15, item16, item18, item17, item20, item3156, item19, 
+                             item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
+                             item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38, na.rm=TRUE))
+
+check<-jac %>% 
+  select(item27750, item27755, item85, item86, item38, item40)
+
 # Disaggregation ----------------------------------------------------------
 
 
@@ -446,11 +468,13 @@ checkafter<-jac_disag %>%
 
 
 
+# Make summary items same as individual items
 
-# Make totals based on E7 of SAS code -------------------------------------------------------------
 
 
 jac_disag<-clean_names(jac_disag)
+
+str(jac_disag)
 
 jac_disag<-jac_disag %>% 
   dplyr::mutate(item27710=ifelse(item27710==0&(item16+item18)>0, (item16+item18), item27710),
@@ -477,138 +501,127 @@ jac_disag<-jac_disag %>%
                 item27755=ifelse(land_data=="saf"|land_data=="both", (item2707+ item2863+ item2864+ item2865+ item2866+ item2708+ item2709+ item2710+ item2711),item27755))
 
 
+
+
 # Round everything here - all livestock and workforce items to whole numbers and land items to 2 dp
 
 jac_disag<-jac_disag %>% 
-  mutate(across(any_of(c(all_sheep, all_pig, all_poultry, all_other_livestock, workforce)), round_half_up, 0))
+  dplyr::mutate(across(any_of(c(all_sheep, all_pig, all_poultry, all_other_livestock, workforce)), round_half_up, 0))
 
 jac_disag<-jac_disag %>% 
-  mutate(across(any_of(c("item20026","item11","item12","item50", land_items, all_crops, all_grass, all_other_land)), round_half_up, 2))
+  dplyr::mutate(across(any_of(c("item20026","item11","item12","item50", land_items, all_crops, all_grass, all_other_land)), round_half_up, 2))
 
-# make items 
 
-jac_disag<-jac_disag %>% 
-  rowwise() %>% 
-  mutate(item87=sum(item2713,item2707, na.rm=TRUE), #bear in mind 2713 isn't on SAF so will be an underestimate (made from disaggregating ags-only and imputed data)
-         item39=sum(item2469,item2470, na.rm=TRUE),
-         item6000=sum(item2861, item2866, na.rm=TRUE),
-         item2036=sum(item2714, item2708,na.rm=TRUE),
-         item2037=sum(item2715, item2709, na.rm=TRUE),
-         item1711=sum(item2716, item2710, na.rm=TRUE),
-         item1943=sum(item2717, item2711, na.rm=TRUE),
-         lambs=item144,
-         ewes=item139,
-         pigs20=item27770,
-         pigs50=sum(item155,item27765, na.rm=TRUE), # item155 is disaggregated from 27760 but weaners are a separate category 27765... is this fine?
-         pigs80=item154,
-         tpigsbig=sum(item153,item152, na.rm=TRUE),
-         pigsbig=tpigsbig,
-         tothpigs=sum(item157-sum(item27760, item27765, item27770, na.rm=TRUE), na.rm=TRUE),
-         othpigs=tothpigs,
-         broilers=item164,
-         tlayers=sum(item158,item159, na.rm=TRUE),
-         layers=tlayers,
-         peas=item52,
-         cala=item60,
-         turswe=item56,
-         carrots=item63,
-         #tveg=sum(item68,item36,item37, na.rm=TRUE) - sum(item52,item60,item56,item63, na.rm=TRUE),  # not sure this makes sense, produces some negative numbers...
-         #veg=tveg,
-         tothcer=sum(item14,item15,item17,item20, na.rm=TRUE), # no item22
-         othcer=tothcer)
+jac_disagorig<-jac_disag
+
+
+# Corrections to data
+
+
+jac_disag<-ungroup(jac_disag)
+
+
+
+# correct two holdings - clearly decimal place errors
+
+
+checkfruitandothercrops<-jac_disag %>% 
+  select(parish, holding, land_data, item75, item2714,item2708, item2713, item2707, item34, item2059, item38, item41, item84, item85, item86)
+
+
+checkholdingsfruit<-previous_years %>% 
+  select(parish, holding,yr,item75,item2713,item2707, item2036, item2714) %>% 
+  filter(parish==674 & holding ==44 | parish==674 & holding==17 |parish==94 &holding==47 |parish==472&holding==121)  
+
+checkholdingsothercrops<-previous_years %>% 
+  select(parish, holding,yr,item75,item2713,item2707, item2036, item2714) %>% 
+  filter(parish==674 & holding ==44 | parish==674 & holding==17 |parish==94 &holding==47 |parish==472&holding==121)  
+
 
 
 jac_disag<-jac_disag %>% 
-  rowwise() %>% 
-  mutate(
-    otherfr_open=sum(item75,item72, na.rm=TRUE), # note from SAS: include blackcurrants in open (blackcurrants under cover are disclosive)
-    otherfr_covered=sum(item2036,item6000, na.rm=TRUE),
-    strawb = sum(item2556,item70, na.rm=TRUE),
-    raspb = sum(item2557,item71, na.rm=TRUE),
-    blackc = sum(item6000,item72, na.rm=TRUE),
-    blueb = sum(item2836,item2832, na.rm=TRUE),
-    tomato = sum(item87, na.rm=TRUE),
-    otherfr = sum(item75,item2036, na.rm=TRUE),
-    fruit = sum(strawb,raspb,blackc,blueb,tomato,otherfr, na.rm=TRUE),  # SAS code also includes mixedfr here but can't see how it's made. Mixed fruit is item75 which is already in othfr
-    fewes=sum(ewes,lambs, na.rm=TRUE), # note didn't make fsheep=sum(sheep,fewes), not in the tables
-    fpigs50=sum(pigs50,pigs20, na.rm=TRUE),
-    fpigs80=sum(fpigs50,pigs80, na.rm=TRUE),
-    fpigsbig=sum(pigsbig,fpigs80, na.rm=TRUE),
-    fothpigs=sum(othpigs,fpigsbig,na.rm=TRUE),
-    flayers=sum(layers,broilers, na.rm=TRUE),  # note didn't make fothpoul=othpoul+flayers because the SAS code didn't make sense to me and it's not in the tables anyway
-    fcala=sum(cala,peas, na.rm=TRUE),
-    fturswe=sum(turswe,fcala, na.rm=TRUE),
-    fcarrots=sum(carrots,fturswe, na.rm=TRUE),
-    #fveg=sum(veg,fcarrots, na.rm=TRUE),
-    fothcer=sum(othcer, item27710, na.rm=TRUE),
-    fal5=sum(item2469,item2470, na.rm=TRUE),
-    othcrops=sum(item34,item2059, na.rm=TRUE),
-    othcrops2=sum(item38, na.rm=TRUE),  # in SAS this includes item2319 but it's not on the dataset
-    othcrops3=sum(item38,-sum(item87,item2556,item2557,item2836,item6000,item2036, na.rm=TRUE), na.rm=TRUE),
-    fodder=sum(item34,item2059,item2034,item29,item30,item31,item32, na.rm=TRUE),
-    othveg=sum(item55,item2323,item59,item64,item65,item66, na.rm=TRUE),
-    bigpigs=sum(item152,item153, na.rm=TRUE),
-    layers=sum(item158,item159, na.rm=TRUE),
-    breeders=sum(item160,item162, na.rm=TRUE),
-    breefowl=sum(item160,item162,item163, na.rm=TRUE),
-    eggfowl=sum(item158,item159,item161, na.rm=TRUE),
-    othpoul=sum(item2038,item2039,item167, na.rm=TRUE),
-    breepigs=sum(item146,item147,item148, na.rm=TRUE),
-    othpigs=sum(item27760, item27765, item27770, na.rm=TRUE), # why does SAS code assign othpigs twice, using different items...
-    goats=item27780,
-    grass=sum(item2321,item2322, na.rm=TRUE),
-    potatoes=sum(item24,item2320, na.rm=TRUE),
-    toats=item27715,
-    tglasshouse = sum(item85,item86),
-    cereal=sum(item14,item15,item27710, item27715, item3156, na.rm=TRUE),
-    osr=item27720,
-    oilseeds=sum(item27720, item21, na.rm=TRUE),
-    combine=sum(item14,item15,item27710, item27715, item27720,
-                item27,item28,item21, item3156, na.rm=TRUE),
-    horses=item27775,
-    othsheep=sum(item141,item143, na.rm=TRUE),
-    ftmale=sum(item1715,item1716,item1714, na.rm=TRUE),
-    ftfemale=sum(item192,item193,item1717, na.rm=TRUE),
-    ptmale=sum(item194,item195,item1718, na.rm=TRUE),
-    ptfemale=sum(item196,item197,item1719, na.rm=TRUE),
-    ftregular=sum(ftfemale,ftmale, na.rm=TRUE),
-    ptregular=sum(ptfemale,ptmale, na.rm=TRUE),
-    regstaff=sum(item1715,item1716,item1714,item192,item193,item1717
-                 ,item194,item195,item1718,item196,item197,item1719, na.rm=TRUE),
-    casual=sum(item198,item199, na.rm=TRUE),
-    occ=sum(item177,item178,item179, na.rm=TRUE),
-    sp=sum(item182,item183,item184, na.rm=TRUE),
-    occsp=sum(item177,item178,item179,item182,item183,item184, na.rm=TRUE),
-    workforce=sum(item200,sp, na.rm=TRUE),
-    camelids=sum(item2472, item2473, item2474, na.rm=TRUE),
-    bcat=sum(cts303,cts305,cts307, na.rm=TRUE),
-    dcat=sum(cts304,cts306,cts308, na.rm=TRUE),
-    mcat=sum(cts310,cts311, na.rm=TRUE),
-    calves=sum(cts301,cts302,cts309, na.rm=TRUE)
+  dplyr::mutate(
+    item2714=ifelse(parish==674 & holding ==44, 3.4, item2714),
+    item2714=ifelse(parish==674 & holding==17, 0.4, item2714),
+    item2707=ifelse(parish==472 & holding==121, 0.021, item2707),
+    item2036=ifelse(parish==94 & holding==47, 0.204, item2714)
   )
 
+occandocc2<-c("item177", "item178", "item179", "item182", "item183", "item184","item2566", "item2567","item2877", "item2878", "item3056", "item3057")
+
+jac_disag<-jac_disag %>% 
+  dplyr::mutate(across(any_of(occandocc2), ~ifelse (.>0, 1, .)))
 
 
-land_use_items<-c(land_items,all_crops, "item24","item2320","item41","item38","item39","item2469","item2470","item40",all_grass,"item46",all_other_land,
-                  "item70", "item71", "item72", "item2832","item76","item85","item86","item2556","item2557","item2836","item6000","item2036","item2037","item1711","item1943","item6001")
-area_workforce_items<-c("item20026","item11","item12","item50",workforce,other_labour,"item177","item178", "item179", "item2566","item182","item183","item184", "item2567")
 
-livestock_all_items<-c(all_cattle, all_sheep,all_pig, "item152","item153","item154","item155", all_poultry,all_other_livestock, "item27775","item27780")
 
-added_items<-c("item87","item39","item6000","item2036","item2037", "item1711", "item1943", "lambs", "ewes",
-               "pigs20","pigs50",   "pigs80",   "tpigsbig", "pigsbig",  "tothpigs", "othpigs",  "broilers", "tlayers", "layers", 
-               "peas", "cala",     "turswe", "carrots", #"tveg", "veg",  
-               "tothcer",  "othcer","otherfr_open","otherfr_covered",
-               "strawb","raspb","blackc","blueb","tomato","otherfr","fruit","fewes","fpigs50","fpigs80","fpigsbig","fothpigs",
-               "fothcer","fal5" ,"othcrops","othcrops2","othcrops3","fodder","othveg", "bigpigs","breeders", "breefowl","eggfowl", 
-               "othpoul","breepigs","goats","grass","potatoes","toats","tglasshouse","cereal","osr","oilseeds","combine","horses",
-               "othsheep","ftmale","ftfemale","ptmale","ptfemale","ftregular","ptregular","regstaff","casual","occ","sp",
-               "occsp","workforce","camelids","bcat" ,"dcat","mcat","calves")
 
-# check new items make sense
+checkitem50<-jac_disag %>%
+  select(parish, holding, imptype, item85, item86, item38, item41, item84, item40,item14, item15, item16, item18, item17, item20, item3156, item19, 
+         item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
+         item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38, 
+         item46, item47, item48, item49, item50,item2321, item2322)
 
-checkaddeditems<-jac_disag %>% 
-  select(parish, holding, added_items)
+
+checkglasshouse<-jac_disag %>% 
+  select(parish, holding, imptype, land_data, item85, item86, 
+         item27750,item2862, item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717,
+         item27755, item2867,item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711) %>% 
+  filter(item85+item86==0&(land_data=="both"|land_data=="saf")) %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(
+    item85=sum(item2862, item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717,na.rm=TRUE),
+    item86=sum(item2867,item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711,na.rm=TRUE),
+    item27750=sum(item2713, item2858, item2859, item2860, item2861, item2714, item2715, item2716, item2717,na.rm=TRUE),
+    item27755=sum(item2707, item2863, item2864, item2865, item2866, item2708, item2709, item2710, item2711,na.rm=TRUE))
+
+jac_disag<-rows_update(jac_disag, checkglasshouse, by=c("parish","holding"))
+
+
+jac_disag<-jac_disag %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(
+    item38 = sum(item41,item84,item85,item86, na.rm = TRUE),
+    item40 = sum(item14, item15, item16, item18, item17, item20, item3156, item19, 
+                 item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
+                 item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38, na.rm=TRUE),
+    item46 = sum(item2321, item2322, item40, na.rm=TRUE),
+    item50 = sum(item46, item47, item48, item49, na.rm=TRUE))
+
+
+
+# Disaggregate remaining holdings by overall proportion
+
+# Pigs
+
+pigs <- jac_disag %>% 
+  select(id, item27760, item152, item153, item154, item155) %>% 
+  dplyr::mutate(totalitem152=sum(item152, na.rm=TRUE),
+         totalitem153=sum(item153, na.rm=TRUE),
+         totalitem154=sum(item154, na.rm=TRUE),
+         totalitem155=sum(item155, na.rm=TRUE),
+         totalitem27760=sum(item27760, na.rm=TRUE),
+         prop_152=totalitem152/(totalitem152+totalitem153+totalitem154+totalitem155),
+         prop_153=totalitem153/(totalitem152+totalitem153+totalitem154+totalitem155),
+         prop_154=totalitem154/(totalitem152+totalitem153+totalitem154+totalitem155),
+         prop_155=totalitem155/(totalitem152+totalitem153+totalitem154+totalitem155)) %>% 
+  mutate(item152= ifelse (is.na(item152), prop_152*item27760, item152),
+         item153= ifelse (is.na(item153), prop_153*item27760, item153),
+         item154= ifelse (is.na(item154), prop_154*item27760, item154),
+         item155= ifelse (is.na(item155), prop_155*item27760, item155)) %>% 
+  select(id, item27760, item152, item153, item154, item155)
+
+
+jac_disag<-rows_update(jac_disag, pigs, by="id")
+
+jac_disag<-jac_disag %>% 
+  dplyr::mutate(across(any_of(c(all_pig)), round_half_up, 0))
+
+
+checkitem50<-jac_disag %>% 
+  select(id, item50, item46,item12, item40,item40,item14, item15, item16, item18, item17, item20, item3156, item19, 
+         item23, item21, item24, item2320, item27, item28, item2034, item29, item30,
+         item31, item2059, item32, item34, item36, item2469, item2470, item35, item37, item38)
 
 
 # Save temp dataset -------------------------------------------------------
