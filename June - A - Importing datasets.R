@@ -116,7 +116,7 @@ schema <- "juneagriculturalsurvey2023alpha"
 # Import Ags data (downloaded from Ags)
 
 
-df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_091023.csv"),
+df_nonSAF<-read.csv(paste0(AGS_directory,"/June_extract_121023.csv"),
                     fileEncoding="latin1")  # There is no SAF/non-SAF from 2023 onwards. All forms are essentially equivalent to non-SAF.
 
 # # # Tidy Ags data ----------------------------------------------------------------
