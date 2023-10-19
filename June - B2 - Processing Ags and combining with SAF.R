@@ -94,7 +94,7 @@ all_ags <- all_ags %>% add_land_other() %>%
 
 # Convert glasshouse from sq m to hectares
 
-all_ags <- all_ags %>% mutate(across(any_of(all_glasshouse), ~ .x / 10000))
+all_ags <- all_ags %>% dplyr::mutate(across(any_of(all_glasshouse), ~ .x / 10000))
 
 # Process SAF: split into seasonal/non-seasonal ---------------------------
 
@@ -284,7 +284,8 @@ check_glasshouse <-
 #dealing with NAs - remove from sum to get value. Remove "na.rm = TRUE" to return NA (otherwise get zeros, imputation for genuinely missing values not zeros)
 full_JAC_SAF <-
   full_JAC_SAF_corr %>% 
-  mutate(
+  dplyr::rowwise() %>% 
+  dplyr::mutate(
     #item87 = sum(item2713, item2707, na.rm = TRUE),
     #item2036 = sum(item2714, item2708),
     
@@ -383,7 +384,8 @@ full_JAC_SAF <-
 
 
 full_JAC_SAF <-
-  full_JAC_SAF %>% mutate(
+  full_JAC_SAF %>% dplyr::rowwise() %>% 
+  dplyr::mutate(
     item85 = case_when(
       survtype == "SAF_only" &
         land_data == "saf"  ~ sum(
@@ -427,7 +429,8 @@ full_JAC_SAF <-
   )
 
 full_JAC_SAF <-
-  full_JAC_SAF %>% mutate(
+  full_JAC_SAF %>% dplyr::rowwise() %>% 
+  dplyr::mutate(
     item2 = case_when(
       sum(item2827, item2828) > 0  ~ sum(item2827, item2828),
       TRUE ~ as.numeric(item2)
@@ -437,7 +440,8 @@ full_JAC_SAF <-
   )
 
 full_JAC_SAF <-
-  full_JAC_SAF %>% mutate(
+  full_JAC_SAF %>% dplyr::rowwise() %>% 
+  dplyr::mutate(
     item2 = case_when(item2879 > 0  ~ as.numeric(item2879),
                       TRUE ~ as.numeric(item2)),
     item2827 = case_when(item2879 > 0  ~ NA_real_,
@@ -693,8 +697,8 @@ combined_data_excl<-combined_data_excl %>%
   
     
 combined_data_2023<-combined_data_excl %>% 
-  rowwise() %>% 
-  mutate(
+  dplyr::rowwise() %>% 
+  dplyr::mutate(
   item50=ifelse(saf_data!="none", sum(c(item46,item47,item48,item49), na.rm=TRUE), item50))
 
 combined_data_2023<-combined_data_2023 %>% 
