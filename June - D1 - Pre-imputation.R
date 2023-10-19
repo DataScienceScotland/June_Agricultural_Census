@@ -1,5 +1,5 @@
 # This script creates the pre_imputation dataset. This combines the data from the current year, the previous ten years historic data, and the census population from the RP&S address file.
-# This needs to be run every time the combinef_data or combined_data_2023_corrected is updated (i.e. using new data cuts)
+# This needs to be run every time the combined_data or combined_data_2023_corrected is updated (i.e. using new data cuts)
 # This script is based on programs D0-D2 in the June SAS project (\\s0177a\datashare\seerad\ags\census\branch1\NewStructure\Surveys\June\Main\JUNE CENSUS PROJECT - 2021 Provisional)
 # Created by Lucy Nevard July 2023.
 # Modified by Lucy Nevard 25.09.23
