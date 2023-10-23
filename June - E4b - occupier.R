@@ -7,8 +7,8 @@ rm(list = ls())
 
 #yr = this year 20xx
 yr <- 2023
-yr1 <- yr - 2
-yr2 <-  yr - 3
+#yr1 <- yr - 2
+#yr2 <-  yr - 3
 #yr3 <-  yr - 4
 # Load packages
 library(plyr)
@@ -80,20 +80,20 @@ occupier2_no_work <- "item2567"
 
 # Age bands ---------------------------------------------------------------
 
-june_final <- june_final %>% mutate(age_band_occ1 = case_when(yr - get(occupier1_year)<25 & get(occupier1_year)>0 ~ "under_25",
-                                                       yr - get(occupier1_year)>=25 & yr - get(occupier1_year) <=34 ~ "25_to_34",
-                                                       yr - get(occupier1_year)>=35 & yr - get(occupier1_year) <=44 ~ "35_to_44",
-                                                       yr - get(occupier1_year)>=45 & yr - get(occupier1_year) <=54 ~ "45_to_54",
-                                                       yr - get(occupier1_year)>=55 & yr - get(occupier1_year) <=64 ~ "55_to_64",
-                                                       yr - get(occupier1_year)>=65 & get(occupier1_year)>0  ~ "over_64"),
-                                                       
-                                  age_band_occ2 = case_when(yr - get(occupier2_year)<25 & get(occupier2_year)>0 ~ "under_25",
-                                                            yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34 ~ "25_to_34",
-                                                            yr - get(occupier2_year)>=35 & yr - get(occupier2_year) <=44 ~ "35_to_44",
-                                                            yr - get(occupier2_year)>=45 & yr - get(occupier2_year) <=54 ~ "45_to_54",
-                                                            yr - get(occupier2_year)>=55 & yr - get(occupier2_year) <=64 ~ "55_to_64",
-                                                            yr - get(occupier2_year)>=65 & get(occupier2_year)>0  ~ "over_64")
-                                  ) 
+# june_final <- june_final %>% mutate(age_band_occ1 = case_when(yr - get(occupier1_year)<25 & get(occupier1_year)>0 ~ "under_25",
+#                                                        yr - get(occupier1_year)>=25 & yr - get(occupier1_year) <=34 ~ "25_to_34",
+#                                                        yr - get(occupier1_year)>=35 & yr - get(occupier1_year) <=44 ~ "35_to_44",
+#                                                        yr - get(occupier1_year)>=45 & yr - get(occupier1_year) <=54 ~ "45_to_54",
+#                                                        yr - get(occupier1_year)>=55 & yr - get(occupier1_year) <=64 ~ "55_to_64",
+#                                                        yr - get(occupier1_year)>=65 & get(occupier1_year)>0  ~ "over_64"),
+#                                                        
+#                                   age_band_occ2 = case_when(yr - get(occupier2_year)<25 & get(occupier2_year)>0 ~ "under_25",
+#                                                             yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34 ~ "25_to_34",
+#                                                             yr - get(occupier2_year)>=35 & yr - get(occupier2_year) <=44 ~ "35_to_44",
+#                                                             yr - get(occupier2_year)>=45 & yr - get(occupier2_year) <=54 ~ "45_to_54",
+#                                                             yr - get(occupier2_year)>=55 & yr - get(occupier2_year) <=64 ~ "55_to_64",
+#                                                             yr - get(occupier2_year)>=65 & get(occupier2_year)>0  ~ "over_64")
+#                                   ) 
 
 
 # Table categories --------------------------------------------------------
@@ -128,12 +128,12 @@ june_final <- june_final %>% mutate(ft_m_under_25_1 = case_when(get(occupier1_ft
                                                                 (yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34) ~1,
                                                               TRUE ~ 0),
                                   
-                                  ft_m_25_to_34_1 = case_when(get(occupier1_ft)>0 &
-                                                              get(occupier1_male) == 1 & 
+                                  ft_f_25_to_34_1 = case_when(get(occupier1_ft)>0 &
+                                                              get(occupier1_female) == 1 & 
                                                               (yr - get(occupier1_year)>=25 & yr - get(occupier1_year) <=34) ~ 1,
                                                               TRUE ~0),
                                                               
-                                  ft_m_25_to_34_2= case_when(get(occupier2_ft)>0 &
+                                  ft_f_25_to_34_2= case_when(get(occupier2_ft)>0 &
                                                               get(occupier2_female) == 1 & 
                                                               (yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34) ~1,
                                                             TRUE ~ 0),
@@ -241,12 +241,12 @@ june_final <- june_final %>% mutate(pt_gthalf_m_under_25_1 = case_when(get(occup
                                                                   (yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34) ~1,
                                                                 TRUE ~ 0),
                                     
-                                    pt_gthalf_m_25_to_34_1 = case_when(get(occupier1_pt_gthalf)>0 &
-                                                                  get(occupier1_male) == 1 & 
+                                    pt_gthalf_f_25_to_34_1 = case_when(get(occupier1_pt_gthalf)>0 &
+                                                                  get(occupier1_female) == 1 & 
                                                                   (yr - get(occupier1_year)>=25 & yr - get(occupier1_year) <=34) ~ 1,
                                                                 TRUE ~0),
                                     
-                                    pt_gthalf_m_25_to_34_2= case_when(get(occupier2_pt_gthalf)>0 &
+                                    pt_gthalf_f_25_to_34_2= case_when(get(occupier2_pt_gthalf)>0 &
                                                                  get(occupier2_female) == 1 & 
                                                                  (yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34) ~1,
                                                                TRUE ~ 0),
@@ -355,12 +355,12 @@ june_final <- june_final %>% mutate(pt_lthalf_m_under_25_1 = case_when(get(occup
                                                                   (yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34) ~1,
                                                                 TRUE ~ 0),
                                     
-                                    pt_lthalf_m_25_to_34_1 = case_when(get(occupier1_pt_lthalf)>0 &
-                                                                  get(occupier1_male) == 1 & 
+                                    pt_lthalf_f_25_to_34_1 = case_when(get(occupier1_pt_lthalf)>0 &
+                                                                  get(occupier1_female) == 1 & 
                                                                   (yr - get(occupier1_year)>=25 & yr - get(occupier1_year) <=34) ~ 1,
                                                                 TRUE ~0),
                                     
-                                    pt_lthalf_m_25_to_34_2= case_when(get(occupier2_pt_lthalf)>0 &
+                                    pt_lthalf_f_25_to_34_2= case_when(get(occupier2_pt_lthalf)>0 &
                                                                  get(occupier2_female) == 1 & 
                                                                  (yr - get(occupier2_year)>=25 & yr - get(occupier2_year) <=34) ~1,
                                                                TRUE ~ 0),
