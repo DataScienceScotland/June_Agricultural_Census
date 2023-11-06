@@ -1,4 +1,4 @@
-# June - 2023
+# June Agricultural Census 2023
 
 This is the R code for the June Agricultural Census 2023.
 
