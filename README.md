@@ -1,8 +1,6 @@
 # June - 2023
 
-This is the branch for the 2023 version of the code. It is now the default branch.
-
-Code for June Agricultural Census
+This is the R code for June Agricultural Census 2023.
 
 Script A inputs SAF and Census (Ags) datasets.
 
